@@ -21,5 +21,8 @@ build/
 # macOS
 .DS_Store
 
+# Rust build artifacts
+**/target/
+
 # Data dumps
 data/
