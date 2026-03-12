@@ -23,19 +23,19 @@ struct KcalRingView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.kcSwan, lineWidth: 14)
+                .stroke(Color.kcSwan, lineWidth: 12)
 
             Circle()
                 .trim(from: 0, to: animatedProgress)
                 .stroke(
                     Color.kcFeather,
-                    style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                    style: StrokeStyle(lineWidth: 12, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
 
             VStack(spacing: 2) {
                 Text("\(remaining)")
-                    .font(.kcNumber)
+                    .font(.system(size: 34, weight: .black, design: .rounded))
                     .foregroundStyle(Color.kcEel)
                     .contentTransition(.numericText())
 
@@ -45,7 +45,7 @@ struct KcalRingView: View {
                     .kerning(0.6)
             }
         }
-        .frame(width: 156, height: 156)
+        .frame(width: 130, height: 130)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(percentage) pour cent de l'objectif atteint, \(remaining) kilocalories restantes")
         .onAppear {

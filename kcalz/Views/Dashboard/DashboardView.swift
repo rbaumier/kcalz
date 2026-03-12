@@ -95,12 +95,12 @@ struct DashboardView: View {
                     }
                     .padding(.bottom, 32)
                 }
-                .padding(.horizontal, 36)
+                .padding(.horizontal, 20)
                 .opacity(summaryAppeared ? 1 : 0)
                 .offset(y: summaryAppeared ? 0 : 16)
 
                 // MARK: - Meals
-                VStack(spacing: 16) {
+                VStack(spacing: 24) {
                     ForEach(Array(dayLog.meals.enumerated()), id: \.element.id) { i, meal in
                         MealSectionView(meal: meal, index: i)
                     }

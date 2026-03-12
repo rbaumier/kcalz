@@ -8,18 +8,11 @@ struct MealSectionView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header
+        VStack(alignment: .leading, spacing: 8) {
+            // Header — outside the card
             HStack(spacing: 12) {
-                Image(systemName: meal.type.icon)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color.kcEel)
-                    .frame(width: 32, height: 32)
-                    .background(Color.kcPolar)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
                 Text(meal.type.rawValue)
-                    .font(.kcSubheadline)
+                    .font(.kcHeadline)
                     .foregroundStyle(Color.kcEel)
 
                 Spacer()
@@ -46,10 +39,9 @@ struct MealSectionView: View {
                 .buttonStyle(Kc3DButton(shadow: .kcWing))
                 .accessibilityLabel("Ajouter un aliment à \(meal.type.rawValue)")
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 4)
 
-            // Entries
+            // Card body — entries only
             if meal.entries.isEmpty {
                 HStack(spacing: 10) {
                     Image(systemName: "fork.knife")
@@ -60,16 +52,20 @@ struct MealSectionView: View {
                         .foregroundStyle(Color.kcHare)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .padding(.bottom, 4)
-                .overlay(alignment: .top) {
-                    Rectangle()
-                        .fill(Color.kcPolar)
-                        .frame(height: 2)
-                }
+                .padding(.vertical, 20)
+                .background(Color.kcSnow)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
             } else {
                 VStack(spacing: 0) {
-                    ForEach(Array(meal.entries.enumerated()), id: \.element.id) { _, entry in
+                    ForEach(Array(meal.entries.enumerated()), id: \.element.id) { i, entry in
+                        if i > 0 {
+                            Rectangle()
+                                .fill(Color.kcPolar)
+                                .frame(height: 2)
+                                .padding(.leading, 20)
+                        }
+
                         HStack(spacing: 0) {
                             Text(entry.name)
                                 .font(.kcBody)
@@ -90,18 +86,13 @@ struct MealSectionView: View {
                         }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 14)
-                        .overlay(alignment: .top) {
-                            Rectangle()
-                                .fill(Color.kcPolar)
-                                .frame(height: 2)
-                        }
                     }
                 }
+                .background(Color.kcSnow)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
             }
         }
-        .background(Color.kcSnow)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
         .padding(.bottom, 4)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
