@@ -28,10 +28,6 @@ struct DashboardView: View {
                             .frame(width: 44, height: 44)
                             .background(Color.kcSnow)
                             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.kcSwan, lineWidth: 2)
-                            )
                     }
                     .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
                     .accessibilityLabel("Jour précédent")
@@ -51,10 +47,6 @@ struct DashboardView: View {
                             .frame(width: 44, height: 44)
                             .background(Color.kcSnow)
                             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.kcSwan, lineWidth: 2)
-                            )
                     }
                     .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
                     .accessibilityLabel("Jour suivant")
