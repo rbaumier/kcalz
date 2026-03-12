@@ -3,23 +3,27 @@ import SwiftUI
 // MARK: - Couleurs
 
 extension Color {
-    // Couleurs principales — palette vive style Duolingo
-    static let kcPrimary = Color(hex: 0x58CC02)
-    static let kcSecondary = Color(hex: 0x1CB0F6)
-    static let kcAccent = Color(hex: 0xFF9600)
-    static let kcDanger = Color(hex: 0xFF4B4B)
+    // Primaires
+    static let kcPrimary = Color(hex: 0x4BBF00)
+    static let kcSecondary = Color(hex: 0x1DA8F0)
+    static let kcAccent = Color(hex: 0xFF8C00)
+    static let kcDanger = Color(hex: 0xF04848)
 
-    // Nutriments — chaque macro a sa couleur
-    static let kcKcal = Color(hex: 0xFF9600)
-    static let kcProteins = Color(hex: 0xFF4B4B)
-    static let kcCarbs = Color(hex: 0x1CB0F6)
-    static let kcFat = Color(hex: 0xFFC800)
-    static let kcSugars = Color(hex: 0xCE82FF)
-    static let kcSalt = Color(hex: 0x78C800)
+    // Nutriments
+    static let kcKcal = Color(hex: 0xFF8C00)
+    static let kcProteins = Color(hex: 0xF04848)
+    static let kcCarbs = Color(hex: 0x1DA8F0)
+    static let kcFat = Color(hex: 0xF0B800)
+    static let kcSugars = Color(hex: 0xC070F0)
+    static let kcSalt = Color(hex: 0x6DB800)
 
-    // Surfaces
-    static let kcBackground = Color(hex: 0xF7F7F7)
-    static let kcCard = Color.white
+    // Surfaces — tinted, never pure
+    static let kcBackground = Color(hex: 0xF5F3EF)
+    static let kcSurface = Color(hex: 0xFFFDF8)
+    static let kcSurfaceElevated = Color(hex: 0xFFFFFA)
+    static let kcTextPrimary = Color(hex: 0x1A1812)
+    static let kcTextSecondary = Color(hex: 0x8A857A)
+    static let kcDivider = Color(hex: 0xE8E4DC)
 
     init(hex: UInt, alpha: Double = 1.0) {
         self.init(
@@ -35,42 +39,45 @@ extension Color {
 // MARK: - Fonts
 
 extension Font {
-    static let kcTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
-    static let kcHeadline = Font.system(.title2, design: .rounded, weight: .bold)
-    static let kcSubheadline = Font.system(.headline, design: .rounded, weight: .semibold)
+    static let kcTitle = Font.system(.largeTitle, design: .rounded, weight: .black)
+    static let kcHeadline = Font.system(.title3, design: .rounded, weight: .bold)
+    static let kcSubheadline = Font.system(.subheadline, design: .rounded, weight: .semibold)
     static let kcBody = Font.system(.body, design: .rounded)
     static let kcCaption = Font.system(.caption, design: .rounded, weight: .medium)
-    static let kcNumber = Font.system(.title, design: .rounded, weight: .heavy)
-    static let kcNumberSmall = Font.system(.body, design: .rounded, weight: .bold)
+    static let kcNumber = Font.system(.largeTitle, design: .rounded, weight: .black)
+    static let kcNumberMedium = Font.system(.title2, design: .rounded, weight: .heavy)
+    static let kcNumberSmall = Font.system(.subheadline, design: .rounded, weight: .bold)
 }
 
-// MARK: - Animations
+// MARK: - Animations — smooth deceleration, no bounce
 
 extension Animation {
-    static let kcBounce = Animation.spring(response: 0.4, dampingFraction: 0.6)
-    static let kcSnappy = Animation.spring(response: 0.3, dampingFraction: 0.7)
+    static let kcSmooth = Animation.easeOut(duration: 0.5)
+    static let kcSnappy = Animation.easeOut(duration: 0.25)
+    static func kcStagger(_ index: Int) -> Animation {
+        .easeOut(duration: 0.4).delay(Double(index) * 0.06)
+    }
 }
 
 // MARK: - View Modifiers
 
-struct KcCardModifier: ViewModifier {
+struct KcSectionModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .padding()
-            .background(Color.kcCard)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
     }
 }
 
-struct KcBounceButton: ButtonStyle {
+struct KcPressable: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
-            .animation(.kcBounce, value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.kcSnappy, value: configuration.isPressed)
     }
 }
 
 extension View {
-    func kcCard() -> some View { modifier(KcCardModifier()) }
+    func kcSection() -> some View { modifier(KcSectionModifier()) }
 }

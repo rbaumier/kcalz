@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kcalz — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --feather: #58CC02;
+    --wing: #43C000;
+    --mask: #89E219;
+
+    --macaw: #1CB0F6;
+    --cardinal: #FF4B4B;
+    --bee: #FFC800;
+    --fox: #FF9600;
+
+    --eel: #4B4B4B;
+    --wolf: #777777;
+    --hare: #AFAFAF;
+    --swan: #E5E5E5;
+    --polar: #F7F7F7;
+    --snow: #FFFFFF;
+
+    /* Derived */
+    --feather-dark: #46A302;
+    --cardinal-dark: #E03E3E;
+    --macaw-dark: #1899D6;
+    --bee-dark: #E0B000;
+  }
+
+  body {
+    background: #2B2B2B;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'Nunito', system-ui, sans-serif;
+  }
+
+  /* ── Phone ── */
+  .phone {
+    width: 393px;
+    height: 852px;
+    background: #fff;
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 4px #3a3a3a, 0 24px 80px rgba(0,0,0,0.4);
+  }
+
+  .screen {
+    height: 100%;
+    overflow-y: auto;
+    padding-top: 60px;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+
+  .notch {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 37px;
+    background: #1C1C1E;
+    border-radius: 20px;
+    z-index: 20;
+  }
+
+  .statusbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--eel);
+    background: #fff;
+    z-index: 10;
+  }
+
+  /* ── Date nav ── */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    padding: 6px 20px 16px;
+    gap: 12px;
+  }
+
+  .nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--snow);
+    border: 2px solid var(--swan);
+    border-bottom: 4px solid var(--swan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    flex-shrink: 0;
+  }
+  .nav-btn:active {
+    border-bottom-width: 2px;
+    transform: translateY(2px);
+  }
+  .nav-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--wolf);
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .date-label {
+    flex: 1;
+    text-align: center;
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--eel);
+    letter-spacing: -0.3px;
+  }
+
+  /* ── Summary ── */
+  .summary {
+    margin: 0 16px;
+    background: var(--snow);
+    border-radius: 20px;
+    border: 2px solid var(--swan);
+    border-bottom: 4px solid var(--swan);
+    padding: 24px 20px 20px;
+  }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  /* Ring */
+  .ring {
+    width: 156px;
+    height: 156px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-num {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--eel);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .ring-lbl {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--wolf);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 2px;
+  }
+
+  /* Side stats */
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--wolf);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .stat-num {
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .stat-unit {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--wolf);
+  }
+
+  /* ── Macros ── */
+  .macros {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid var(--polar);
+  }
+
+  .macro {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .macro-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--eel);
+    width: 72px;
+    flex-shrink: 0;
+  }
+
+  .bar-bg {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--swan);
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    min-width: 10px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .macro-val {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--eel);
+    min-width: 56px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── Meals ── */
+  .meals {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px 44px;
+  }
+
+  .meal {
+    background: var(--snow);
+    border-radius: 20px;
+    border: 2px solid var(--swan);
+    border-bottom: 4px solid var(--swan);
+    overflow: hidden;
+  }
+
+  .meal-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 14px 14px 18px;
+  }
+
+  .meal-ico {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--polar);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .meal-ico svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--eel);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .meal-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--eel);
+    flex: 1;
+  }
+
+  .meal-kcal {
+    font-size: 17px;
+    font-weight: 900;
+    color: var(--feather);
+    letter-spacing: -0.3px;
+  }
+
+  .meal-unit {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--wolf);
+    margin-right: 6px;
+  }
+
+  .add-btn {
+    width: 44px;
+    height: 40px;
+    border-radius: 12px;
+    border: none;
+    background: var(--feather);
+    box-shadow: 0 4px 0 var(--feather-dark);
+    color: var(--snow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.08s ease;
+    flex-shrink: 0;
+  }
+  .add-btn:active {
+    box-shadow: 0 0px 0 var(--feather-dark);
+    transform: translateY(4px);
+  }
+  .add-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--snow);
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+  }
+
+  /* Entries */
+  .entries {
+    border-top: 2px solid var(--polar);
+  }
+
+  .entry {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+  }
+  .entry + .entry {
+    border-top: 2px solid var(--polar);
+  }
+
+  .entry-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--eel);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .entry-g {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--hare);
+    margin: 0 14px 0 8px;
+    flex-shrink: 0;
+  }
+
+  .entry-cal {
+    font-size: 17px;
+    font-weight: 900;
+    color: var(--feather);
+    min-width: 44px;
+    text-align: right;
+    flex-shrink: 0;
+    letter-spacing: -0.3px;
+  }
+
+  /* Empty */
+  .empty {
+    padding: 16px 18px 20px;
+    border-top: 2px solid var(--polar);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .empty-txt {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--hare);
+  }
+  .empty svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--hare);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ── Reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar">9:41</div>
+
+  <div class="screen">
+
+    <!-- Date -->
+    <nav class="date-nav" aria-label="Navigation par date">
+      <button class="nav-btn" aria-label="Jour précédent">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 class="date-label">Jeudi 12 Mars</h1>
+      <button class="nav-btn" aria-label="Jour suivant">
+        <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </nav>
+
+    <!-- Summary -->
+    <section class="summary" aria-label="Résumé du jour">
+      <div class="hero">
+
+        <!-- Ring -->
+        <div class="ring" role="img" aria-label="41 pour cent de l'objectif atteint, 1292 kilocalories restantes">
+          <svg viewBox="0 0 156 156">
+            <circle cx="78" cy="78" r="64" fill="none" stroke="var(--swan)" stroke-width="14"/>
+            <circle cx="78" cy="78" r="64" fill="none"
+              stroke="var(--feather)" stroke-width="14"
+              stroke-linecap="round"
+              stroke-dasharray="402.1"
+              stroke-dashoffset="236"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-num">1292</div>
+            <div class="ring-lbl">restantes</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+          <div>
+            <div class="stat-label">Consomm&#233;</div>
+            <div class="stat-row">
+              <span class="stat-num" style="color: var(--feather)">908</span>
+              <span class="stat-unit">/ 2200 kcal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Macros -->
+      <div class="macros">
+        <div class="macro">
+          <span class="macro-name">Prot&#233;ines</span>
+          <div class="bar-bg" role="progressbar" aria-valuenow="67" aria-valuemin="0" aria-valuemax="140" aria-label="Protéines: 67 sur 140 grammes">
+            <div class="bar-fill" style="background: var(--cardinal); width: 47.9%"></div>
+          </div>
+          <span class="macro-val">67 <span style="color:var(--wolf);font-weight:700">/ 140g</span></span>
+        </div>
+
+        <div class="macro">
+          <span class="macro-name">Glucides</span>
+          <div class="bar-bg" role="progressbar" aria-valuenow="128" aria-valuemin="0" aria-valuemax="250" aria-label="Glucides: 128 sur 250 grammes">
+            <div class="bar-fill" style="background: var(--macaw); width: 51.3%"></div>
+          </div>
+          <span class="macro-val">128 <span style="color:var(--wolf);font-weight:700">/ 250g</span></span>
+        </div>
+
+        <div class="macro">
+          <span class="macro-name">Lipides</span>
+          <div class="bar-bg" role="progressbar" aria-valuenow="14" aria-valuemin="0" aria-valuemax="80" aria-label="Lipides: 14 sur 80 grammes">
+            <div class="bar-fill" style="background: var(--bee); width: 17%"></div>
+          </div>
+          <span class="macro-val">14 <span style="color:var(--wolf);font-weight:700">/ 80g</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Meals -->
+    <div class="meals" role="list">
+
+      <!-- Petit déjeuner -->
+      <article class="meal" role="listitem">
+        <div class="meal-head">
+          <div class="meal-ico">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
+          <span class="meal-title">Petit d&#233;jeuner</span>
+          <span class="meal-kcal">426</span>
+          <span class="meal-unit">kcal</span>
+          <button class="add-btn" aria-label="Ajouter un aliment au petit déjeuner">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="entries">
+          <div class="entry">
+            <span class="entry-name">Flocons d'avoine</span>
+            <span class="entry-g">60g</span>
+            <span class="entry-cal">227</span>
+          </div>
+          <div class="entry">
+            <span class="entry-name">Lait demi-&#233;cr&#233;m&#233;</span>
+            <span class="entry-g">200g</span>
+            <span class="entry-cal">92</span>
+          </div>
+          <div class="entry">
+            <span class="entry-name">Banane</span>
+            <span class="entry-g">120g</span>
+            <span class="entry-cal">107</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Déjeuner -->
+      <article class="meal" role="listitem">
+        <div class="meal-head">
+          <div class="meal-ico">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
+          <span class="meal-title">D&#233;jeuner</span>
+          <span class="meal-kcal">482</span>
+          <span class="meal-unit">kcal</span>
+          <button class="add-btn" aria-label="Ajouter un aliment au déjeuner">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="entries">
+          <div class="entry">
+            <span class="entry-name">Poulet grill&#233;</span>
+            <span class="entry-g">150g</span>
+            <span class="entry-cal">248</span>
+          </div>
+          <div class="entry">
+            <span class="entry-name">Riz basmati</span>
+            <span class="entry-g">180g</span>
+            <span class="entry-cal">234</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Goûter -->
+      <article class="meal" role="listitem">
+        <div class="meal-head">
+          <div class="meal-ico">
+            <svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+          </div>
+          <span class="meal-title">Go&#251;ter</span>
+          <span class="meal-kcal" style="visibility: hidden">0</span>
+          <button class="add-btn" aria-label="Ajouter un aliment au goûter">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="empty">
+          <svg viewBox="0 0 24 24"><path d="M3 2l18 0"/><path d="M4 2v1a9 9 0 0 0 9 9 9 9 0 0 0 9-9V2"/><path d="M12 12v9"/><path d="M8 21h8"/></svg>
+          <span class="empty-txt">Aucun aliment</span>
+        </div>
+      </article>
+
+      <!-- Dîner -->
+      <article class="meal" role="listitem">
+        <div class="meal-head">
+          <div class="meal-ico">
+            <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </div>
+          <span class="meal-title">D&#238;ner</span>
+          <span class="meal-kcal" style="visibility: hidden">0</span>
+          <button class="add-btn" aria-label="Ajouter un aliment au dîner">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="empty">
+          <svg viewBox="0 0 24 24"><path d="M3 2l18 0"/><path d="M4 2v1a9 9 0 0 0 9 9 9 9 0 0 0 9-9V2"/><path d="M12 12v9"/><path d="M8 21h8"/></svg>
+          <span class="empty-txt">Aucun aliment</span>
+        </div>
+      </article>
+
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -5,7 +5,10 @@ struct NutrientBarView: View {
     let current: Double
     let goal: Double
     let color: Color
+    let index: Int
+
     @State private var animatedProgress: Double = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var progress: Double {
         guard goal > 0 else { return 0 }
@@ -13,32 +16,49 @@ struct NutrientBarView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(label)
-                    .font(.kcCaption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("\(Int(current))/\(Int(goal))g")
-                    .font(.kcNumberSmall)
-                    .foregroundStyle(color)
-            }
+        HStack(spacing: 12) {
+            // Colored dot
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(color.opacity(0.15))
+            // Label
+            Text(label)
+                .font(.kcSubheadline)
+                .foregroundStyle(Color.kcTextPrimary)
 
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(color)
-                        .frame(width: geo.size.width * animatedProgress)
-                }
-            }
-            .frame(height: 10)
+            Spacer()
+
+            // Values
+            Text("\(Int(current))")
+                .font(.kcNumberSmall)
+                .foregroundStyle(color)
+            Text("/ \(Int(goal))g")
+                .font(.kcCaption)
+                .foregroundStyle(Color.kcTextSecondary)
         }
+
+        // Bar
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(color.opacity(0.12))
+
+                Capsule()
+                    .fill(color)
+                    .frame(width: max(geo.size.width * animatedProgress, animatedProgress > 0 ? 8 : 0))
+            }
+        }
+        .frame(height: 8)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(Int(current)) sur \(Int(goal)) grammes")
         .onAppear {
-            withAnimation(.kcBounce.delay(0.3)) {
+            if reduceMotion {
                 animatedProgress = progress
+            } else {
+                withAnimation(.kcStagger(index)) {
+                    animatedProgress = progress
+                }
             }
         }
     }
