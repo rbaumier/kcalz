@@ -16,40 +16,34 @@ struct NutrientBarView: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Colored dot
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-
-            // Label
+        HStack(spacing: 10) {
             Text(label)
-                .font(.kcSubheadline)
-                .foregroundStyle(Color.kcTextPrimary)
+                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                .foregroundStyle(Color.kcEel)
+                .frame(width: 72, alignment: .leading)
 
-            Spacer()
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.kcSwan)
 
-            // Values
-            Text("\(Int(current))")
-                .font(.kcNumberSmall)
-                .foregroundStyle(color)
-            Text("/ \(Int(goal))g")
-                .font(.kcCaption)
-                .foregroundStyle(Color.kcTextSecondary)
-        }
-
-        // Bar
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(color.opacity(0.12))
-
-                Capsule()
-                    .fill(color)
-                    .frame(width: max(geo.size.width * animatedProgress, animatedProgress > 0 ? 8 : 0))
+                    Capsule()
+                        .fill(color)
+                        .frame(width: max(geo.size.width * animatedProgress, animatedProgress > 0 ? 10 : 0))
+                }
             }
+            .frame(height: 10)
+
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text("\(Int(current))")
+                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.kcEel)
+                Text("/ \(Int(goal))g")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.kcWolf)
+            }
+            .frame(minWidth: 56, alignment: .trailing)
         }
-        .frame(height: 8)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label): \(Int(current)) sur \(Int(goal)) grammes")
         .onAppear {

@@ -23,110 +23,93 @@ struct DashboardView: View {
                 HStack {
                     Button { } label: {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.kcTextSecondary)
-                            .frame(width: 36, height: 36)
-                            .background(Color.kcSurface)
-                            .clipShape(Circle())
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color.kcWolf)
+                            .frame(width: 44, height: 44)
+                            .background(Color.kcSnow)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.kcSwan, lineWidth: 2)
+                            )
                     }
-                    .buttonStyle(KcPressable())
+                    .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
+                    .accessibilityLabel("Jour précédent")
 
                     Spacer()
 
                     Text(dateText)
                         .font(.kcHeadline)
-                        .foregroundStyle(Color.kcTextPrimary)
+                        .foregroundStyle(Color.kcEel)
 
                     Spacer()
 
                     Button { } label: {
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.kcTextSecondary)
-                            .frame(width: 36, height: 36)
-                            .background(Color.kcSurface)
-                            .clipShape(Circle())
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color.kcWolf)
+                            .frame(width: 44, height: 44)
+                            .background(Color.kcSnow)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.kcSwan, lineWidth: 2)
+                            )
                     }
-                    .buttonStyle(KcPressable())
+                    .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
+                    .accessibilityLabel("Jour suivant")
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
+                .padding(.top, 6)
+                .padding(.bottom, 16)
                 .opacity(headerAppeared ? 1 : 0)
 
-                // MARK: - Summary hero
-                VStack(spacing: 24) {
-                    // Ring + weight side by side
-                    HStack(spacing: 28) {
+                // MARK: - Summary (no card)
+                VStack(spacing: 0) {
+                    HStack(spacing: 20) {
                         KcalRingView(consumed: dayLog.totalKcal, goal: goal.kcal)
 
-                        VStack(alignment: .leading, spacing: 16) {
-                            // Weight block
-                            if let weight = dayLog.weight {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text("Poids")
-                                        .font(.kcCaption)
-                                        .foregroundStyle(Color.kcTextSecondary)
-                                        .textCase(.uppercase)
-                                        .kerning(0.5)
-                                    HStack(alignment: .firstTextBaseline, spacing: 3) {
-                                        Text(String(format: "%.1f", weight))
-                                            .font(.kcNumberMedium)
-                                            .foregroundStyle(Color.kcTextPrimary)
-                                        Text("kg")
-                                            .font(.kcCaption)
-                                            .foregroundStyle(Color.kcTextSecondary)
-                                    }
-                                }
-                            }
-
-                            // Consumed summary
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("Consommé")
-                                    .font(.kcCaption)
-                                    .foregroundStyle(Color.kcTextSecondary)
-                                    .textCase(.uppercase)
-                                    .kerning(0.5)
-                                HStack(alignment: .firstTextBaseline, spacing: 3) {
-                                    Text("\(Int(dayLog.totalKcal))")
-                                        .font(.kcNumberMedium)
-                                        .foregroundStyle(Color.kcKcal)
-                                    Text("/ \(goal.kcal)")
-                                        .font(.kcCaption)
-                                        .foregroundStyle(Color.kcTextSecondary)
-                                }
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("CONSOMMÉ")
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .foregroundStyle(Color.kcWolf)
+                                .kerning(0.8)
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text("\(Int(dayLog.totalKcal))")
+                                    .font(.kcNumberMedium)
+                                    .foregroundStyle(Color.kcFeather)
+                                Text("/ \(goal.kcal) kcal")
+                                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(Color.kcWolf)
                             }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 28)
 
-                    // Macro bars — no card wrapper, just inline
-                    VStack(spacing: 14) {
-                        NutrientBarView(label: "Protéines", current: dayLog.totalProteins, goal: goal.proteins, color: .kcProteins, index: 0)
-                        NutrientBarView(label: "Glucides", current: dayLog.totalCarbs, goal: goal.carbs, color: .kcCarbs, index: 1)
-                        NutrientBarView(label: "Lipides", current: dayLog.totalFat, goal: goal.fat, color: .kcFat, index: 2)
+                    // Macros — compact inline
+                    VStack(spacing: 12) {
+                        NutrientBarView(label: "Protéines", current: dayLog.totalProteins, goal: goal.proteins, color: .kcCardinal, index: 0)
+                        NutrientBarView(label: "Glucides", current: dayLog.totalCarbs, goal: goal.carbs, color: .kcMacaw, index: 1)
+                        NutrientBarView(label: "Lipides", current: dayLog.totalFat, goal: goal.fat, color: .kcBee, index: 2)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.bottom, 32)
                 }
-                .padding(.vertical, 20)
-                .background(Color.kcSurface)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 36)
                 .opacity(summaryAppeared ? 1 : 0)
                 .offset(y: summaryAppeared ? 0 : 16)
 
                 // MARK: - Meals
-                VStack(spacing: 10) {
+                VStack(spacing: 16) {
                     ForEach(Array(dayLog.meals.enumerated()), id: \.element.id) { i, meal in
                         MealSectionView(meal: meal, index: i)
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 20)
-                .padding(.bottom, 32)
+                .padding(.bottom, 44)
             }
         }
-        .background(Color.kcBackground)
+        .background(Color.kcPolar)
         .onAppear {
             if reduceMotion {
                 headerAppeared = true

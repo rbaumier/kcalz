@@ -22,32 +22,30 @@ struct KcalRingView: View {
 
     var body: some View {
         ZStack {
-            // Background track — warm tint, not gray
             Circle()
-                .stroke(Color.kcKcal.opacity(0.1), lineWidth: 14)
+                .stroke(Color.kcSwan, lineWidth: 14)
 
-            // Progress arc
             Circle()
                 .trim(from: 0, to: animatedProgress)
                 .stroke(
-                    Color.kcKcal,
+                    Color.kcFeather,
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
 
-            // Center content
             VStack(spacing: 2) {
                 Text("\(remaining)")
                     .font(.kcNumber)
-                    .foregroundStyle(Color.kcTextPrimary)
+                    .foregroundStyle(Color.kcEel)
                     .contentTransition(.numericText())
 
-                Text("kcal restantes")
-                    .font(.kcCaption)
-                    .foregroundStyle(Color.kcTextSecondary)
+                Text("RESTANTES")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color.kcWolf)
+                    .kerning(0.6)
             }
         }
-        .frame(width: 150, height: 150)
+        .frame(width: 156, height: 156)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(percentage) pour cent de l'objectif atteint, \(remaining) kilocalories restantes")
         .onAppear {
