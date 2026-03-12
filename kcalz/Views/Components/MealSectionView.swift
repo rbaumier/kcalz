@@ -7,21 +7,21 @@ struct MealSectionView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: meal.type.icon)
-                    .foregroundStyle(.kcPrimary)
+                    .foregroundStyle(Color.kcPrimary)
                 Text(meal.type.rawValue)
                     .font(.kcSubheadline)
                 Spacer()
                 if meal.totalKcal > 0 {
                     Text("\(Int(meal.totalKcal)) kcal")
                         .font(.kcNumberSmall)
-                        .foregroundStyle(.kcKcal)
+                        .foregroundStyle(Color.kcKcal)
                 }
                 Button {
                     // TODO: F5 — ajout aliment
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(.kcPrimary)
+                        .foregroundStyle(Color.kcPrimary)
                 }
                 .buttonStyle(KcBounceButton())
             }
@@ -42,7 +42,7 @@ struct MealSectionView: View {
                             .foregroundStyle(.secondary)
                         Text("\(Int(entry.kcal))")
                             .font(.kcNumberSmall)
-                            .foregroundStyle(.kcKcal)
+                            .foregroundStyle(Color.kcKcal)
                             .frame(width: 50, alignment: .trailing)
                     }
                     .padding(.leading, 28)

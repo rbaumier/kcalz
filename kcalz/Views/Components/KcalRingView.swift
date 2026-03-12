@@ -17,17 +17,17 @@ struct KcalRingView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(.kcKcal.opacity(0.15), lineWidth: 20)
+                .stroke(Color.kcKcal.opacity(0.15), lineWidth: 20)
 
             Circle()
                 .trim(from: 0, to: animatedProgress)
-                .stroke(.kcKcal, style: StrokeStyle(lineWidth: 20, lineCap: .round))
+                .stroke(Color.kcKcal, style: StrokeStyle(lineWidth: 20, lineCap: .round))
                 .rotationEffect(.degrees(-90))
 
             VStack(spacing: 4) {
                 Text("\(remaining)")
                     .font(.kcNumber)
-                    .foregroundStyle(.kcKcal)
+                    .foregroundStyle(Color.kcKcal)
                 Text("restantes")
                     .font(.kcCaption)
                     .foregroundStyle(.secondary)

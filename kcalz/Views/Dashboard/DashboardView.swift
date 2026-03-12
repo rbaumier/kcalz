@@ -79,7 +79,7 @@ struct DashboardView: View {
             }
             .padding()
         }
-        .background(.kcBackground)
+        .background(Color.kcBackground)
     }
 }
 

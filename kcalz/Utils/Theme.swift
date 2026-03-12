@@ -57,7 +57,7 @@ struct KcCardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
-            .background(.kcCard)
+            .background(Color.kcCard)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
     }

@@ -1,0 +1,444 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		217F4B00DDC333760C89FD21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D17B2D0B4EDB4F7166620F2 /* Assets.xcassets */; };
+		23A0B9B826CA9671F3972F11 /* FoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4503FCAEE98D97024FE4AF7 /* FoodEntry.swift */; };
+		30DB1BD2479A16AFB5BED807 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A061E751C3A1F1637FA6C4 /* DashboardView.swift */; };
+		4E4791359F370F872AB95CB6 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 50173806E68A75FE8E969AAB /* GRDB */; };
+		7EAB58F4443DEADE34697B7F /* DayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DFA3157E328E08C5F334B2A /* DayLog.swift */; };
+		88A7EC4D77F38AFAABD289E7 /* NutrientBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CB331B6E6F1EB6E1E7CD52E /* NutrientBarView.swift */; };
+		9C23321EBAB0836EF5C921D1 /* KcalzApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876D09937D7B03D21473BBEC /* KcalzApp.swift */; };
+		ADE48E0AEC4E0E89A8D429E9 /* Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC1535A8EE4401DEAF5C653D /* Meal.swift */; };
+		B1B37D7444B9096D6018DA03 /* PreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D180541420817B886A0BF822 /* PreviewData.swift */; };
+		BA4B736533A802D0D6197E25 /* MealSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF9EAF8890FC4D1F5C2833B /* MealSectionView.swift */; };
+		CC6E21CBE1690A7F48EAE2E3 /* MealType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1535658A3886F613602B1692 /* MealType.swift */; };
+		F43F5927F9FE26B80671E764 /* KcalRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3A1E4DA012CF597BDA53DDA /* KcalRingView.swift */; };
+		F6FC664B37C4907B1FA73753 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 577C59F5760C1550043B4462 /* Theme.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1535658A3886F613602B1692 /* MealType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealType.swift; sourceTree = "<group>"; };
+		2D17B2D0B4EDB4F7166620F2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2DFA3157E328E08C5F334B2A /* DayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayLog.swift; sourceTree = "<group>"; };
+		36A061E751C3A1F1637FA6C4 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		577C59F5760C1550043B4462 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		5CB331B6E6F1EB6E1E7CD52E /* NutrientBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientBarView.swift; sourceTree = "<group>"; };
+		876D09937D7B03D21473BBEC /* KcalzApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KcalzApp.swift; sourceTree = "<group>"; };
+		A4503FCAEE98D97024FE4AF7 /* FoodEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodEntry.swift; sourceTree = "<group>"; };
+		AC1535A8EE4401DEAF5C653D /* Meal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meal.swift; sourceTree = "<group>"; };
+		C3A1E4DA012CF597BDA53DDA /* KcalRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KcalRingView.swift; sourceTree = "<group>"; };
+		C44B4BD166073E26E85641C1 /* kcalz.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = kcalz.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D180541420817B886A0BF822 /* PreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewData.swift; sourceTree = "<group>"; };
+		FDF9EAF8890FC4D1F5C2833B /* MealSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealSectionView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E14DCFA01226D3456A435C34 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E4791359F370F872AB95CB6 /* GRDB in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1DE47B8F8FA901B8E27D7A28 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				577C59F5760C1550043B4462 /* Theme.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		2BF1F1DECD25E050718929A3 = {
+			isa = PBXGroup;
+			children = (
+				CCEA00868947CD7FD28C7767 /* kcalz */,
+				96CEF7B9390389F0BCDC7779 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		618EFB7C368E74871E86B9DA /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				C3A1E4DA012CF597BDA53DDA /* KcalRingView.swift */,
+				FDF9EAF8890FC4D1F5C2833B /* MealSectionView.swift */,
+				5CB331B6E6F1EB6E1E7CD52E /* NutrientBarView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		63F1ABF626B16C71D1695FFA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2DFA3157E328E08C5F334B2A /* DayLog.swift */,
+				A4503FCAEE98D97024FE4AF7 /* FoodEntry.swift */,
+				AC1535A8EE4401DEAF5C653D /* Meal.swift */,
+				1535658A3886F613602B1692 /* MealType.swift */,
+				D180541420817B886A0BF822 /* PreviewData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		811459032715E1DF2F7ABED5 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				36A061E751C3A1F1637FA6C4 /* DashboardView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		96CEF7B9390389F0BCDC7779 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C44B4BD166073E26E85641C1 /* kcalz.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9BDE5634A246211C0197F139 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				618EFB7C368E74871E86B9DA /* Components */,
+				811459032715E1DF2F7ABED5 /* Dashboard */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AAA79B0ED9FCC4A68340A5E9 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				876D09937D7B03D21473BBEC /* KcalzApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		CCEA00868947CD7FD28C7767 /* kcalz */ = {
+			isa = PBXGroup;
+			children = (
+				AAA79B0ED9FCC4A68340A5E9 /* App */,
+				63F1ABF626B16C71D1695FFA /* Models */,
+				EF3CCFA94A5E49ECF90AB0B4 /* Resources */,
+				1DE47B8F8FA901B8E27D7A28 /* Utils */,
+				9BDE5634A246211C0197F139 /* Views */,
+			);
+			path = kcalz;
+			sourceTree = "<group>";
+		};
+		EF3CCFA94A5E49ECF90AB0B4 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2D17B2D0B4EDB4F7166620F2 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AAB68E18CED2324F938A5B37 /* kcalz */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0EE11F9A5CC54D1C1195F19F /* Build configuration list for PBXNativeTarget "kcalz" */;
+			buildPhases = (
+				F663CDA1220FF5A0C6B2677F /* Sources */,
+				0F09BED4594255FE81FDD418 /* Resources */,
+				E14DCFA01226D3456A435C34 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = kcalz;
+			packageProductDependencies = (
+				50173806E68A75FE8E969AAB /* GRDB */,
+			);
+			productName = kcalz;
+			productReference = C44B4BD166073E26E85641C1 /* kcalz.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		19405C0111045E11C7E25D32 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					AAB68E18CED2324F938A5B37 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = 6C0B7AC5E29632D2108785DD /* Build configuration list for PBXProject "kcalz" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 2BF1F1DECD25E050718929A3;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B3FFFD3CDCCCC6761C985654 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 96CEF7B9390389F0BCDC7779 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AAB68E18CED2324F938A5B37 /* kcalz */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0F09BED4594255FE81FDD418 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				217F4B00DDC333760C89FD21 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F663CDA1220FF5A0C6B2677F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30DB1BD2479A16AFB5BED807 /* DashboardView.swift in Sources */,
+				7EAB58F4443DEADE34697B7F /* DayLog.swift in Sources */,
+				23A0B9B826CA9671F3972F11 /* FoodEntry.swift in Sources */,
+				F43F5927F9FE26B80671E764 /* KcalRingView.swift in Sources */,
+				9C23321EBAB0836EF5C921D1 /* KcalzApp.swift in Sources */,
+				ADE48E0AEC4E0E89A8D429E9 /* Meal.swift in Sources */,
+				BA4B736533A802D0D6197E25 /* MealSectionView.swift in Sources */,
+				CC6E21CBE1690A7F48EAE2E3 /* MealType.swift in Sources */,
+				88A7EC4D77F38AFAABD289E7 /* NutrientBarView.swift in Sources */,
+				B1B37D7444B9096D6018DA03 /* PreviewData.swift in Sources */,
+				F6FC664B37C4907B1FA73753 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A693930A9F6C8EF3BD9C94C8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = kcalz;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kcalz.kcalz;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A82CB2C3179368DC25045CC5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = kcalz;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kcalz.kcalz;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E64304A91BF3EDE87319A422 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		FDD4AD91E8972A601800575B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0EE11F9A5CC54D1C1195F19F /* Build configuration list for PBXNativeTarget "kcalz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A693930A9F6C8EF3BD9C94C8 /* Debug */,
+				A82CB2C3179368DC25045CC5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6C0B7AC5E29632D2108785DD /* Build configuration list for PBXProject "kcalz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E64304A91BF3EDE87319A422 /* Debug */,
+				FDD4AD91E8972A601800575B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B3FFFD3CDCCCC6761C985654 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		50173806E68A75FE8E969AAB /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B3FFFD3CDCCCC6761C985654 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 19405C0111045E11C7E25D32 /* Project object */;
+}
