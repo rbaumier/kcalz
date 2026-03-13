@@ -1,6 +1,6 @@
 import Foundation
 
-struct FoodEntry: Identifiable {
+struct FoodEntry: Identifiable, Sendable, Hashable {
     let id = UUID()
     var name: String
     var grams: Double
@@ -15,4 +15,7 @@ struct FoodEntry: Identifiable {
     var proteins: Double { proteinsPer100g * grams / 100 }
     var carbs: Double { carbsPer100g * grams / 100 }
     var fat: Double { fatPer100g * grams / 100 }
+
+    static func == (lhs: FoodEntry, rhs: FoodEntry) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }

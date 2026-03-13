@@ -24,26 +24,26 @@ struct ProductDetailView: View {
                             .foregroundStyle(Color.kcWolf)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.horizontal, Theme.cardInnerPadding)
+                .padding(.top, Theme.horizontalPadding)
 
                 // Grams input
                 VStack(alignment: .leading, spacing: 8) {
                     Text("QUANTITÉ")
-                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .font(.kcLabel)
                         .foregroundStyle(Color.kcWolf)
-                        .kerning(0.8)
+                        .kerning(Theme.labelKerning)
 
                     HStack(spacing: 8) {
                         TextField("100", text: $viewModel.gramsText)
                             .font(.kcNumberMedium)
                             .foregroundStyle(Color.kcEel)
-                            .keyboardType(.numberPad)
+                            .keyboardType(.decimalPad)
                             .multilineTextAlignment(.center)
                             .frame(width: 100)
                             .padding(.vertical, 12)
                             .background(Color.kcSnow)
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
                             .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
 
                         Text("grammes")
@@ -51,7 +51,7 @@ struct ProductDetailView: View {
                             .foregroundStyle(Color.kcWolf)
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, Theme.cardInnerPadding)
 
                 // Nutrients
                 VStack(spacing: 0) {
@@ -63,9 +63,9 @@ struct ProductDetailView: View {
                     NutrientDetailRow(label: "Sel", value: String(format: "%.2f", viewModel.salt), unit: "g", color: .kcHare)
                 }
                 .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
                 .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.horizontalPadding)
 
                 // Add button
                 Button {
@@ -76,11 +76,13 @@ struct ProductDetailView: View {
                         .foregroundStyle(Color.kcSnow)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color.kcFeather)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .background(viewModel.isValidInput ? Color.kcFeather : Color.kcSwan)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
                 }
                 .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
-                .padding(.horizontal, 16)
+                .disabled(!viewModel.isValidInput)
+                .accessibilityHint("Ajoute cet aliment au repas")
+                .padding(.horizontal, Theme.horizontalPadding)
                 .padding(.top, 8)
             }
             .padding(.bottom, 32)
@@ -101,7 +103,7 @@ private struct NutrientDetailRow: View {
         HStack {
             Circle()
                 .fill(color)
-                .frame(width: 10, height: 10)
+                .frame(width: Theme.dotSize, height: Theme.dotSize)
 
             Text(label)
                 .font(.kcBody)
@@ -118,7 +120,7 @@ private struct NutrientDetailRow: View {
                 .foregroundStyle(Color.kcWolf)
                 .frame(width: 30, alignment: .leading)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, Theme.cardInnerPadding)
         .padding(.vertical, 12)
     }
 }

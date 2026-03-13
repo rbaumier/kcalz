@@ -4,8 +4,9 @@ import Foundation
 @MainActor
 final class SearchViewModel {
     var query = ""
-    var results: [OFFProduct] = []
-    var isSearching = false
+    private(set) var results: [OFFProduct] = []
+    private(set) var isSearching = false
+    private(set) var error: Error?
 
     private let store: OFFStore
     private var searchTask: Task<Void, Never>?
@@ -16,6 +17,7 @@ final class SearchViewModel {
 
     func onQueryChanged() {
         searchTask?.cancel()
+        error = nil
 
         guard query.count >= 2 else {
             results = []
@@ -34,12 +36,23 @@ final class SearchViewModel {
                     results = found
                     isSearching = false
                 }
+            } catch is CancellationError {
+                return
             } catch {
                 if !Task.isCancelled {
+                    self.error = error
                     results = []
                     isSearching = false
                 }
             }
         }
+    }
+
+    func clearSearch() {
+        searchTask?.cancel()
+        query = ""
+        results = []
+        error = nil
+        isSearching = false
     }
 }

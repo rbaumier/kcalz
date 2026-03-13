@@ -1,26 +1,25 @@
 import SwiftUI
 
-enum Route: Hashable {
-    case search(MealType)
-    case detail(OFFProduct, MealType)
-}
-
 struct DashboardView: View {
     let offStore: OFFStore
 
     @State private var dayLog = PreviewData.dayLog
-    let goal = PreviewData.goal
+    private let goal = PreviewData.goal
 
     @State private var path: [Route] = []
     @State private var headerAppeared = false
     @State private var summaryAppeared = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var dateText: String {
+    private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "fr_FR")
         f.dateFormat = "EEEE d MMMM"
-        return f.string(from: dayLog.date).capitalized
+        return f
+    }()
+
+    private var dateText: String {
+        Self.dateFormatter.string(from: dayLog.date).capitalized
     }
 
     var body: some View {
@@ -32,11 +31,11 @@ struct DashboardView: View {
                     HStack {
                         Button { } label: {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.kcIcon)
                                 .foregroundStyle(Color.kcWolf)
-                                .frame(width: 44, height: 44)
+                                .frame(width: Theme.buttonSize, height: Theme.buttonSize)
                                 .background(Color.kcSnow)
-                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
                         }
                         .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
                         .accessibilityLabel("Jour précédent")
@@ -51,16 +50,16 @@ struct DashboardView: View {
 
                         Button { } label: {
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.kcIcon)
                                 .foregroundStyle(Color.kcWolf)
-                                .frame(width: 44, height: 44)
+                                .frame(width: Theme.buttonSize, height: Theme.buttonSize)
                                 .background(Color.kcSnow)
-                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
                         }
                         .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
                         .accessibilityLabel("Jour suivant")
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, Theme.cardInnerPadding)
                     .padding(.top, 6)
                     .padding(.bottom, 16)
                     .opacity(headerAppeared ? 1 : 0)
@@ -72,15 +71,15 @@ struct DashboardView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("CONSOMMÉ")
-                                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                    .font(.kcLabel)
                                     .foregroundStyle(Color.kcWolf)
-                                    .kerning(0.8)
+                                    .kerning(Theme.labelKerning)
                                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                                     Text("\(Int(dayLog.totalKcal))")
                                         .font(.kcNumberMedium)
                                         .foregroundStyle(Color.kcFeather)
-                                    Text("/ \(goal.kcal) kcal")
-                                        .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                    Text("/ \(Int(goal.kcal)) kcal")
+                                        .font(.kcSecondary)
                                         .foregroundStyle(Color.kcWolf)
                                 }
                             }
@@ -96,7 +95,7 @@ struct DashboardView: View {
                         }
                         .padding(.bottom, 32)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, Theme.cardInnerPadding)
                     .opacity(summaryAppeared ? 1 : 0)
                     .offset(y: summaryAppeared ? 0 : 16)
 
@@ -108,7 +107,7 @@ struct DashboardView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, Theme.horizontalPadding)
                     .padding(.bottom, 44)
                 }
             }
@@ -127,7 +126,7 @@ struct DashboardView: View {
                     }
                 }
             }
-            .onAppear {
+            .task {
                 if reduceMotion {
                     headerAppeared = true
                     summaryAppeared = true
@@ -150,5 +149,7 @@ struct DashboardView: View {
 }
 
 #Preview {
-    DashboardView(offStore: try! OFFStore())
+    if let store = try? OFFStore() {
+        DashboardView(offStore: store)
+    }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct DayLog: Identifiable {
+struct DayLog: Identifiable, Sendable, Equatable {
     let id = UUID()
     var date: Date
     var meals: [Meal]
@@ -14,4 +14,6 @@ struct DayLog: Identifiable {
     func meal(for type: MealType) -> Meal? {
         meals.first { $0.type == type }
     }
+
+    static func == (lhs: DayLog, rhs: DayLog) -> Bool { lhs.id == rhs.id }
 }

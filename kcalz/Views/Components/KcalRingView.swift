@@ -2,18 +2,18 @@ import SwiftUI
 
 struct KcalRingView: View {
     let consumed: Double
-    let goal: Int
+    let goal: Double
 
     @State private var animatedProgress: Double = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var progress: Double {
         guard goal > 0 else { return 0 }
-        return min(consumed / Double(goal), 1.0)
+        return min(consumed / goal, 1.0)
     }
 
     private var remaining: Int {
-        max(goal - Int(consumed), 0)
+        max(Int(goal) - Int(consumed), 0)
     }
 
     private var percentage: Int {
@@ -23,32 +23,32 @@ struct KcalRingView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.kcSwan, lineWidth: 12)
+                .stroke(Color.kcSwan, lineWidth: Theme.ringStroke)
 
             Circle()
                 .trim(from: 0, to: animatedProgress)
                 .stroke(
                     Color.kcFeather,
-                    style: StrokeStyle(lineWidth: 12, lineCap: .round)
+                    style: StrokeStyle(lineWidth: Theme.ringStroke, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
 
             VStack(spacing: 2) {
                 Text("\(remaining)")
-                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .font(.kcNumberLarge)
                     .foregroundStyle(Color.kcEel)
                     .contentTransition(.numericText())
 
                 Text("RESTANTES")
-                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .font(.kcLabel)
                     .foregroundStyle(Color.kcWolf)
-                    .kerning(0.6)
+                    .kerning(Theme.ringLabelKerning)
             }
         }
-        .frame(width: 130, height: 130)
+        .frame(width: Theme.ringSize, height: Theme.ringSize)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(percentage) pour cent de l'objectif atteint, \(remaining) kilocalories restantes")
-        .onAppear {
+        .task {
             if reduceMotion {
                 animatedProgress = progress
             } else {

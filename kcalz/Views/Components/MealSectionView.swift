@@ -3,7 +3,7 @@ import SwiftUI
 struct MealSectionView: View {
     let meal: Meal
     let index: Int
-    var onAdd: () -> Void
+    let onAdd: () -> Void
 
     @State private var appeared = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -12,7 +12,7 @@ struct MealSectionView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Header — outside the card
             HStack(spacing: 12) {
-                Text(meal.type.rawValue)
+                Text(meal.type.displayName)
                     .font(.kcHeadline)
                     .foregroundStyle(Color.kcEel)
 
@@ -23,7 +23,7 @@ struct MealSectionView: View {
                         .font(.kcNumberSmall)
                         .foregroundStyle(Color.kcFeather)
                     Text("kcal")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.kcUnit)
                         .foregroundStyle(Color.kcWolf)
                 }
 
@@ -31,14 +31,14 @@ struct MealSectionView: View {
                     onAdd()
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.kcIconMedium)
                         .foregroundStyle(Color.kcSnow)
-                        .frame(width: 44, height: 36)
+                        .frame(width: Theme.buttonSize, height: 36)
                         .background(Color.kcFeather)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusS, style: .continuous))
                 }
                 .buttonStyle(Kc3DButton(shadow: .kcWing))
-                .accessibilityLabel("Ajouter un aliment à \(meal.type.rawValue)")
+                .accessibilityLabel("Ajouter un aliment à \(meal.type.displayName)")
             }
             .padding(.horizontal, 4)
 
@@ -46,16 +46,16 @@ struct MealSectionView: View {
             if meal.entries.isEmpty {
                 HStack(spacing: 10) {
                     Image(systemName: "fork.knife")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.kcIcon)
                         .foregroundStyle(Color.kcHare)
                     Text("Aucun aliment")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.kcEmptyText)
                         .foregroundStyle(Color.kcHare)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
+                .padding(.vertical, Theme.cardInnerPadding)
                 .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
                 .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
             } else {
                 VStack(spacing: 0) {
@@ -64,7 +64,7 @@ struct MealSectionView: View {
                             Rectangle()
                                 .fill(Color.kcPolar)
                                 .frame(height: 2)
-                                .padding(.leading, 20)
+                                .padding(.leading, Theme.cardInnerPadding)
                         }
 
                         HStack(spacing: 0) {
@@ -76,7 +76,7 @@ struct MealSectionView: View {
                             Spacer(minLength: 8)
 
                             Text("\(Int(entry.grams))g")
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .font(.kcBadge)
                                 .foregroundStyle(Color.kcHare)
                                 .padding(.trailing, 14)
 
@@ -85,19 +85,20 @@ struct MealSectionView: View {
                                 .foregroundStyle(Color.kcFeather)
                                 .frame(minWidth: 44, alignment: .trailing)
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Theme.cardInnerPadding)
                         .padding(.vertical, 14)
+                        .accessibilityElement(children: .combine)
                     }
                 }
                 .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
                 .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
             }
         }
         .padding(.bottom, 4)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
-        .onAppear {
+        .task {
             if reduceMotion {
                 appeared = true
             } else {

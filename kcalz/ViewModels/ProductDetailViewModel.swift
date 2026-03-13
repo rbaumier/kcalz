@@ -10,21 +10,28 @@ final class ProductDetailViewModel {
         self.product = product
     }
 
-    var grams: Double {
-        Double(gramsText) ?? 0
+    var grams: Double? {
+        guard let v = Double(gramsText), v > 0 else { return nil }
+        return v
     }
 
-    var kcal: Double { (product.kcal ?? 0) * grams / 100 }
-    var proteins: Double { (product.proteins ?? 0) * grams / 100 }
-    var carbs: Double { (product.carbs ?? 0) * grams / 100 }
-    var fat: Double { (product.fat ?? 0) * grams / 100 }
-    var sugars: Double { (product.sugars ?? 0) * grams / 100 }
-    var salt: Double { (product.salt ?? 0) * grams / 100 }
+    var isValidInput: Bool { grams != nil }
+
+    var kcal: Double { scaled(product.kcal) }
+    var proteins: Double { scaled(product.proteins) }
+    var carbs: Double { scaled(product.carbs) }
+    var fat: Double { scaled(product.fat) }
+    var sugars: Double { scaled(product.sugars) }
+    var salt: Double { scaled(product.salt) }
+
+    private func scaled(_ valuePer100g: Double?) -> Double {
+        (valuePer100g ?? 0) * (grams ?? 0) / 100
+    }
 
     func makeFoodEntry() -> FoodEntry {
         FoodEntry(
             name: product.name,
-            grams: grams,
+            grams: grams ?? 0,
             kcalPer100g: product.kcal ?? 0,
             proteinsPer100g: product.proteins ?? 0,
             carbsPer100g: product.carbs ?? 0,

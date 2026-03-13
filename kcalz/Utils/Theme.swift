@@ -43,13 +43,56 @@ extension Font {
     static let kcCaption = Font.system(.caption, design: .rounded, weight: .bold)
     static let kcNumber = Font.system(size: 40, weight: .black, design: .rounded)
     static let kcNumberMedium = Font.system(size: 30, weight: .black, design: .rounded)
+    static let kcNumberLarge = Font.system(size: 34, weight: .black, design: .rounded)
     static let kcNumberSmall = Font.system(.body, design: .rounded, weight: .black)
+
+    /// 11pt heavy rounded — section labels (CONSOMMÉ, QUANTITÉ, RESTANTES)
+    static let kcLabel = Font.system(size: 11, weight: .heavy, design: .rounded)
+    /// 13pt heavy rounded — nutrient bar labels
+    static let kcSmallLabel = Font.system(size: 13, weight: .heavy, design: .rounded)
+    /// 13pt black rounded — nutrient bar values
+    static let kcSmallNumber = Font.system(size: 13, weight: .black, design: .rounded)
+    /// 12pt bold rounded — nutrient bar units, kcal suffix
+    static let kcUnit = Font.system(size: 12, weight: .bold, design: .rounded)
+    /// 14pt bold — icon buttons (chevrons)
+    static let kcIcon = Font.system(size: 14, weight: .bold)
+    /// 16pt bold — search/clear/plus icons
+    static let kcIconMedium = Font.system(size: 16, weight: .bold)
+    /// 28pt bold — empty state icons
+    static let kcIconLarge = Font.system(size: 28, weight: .bold)
+    /// 15pt heavy rounded — secondary values (goal suffix)
+    static let kcSecondary = Font.system(size: 15, weight: .heavy, design: .rounded)
+    /// 15pt bold rounded — empty state text
+    static let kcEmptyText = Font.system(size: 15, weight: .bold, design: .rounded)
+    /// 14pt bold rounded — grams badge in meal entries
+    static let kcBadge = Font.system(size: 14, weight: .bold, design: .rounded)
+}
+
+// MARK: - Spacing & Layout tokens
+
+enum Theme {
+    static let cornerRadiusS: CGFloat = 12
+    static let cornerRadiusM: CGFloat = 14
+    static let cornerRadiusL: CGFloat = 16
+    static let cornerRadiusXL: CGFloat = 20
+
+    static let horizontalPadding: CGFloat = 16
+    static let cardInnerPadding: CGFloat = 20
+
+    static let buttonSize: CGFloat = 44
+    static let dotSize: CGFloat = 10
+    static let barHeight: CGFloat = 10
+    static let ringSize: CGFloat = 130
+    static let ringStroke: CGFloat = 12
+    static let minBarWidth: CGFloat = 10
+
+    static let labelKerning: CGFloat = 0.8
+    static let ringLabelKerning: CGFloat = 0.6
 }
 
 // MARK: - Animations — smooth deceleration, no bounce
 
 extension Animation {
-    static let kcSmooth = Animation.easeOut(duration: 0.5)
     static let kcSnappy = Animation.easeOut(duration: 0.1)
     static func kcStagger(_ index: Int) -> Animation {
         .easeOut(duration: 0.4).delay(Double(index) * 0.06)
@@ -58,7 +101,7 @@ extension Animation {
 
 // MARK: - Button Style — Duolingo 3D press via shadow
 
-struct Kc3DButton: ButtonStyle {
+struct Kc3DButton: ButtonStyle, Sendable {
     var shadow: Color = .kcWing
     var depth: CGFloat = 4
 

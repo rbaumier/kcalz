@@ -18,7 +18,7 @@ struct NutrientBarView: View {
     var body: some View {
         HStack(spacing: 10) {
             Text(label)
-                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                .font(.kcSmallLabel)
                 .foregroundStyle(Color.kcEel)
                 .frame(width: 72, alignment: .leading)
 
@@ -29,24 +29,24 @@ struct NutrientBarView: View {
 
                     Capsule()
                         .fill(color)
-                        .frame(width: max(geo.size.width * animatedProgress, animatedProgress > 0 ? 10 : 0))
+                        .frame(width: max(geo.size.width * animatedProgress, animatedProgress > 0 ? Theme.minBarWidth : 0))
                 }
             }
-            .frame(height: 10)
+            .frame(height: Theme.barHeight)
 
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text("\(Int(current))")
-                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .font(.kcSmallNumber)
                     .foregroundStyle(Color.kcEel)
                 Text("/ \(Int(goal))g")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.kcUnit)
                     .foregroundStyle(Color.kcWolf)
             }
             .frame(minWidth: 56, alignment: .trailing)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label): \(Int(current)) sur \(Int(goal)) grammes")
-        .onAppear {
+        .task {
             if reduceMotion {
                 animatedProgress = progress
             } else {

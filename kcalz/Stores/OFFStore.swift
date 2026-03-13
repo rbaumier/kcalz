@@ -1,13 +1,22 @@
 import Foundation
 import GRDB
 
-@MainActor
+enum OFFStoreError: LocalizedError {
+    case databaseNotFound
+
+    var errorDescription: String? {
+        switch self {
+        case .databaseNotFound: "off_fr.sqlite introuvable dans le bundle"
+        }
+    }
+}
+
 final class OFFStore: Sendable {
     private let dbQueue: DatabaseQueue
 
     init() throws {
         guard let path = Bundle.main.path(forResource: "off_fr", ofType: "sqlite") else {
-            fatalError("off_fr.sqlite not found in bundle")
+            throw OFFStoreError.databaseNotFound
         }
         var config = Configuration()
         config.readonly = true
@@ -20,7 +29,7 @@ final class OFFStore: Sendable {
 
         let tokens = trimmed.components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
-            .map { "\"\($0)\"*" }
+            .map { "\"\($0.replacingOccurrences(of: "\"", with: ""))\"*" }
         let ftsQuery = tokens.joined(separator: " ")
 
         return try dbQueue.read { db in
