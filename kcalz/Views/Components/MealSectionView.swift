@@ -3,6 +3,8 @@ import SwiftUI
 struct MealSectionView: View {
     let meal: Meal
     let onAdd: () -> Void
+    let onTap: (FoodEntry) -> Void
+    let onDelete: (FoodEntry) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -49,7 +51,7 @@ struct MealSectionView: View {
                         .foregroundStyle(Color.kcHare)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.cardInnerPadding)
+                .padding(.vertical, 14)
                 .background(Color.kcSnow)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
                 .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
@@ -63,27 +65,11 @@ struct MealSectionView: View {
                                 .padding(.leading, Theme.cardInnerPadding)
                         }
 
-                        HStack(spacing: 0) {
-                            Text(entry.name)
-                                .font(.kcBody)
-                                .foregroundStyle(Color.kcEel)
-                                .lineLimit(1)
-
-                            Spacer(minLength: 8)
-
-                            Text("\(Int(entry.grams))g")
-                                .font(.kcBadge)
-                                .foregroundStyle(Color.kcHare)
-                                .padding(.trailing, 14)
-
-                            Text("\(Int(entry.kcal))")
-                                .font(.kcNumberSmall)
-                                .foregroundStyle(Color.kcFeather)
-                                .frame(minWidth: 44, alignment: .trailing)
-                        }
-                        .padding(.horizontal, Theme.cardInnerPadding)
-                        .padding(.vertical, 14)
-                        .accessibilityElement(children: .combine)
+                        SwipeableEntryRow(
+                            entry: entry,
+                            onTap: { onTap(entry) },
+                            onDelete: { onDelete(entry) }
+                        )
                     }
                 }
                 .background(Color.kcSnow)
@@ -92,5 +78,98 @@ struct MealSectionView: View {
             }
         }
         .padding(.bottom, 4)
+    }
+}
+
+// MARK: - Swipe-to-delete row
+
+private struct SwipeableEntryRow: View {
+    let entry: FoodEntry
+    let onTap: () -> Void
+    let onDelete: () -> Void
+
+    @State private var baseOffset: CGFloat = 0
+    @State private var dragTranslation: CGFloat = 0
+
+    private let deleteWidth: CGFloat = 72
+
+    private var currentOffset: CGFloat {
+        min(baseOffset + dragTranslation, 0)
+    }
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            // Delete background
+            Color.kcCardinal
+                .overlay(alignment: .trailing) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.trailing, 26)
+                }
+
+            // Entry content (slides left on swipe)
+            HStack(spacing: 0) {
+                Text(entry.name)
+                    .font(.kcBody)
+                    .foregroundStyle(Color.kcEel)
+                    .lineLimit(1)
+
+                Spacer(minLength: 8)
+
+                Text("\(Int(entry.grams))g")
+                    .font(.kcBadge)
+                    .foregroundStyle(Color.kcHare)
+                    .padding(.trailing, 14)
+
+                Text("\(Int(entry.kcal))")
+                    .font(.kcNumberSmall)
+                    .foregroundStyle(Color.kcFeather)
+                    .frame(minWidth: 44, alignment: .trailing)
+            }
+            .padding(.horizontal, Theme.cardInnerPadding)
+            .padding(.vertical, 14)
+            .background(Color.kcSnow)
+            .offset(x: currentOffset)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if baseOffset < 0 {
+                    withAnimation(.easeOut(duration: 0.2)) { baseOffset = 0 }
+                } else {
+                    onTap()
+                }
+            }
+
+            // Delete tap target (on top of everything when revealed)
+            if baseOffset < 0 {
+                HStack {
+                    Spacer()
+                    Color.clear
+                        .frame(width: -baseOffset)
+                        .contentShape(Rectangle())
+                        .onTapGesture { onDelete() }
+                }
+            }
+        }
+        .clipped()
+        .accessibilityElement(children: .combine)
+        .gesture(
+            DragGesture(minimumDistance: 16)
+                .onChanged { value in
+                    dragTranslation = value.translation.width
+                }
+                .onEnded { value in
+                    baseOffset = min(baseOffset + value.translation.width, 0)
+                    dragTranslation = 0
+                    if baseOffset < -deleteWidth {
+                        // Full swipe → delete
+                        onDelete()
+                    } else {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            baseOffset = baseOffset < -deleteWidth / 2 ? -deleteWidth : 0
+                        }
+                    }
+                }
+        )
     }
 }

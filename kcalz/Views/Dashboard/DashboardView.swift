@@ -47,10 +47,18 @@ struct DashboardView: View {
                         path.append(.detail(product, mealType))
                     }
                 case .detail(let product, let mealType):
-                    ProductDetailView(product: product) { entry in
+                    ProductDetailView(product: product, onSave: { entry in
                         addEntry(entry, to: mealType)
                         path = []
-                    }
+                    })
+                case .edit(let entry, let mealType):
+                    ProductDetailView(entry: entry, onSave: { updated in
+                        updateEntry(updated, in: mealType)
+                        path = []
+                    }, onDelete: {
+                        removeEntry(entry, from: mealType)
+                        path = []
+                    })
                 }
             }
             .task {
@@ -150,9 +158,13 @@ struct DashboardView: View {
                 // MARK: - Meals
                 VStack(spacing: 24) {
                     ForEach(dayLog.meals) { meal in
-                        MealSectionView(meal: meal) {
+                        MealSectionView(meal: meal, onAdd: {
                             path.append(.search(meal.type))
-                        }
+                        }, onTap: { entry in
+                            path.append(.edit(entry, meal.type))
+                        }, onDelete: { entry in
+                            removeEntry(entry, from: meal.type)
+                        })
                     }
                 }
                 .padding(.horizontal, Theme.horizontalPadding)
@@ -172,11 +184,18 @@ struct DashboardView: View {
     }
 
     private func addEntry(_ entry: FoodEntry, to mealType: MealType) {
-        guard var log = dayLog else { return }
         try? userStore.addEntry(entry, date: currentDate, mealType: mealType)
-        guard let idx = log.meals.firstIndex(where: { $0.type == mealType }) else { return }
-        log.meals[idx].entries.append(entry)
-        dayLog = log
+        loadDay(currentDate)
+    }
+
+    private func updateEntry(_ entry: FoodEntry, in mealType: MealType) {
+        try? userStore.updateEntryGrams(id: entry.id, grams: entry.grams)
+        loadDay(currentDate)
+    }
+
+    private func removeEntry(_ entry: FoodEntry, from mealType: MealType) {
+        try? userStore.deleteEntry(id: entry.id)
+        loadDay(currentDate)
     }
 }
 

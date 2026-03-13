@@ -128,6 +128,15 @@ final class UserStore: Sendable {
         }
     }
 
+    func updateEntryGrams(id: UUID, grams: Double) throws {
+        try dbQueue.write { db in
+            try db.execute(
+                sql: "UPDATE food_entry SET grams = ? WHERE id = ?",
+                arguments: [grams, id.uuidString]
+            )
+        }
+    }
+
     func deleteEntry(id: UUID) throws {
         try dbQueue.write { db in
             try db.execute(sql: "DELETE FROM food_entry WHERE id = ?", arguments: [id.uuidString])

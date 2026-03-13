@@ -2,11 +2,19 @@ import SwiftUI
 
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
-    let onAdd: (FoodEntry) -> Void
+    let onSave: (FoodEntry) -> Void
+    var onDelete: (() -> Void)?
 
-    init(product: OFFProduct, onAdd: @escaping (FoodEntry) -> Void) {
+    init(product: OFFProduct, onSave: @escaping (FoodEntry) -> Void) {
         _viewModel = State(initialValue: ProductDetailViewModel(product: product))
-        self.onAdd = onAdd
+        self.onSave = onSave
+        self.onDelete = nil
+    }
+
+    init(entry: FoodEntry, onSave: @escaping (FoodEntry) -> Void, onDelete: @escaping () -> Void) {
+        _viewModel = State(initialValue: ProductDetailViewModel(entry: entry))
+        self.onSave = onSave
+        self.onDelete = onDelete
     }
 
     var body: some View {
@@ -14,11 +22,11 @@ struct ProductDetailView: View {
             VStack(alignment: .leading, spacing: 24) {
                 // Header
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(viewModel.product.name)
+                    Text(viewModel.name)
                         .font(.kcHeadline)
                         .foregroundStyle(Color.kcEel)
 
-                    if let brands = viewModel.product.brands, !brands.isEmpty {
+                    if let brands = viewModel.brands, !brands.isEmpty {
                         Text(brands)
                             .font(.kcBody)
                             .foregroundStyle(Color.kcWolf)
@@ -67,11 +75,11 @@ struct ProductDetailView: View {
                 .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
                 .padding(.horizontal, Theme.horizontalPadding)
 
-                // Add button
+                // Save button
                 Button {
-                    onAdd(viewModel.makeFoodEntry())
+                    onSave(viewModel.makeFoodEntry())
                 } label: {
-                    Text("Ajouter")
+                    Text(viewModel.isEditing ? "Modifier" : "Ajouter")
                         .font(.kcHeadline)
                         .foregroundStyle(Color.kcSnow)
                         .frame(maxWidth: .infinity)
@@ -81,14 +89,28 @@ struct ProductDetailView: View {
                 }
                 .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
                 .disabled(!viewModel.isValidInput)
-                .accessibilityHint("Ajoute cet aliment au repas")
+                .accessibilityHint(viewModel.isEditing ? "Modifie le grammage" : "Ajoute cet aliment au repas")
                 .padding(.horizontal, Theme.horizontalPadding)
                 .padding(.top, 8)
+
+                // Delete button (edit mode only)
+                if let onDelete {
+                    Button {
+                        onDelete()
+                    } label: {
+                        Text("Supprimer")
+                            .font(.kcBody)
+                            .foregroundStyle(Color.kcCardinal)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .padding(.horizontal, Theme.horizontalPadding)
+                }
             }
             .padding(.bottom, 32)
         }
         .background(Color.kcPolar)
-        .navigationTitle("Détail")
+        .navigationTitle(viewModel.isEditing ? "Modifier" : "Détail")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
