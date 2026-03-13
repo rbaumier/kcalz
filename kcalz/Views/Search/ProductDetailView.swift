@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 struct ProductDetailView: View {
@@ -50,13 +49,7 @@ struct ProductDetailView: View {
                         .kerning(Theme.labelKerning)
 
                     HStack(spacing: 8) {
-                        TextField("100", text: $viewModel.gramsText)
-                            .decimalOnly($viewModel.gramsText)
-                            .font(.kcNumberMedium)
-                            .foregroundStyle(Color.kcEel)
-                            .keyboardType(.decimalPad)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 100)
+                        KcNumericField(placeholder: "100", text: $viewModel.gramsText)
                             .padding(.vertical, 12)
                             .kcCard(radius: Theme.cornerRadiusM)
 
@@ -80,19 +73,12 @@ struct ProductDetailView: View {
                 .padding(.horizontal, Theme.horizontalPadding)
 
                 // Save button
-                Button {
+                KcPrimaryButton(
+                    label: viewModel.isEditing ? "Modifier" : "Ajouter",
+                    enabled: viewModel.isValidInput
+                ) {
                     onSave(viewModel.makeFoodEntry())
-                } label: {
-                    Text(viewModel.isEditing ? "Modifier" : "Ajouter")
-                        .font(.kcHeadline)
-                        .foregroundStyle(Color.kcSnow)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(viewModel.isValidInput ? Color.kcFeather : Color.kcSwan)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
                 }
-                .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
-                .disabled(!viewModel.isValidInput)
                 .accessibilityHint(viewModel.isEditing ? "Modifie le grammage" : "Ajoute cet aliment au repas")
                 .padding(.horizontal, Theme.horizontalPadding)
                 .padding(.top, 8)
@@ -151,13 +137,3 @@ private struct NutrientDetailRow: View {
     }
 }
 
-// MARK: - Decimal filter
-
-private extension View {
-    func decimalOnly(_ text: Binding<String>) -> some View {
-        onReceive(Just(text.wrappedValue)) { newValue in
-            let filtered = newValue.filter { $0.isNumber || $0 == "." || $0 == "," }
-            if filtered != newValue { text.wrappedValue = filtered }
-        }
-    }
-}

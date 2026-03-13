@@ -48,19 +48,10 @@ struct CopySheet: View {
                 }
                 .frame(height: 180)
 
-                Button {
+                KcPrimaryButton(label: "Copier") {
                     onCopy(selectedDate, selectedMealType)
                     dismiss()
-                } label: {
-                    Text("Copier")
-                        .font(.kcHeadline)
-                        .foregroundStyle(Color.kcSnow)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.kcFeather)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
                 }
-                .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
             }
             .padding(.horizontal, Theme.horizontalPadding)
             .padding(.bottom, 32)

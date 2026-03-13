@@ -169,21 +169,9 @@ struct DashboardView: View {
                 // MARK: - Summary
                 VStack(spacing: 0) {
                     if goal.isEmpty {
-                        Button { path.append(.goals) } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "target")
-                                    .font(.kcIconMedium)
-                                    .foregroundStyle(Color.kcSnow)
-                                Text("Définir mes objectifs")
-                                    .font(.kcHeadline)
-                                    .foregroundStyle(Color.kcSnow)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.kcFeather)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
+                        KcPrimaryButton(label: "Définir mes objectifs", icon: "target") {
+                            path.append(.goals)
                         }
-                        .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
                         .padding(.top, 20)
                         .padding(.bottom, 32)
                         .padding(.horizontal, -4)

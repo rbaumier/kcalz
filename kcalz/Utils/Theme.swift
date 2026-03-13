@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 // MARK: - Couleurs — Palette Duolingo
@@ -98,6 +99,67 @@ extension View {
             .background(Color.kcSnow)
             .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
             .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+    }
+}
+
+// MARK: - Primary Button
+
+struct KcPrimaryButton: View {
+    let label: String
+    var icon: String?
+    var enabled: Bool = true
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.kcIconMedium)
+                        .foregroundStyle(Color.kcSnow)
+                }
+                Text(label)
+                    .font(.kcHeadline)
+                    .foregroundStyle(Color.kcSnow)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(enabled ? Color.kcFeather : Color.kcSwan)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
+        }
+        .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
+        .disabled(!enabled)
+    }
+}
+
+// MARK: - Numeric Input
+
+struct KcNumericField: View {
+    let placeholder: String
+    @Binding var text: String
+    var font: Font = .kcNumberMedium
+    var color: Color = .kcEel
+    var width: CGFloat = 100
+    var decimals: Bool = true
+
+    var body: some View {
+        TextField(placeholder, text: $text)
+            .font(font)
+            .foregroundStyle(color)
+            .keyboardType(decimals ? .decimalPad : .numberPad)
+            .multilineTextAlignment(.center)
+            .frame(width: width)
+            .onReceive(Just(text)) { new in
+                let filtered: String
+                if decimals {
+                    filtered = new
+                        .filter { "0123456789.,".contains($0) }
+                        .replacingOccurrences(of: ",", with: ".")
+                } else {
+                    filtered = new.filter(\.isNumber)
+                }
+                if filtered != new { text = filtered }
+            }
     }
 }
 

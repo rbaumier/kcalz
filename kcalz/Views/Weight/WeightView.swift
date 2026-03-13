@@ -1,6 +1,5 @@
 import SwiftUI
 import Charts
-import Combine
 
 struct WeightView: View {
     let userStore: UserStore
@@ -64,18 +63,8 @@ struct WeightView: View {
                 .frame(maxWidth: .infinity)
 
             HStack(spacing: 12) {
-                HStack(spacing: 4) {
-                    TextField("0.0", text: $weightText)
-                        .font(.kcNumberMedium)
-                        .foregroundStyle(Color.kcEel)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.center)
-                        .frame(width: 100)
-                        .onReceive(Just(weightText)) { new in
-                            let filtered = new.filter { "0123456789.,".contains($0) }
-                                .replacingOccurrences(of: ",", with: ".")
-                            if filtered != new { weightText = filtered }
-                        }
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    KcNumericField(placeholder: "0.0", text: $weightText)
 
                     Text("kg")
                         .font(.kcSecondary)
@@ -102,6 +91,7 @@ struct WeightView: View {
             .frame(maxWidth: .infinity)
         }
         .padding(.top, 8)
+        .padding(.bottom, 8)
     }
 
     // MARK: - Period picker

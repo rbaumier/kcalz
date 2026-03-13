@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 struct GoalsView: View {
@@ -53,13 +52,7 @@ struct GoalsView: View {
                         .kerning(Theme.labelKerning)
 
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        TextField("2000", text: $kcalText)
-                            .font(.kcNumberLarge)
-                            .foregroundStyle(Color.kcFeather)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 160)
-                            .digitsOnly($kcalText)
+                        KcNumericField(placeholder: "2000", text: $kcalText, font: .kcNumberLarge, color: .kcFeather, width: 110, decimals: false)
 
                         Text("kcal")
                             .font(.kcSecondary)
@@ -90,19 +83,10 @@ struct GoalsView: View {
                 }
 
                 // MARK: - Save
-                Button {
+                KcPrimaryButton(label: "Enregistrer") {
                     onSave(goal)
                     dismiss()
-                } label: {
-                    Text("Enregistrer")
-                        .font(.kcHeadline)
-                        .foregroundStyle(Color.kcSnow)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.kcFeather)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
                 }
-                .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
                 .padding(.top, 8)
             }
             .padding(.horizontal, Theme.horizontalPadding)
@@ -112,17 +96,6 @@ struct GoalsView: View {
         .background(Color.kcPolar)
         .navigationTitle("Objectifs")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-// MARK: - Numeric filter
-
-private extension View {
-    func digitsOnly(_ text: Binding<String>) -> some View {
-        onReceive(Just(text.wrappedValue)) { newValue in
-            let filtered = newValue.filter(\.isNumber)
-            if filtered != newValue { text.wrappedValue = filtered }
-        }
     }
 }
 
@@ -146,13 +119,7 @@ private struct MacroCard: View {
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 3) {
-                TextField("—", text: $text)
-                    .font(.kcNumberSmall)
-                    .foregroundStyle(Color.kcEel)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 70)
-                    .digitsOnly($text)
+                KcNumericField(placeholder: "—", text: $text, font: .kcNumberSmall, width: 50, decimals: false)
 
                 Text(unit)
                     .font(.kcUnit)
