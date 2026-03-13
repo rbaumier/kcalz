@@ -8,11 +8,9 @@
 - **F4** — Recherche OFF (OFFStore GRDB read-only, FTS5 prefix matching, debounce 150ms)
 - **F5** — Ajout d'aliment (SearchView → ProductDetailView → ajout au repas, NavigationStack)
 - **F6** — Persistance des données utilisateur (GRDB read-write, user.sqlite, auto-save immédiat)
+- **F7** — Navigation entre jours (chevrons fonctionnels, passé/futur, "Aujourd'hui")
 
 ## Next
-
-### Fondations
-- **F7** — Navigation entre jours (chevrons fonctionnels, passé et futur, créer un DayLog par date)
 
 ### Gestion des aliments
 - **F8** — Modifier un aliment (tap sur un aliment du dashboard → même écran que l'ajout, modifier le grammage, bouton supprimer)
