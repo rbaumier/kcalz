@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MealSectionView: View {
     let meal: Meal
+    let onTitleTap: () -> Void
     let onAdd: () -> Void
     let onTap: (FoodEntry) -> Void
     let onDelete: (FoodEntry) -> Void
@@ -13,9 +14,12 @@ struct MealSectionView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Header — outside the card
             HStack(spacing: 12) {
-                Text(meal.type.displayName)
-                    .font(.kcHeadline)
-                    .foregroundStyle(Color.kcEel)
+                Button { onTitleTap() } label: {
+                    Text(meal.type.displayName)
+                        .font(.kcHeadline)
+                        .foregroundStyle(Color.kcEel)
+                }
+                .buttonStyle(.plain)
 
                 Spacer()
 

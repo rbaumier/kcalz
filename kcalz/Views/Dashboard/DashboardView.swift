@@ -73,6 +73,8 @@ struct DashboardView: View {
                         removeEntry(entry, from: mealType)
                         path = []
                     })
+                case .mealDetail(let meal):
+                    MealDetailView(meal: meal)
                 case .goals:
                     GoalsView(current: goal) { newGoal in
                         try? userStore.saveGoals(newGoal)
@@ -243,6 +245,7 @@ struct DashboardView: View {
                     ForEach(dayLog.meals) { meal in
                         MealSectionView(
                             meal: meal,
+                            onTitleTap: { path.append(.mealDetail(meal)) },
                             onAdd: { path.append(.search(meal.type)) },
                             onTap: { entry in path.append(.edit(entry, meal.type)) },
                             onDelete: { entry in removeEntry(entry, from: meal.type) },

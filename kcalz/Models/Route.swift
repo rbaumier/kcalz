@@ -5,6 +5,7 @@ enum Route: Hashable {
     case detail(OFFProduct, MealType)
     case addRecent(FoodEntry, MealType)
     case edit(FoodEntry, MealType)
+    case mealDetail(Meal)
     case goals
     case weight
 }

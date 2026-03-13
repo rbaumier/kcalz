@@ -13,16 +13,12 @@
 - **F9** — Sélection multiple d'aliments (long press → mode sélection, barre d'actions : supprimer ou copier vers un autre repas)
 - **F17** — Suivi du poids (zone poids sur le dashboard, tap → graphe d'évolution avec période ajustable)
 
+- **F14** — Aliments récents / fréquents (historique filtrable, toggle récents/fréquents, brands persistées)
+
 ## Next
 - **F10** — Détail d'un repas (tap sur le titre "Petit déjeuner" → écran avec détails nutriments du repas)
 - **F11** — Poids par défaut pré-remplis quand on ajoute un aliment
-
-### Recherche avancée
 - **F12** — Scan code-barres (recherche OFF par code EAN lors de l'ajout d'un aliment)
-- **F13** — Recherche par kcal (taper un nombre de kcal/100g dans la barre de recherche pour filtrer)
-- **F14** — Aliments récents / favoris (accès rapide sans recherche)
 - **F15** — Aliments custom (créer un aliment non présent dans OFF)
 - **F18** — Onboarding (saisie objectifs, poids initial au premier lancement)
-
-### Stats
 - **F19** — Historique & stats (résumé hebdo/mensuel, moyennes, tendances)
