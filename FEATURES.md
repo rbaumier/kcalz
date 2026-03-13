@@ -7,11 +7,11 @@
 - **F3** — Script Rust `off-to-sqlite` (JSONL → SQLite + FTS5, 785k produits, 195Mo)
 - **F4** — Recherche OFF (OFFStore GRDB read-only, FTS5 prefix matching, debounce 150ms)
 - **F5** — Ajout d'aliment (SearchView → ProductDetailView → ajout au repas, NavigationStack)
+- **F6** — Persistance des données utilisateur (GRDB read-write, user.sqlite, auto-save immédiat)
 
 ## Next
 
 ### Fondations
-- **F6** — Persistance des données utilisateur (SwiftData ou GRDB, sauvegarder repas/entrées/poids)
 - **F7** — Navigation entre jours (chevrons fonctionnels, passé et futur, créer un DayLog par date)
 
 ### Gestion des aliments
