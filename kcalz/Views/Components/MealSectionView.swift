@@ -2,11 +2,7 @@ import SwiftUI
 
 struct MealSectionView: View {
     let meal: Meal
-    let index: Int
     let onAdd: () -> Void
-
-    @State private var appeared = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -96,16 +92,5 @@ struct MealSectionView: View {
             }
         }
         .padding(.bottom, 4)
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-        .task {
-            if reduceMotion {
-                appeared = true
-            } else {
-                withAnimation(.kcStagger(index + 3)) {
-                    appeared = true
-                }
-            }
-        }
     }
 }

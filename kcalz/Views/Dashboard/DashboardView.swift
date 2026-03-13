@@ -4,6 +4,7 @@ struct DashboardView: View {
     let offStore: OFFStore
     let userStore: UserStore
 
+    @State private var currentDate = Date.now
     @State private var dayLog: DayLog?
     private let goal = PreviewData.goal
 
@@ -19,9 +20,13 @@ struct DashboardView: View {
         return f
     }()
 
+    private var isToday: Bool {
+        Calendar.current.isDateInToday(currentDate)
+    }
+
     private var dateText: String {
-        guard let dayLog else { return "" }
-        return Self.dateFormatter.string(from: dayLog.date).capitalized
+        if isToday { return "Aujourd'hui" }
+        return Self.dateFormatter.string(from: currentDate).capitalized
     }
 
     var body: some View {
@@ -49,7 +54,7 @@ struct DashboardView: View {
                 }
             }
             .task {
-                loadToday()
+                loadDay(currentDate)
                 if reduceMotion {
                     headerAppeared = true
                     summaryAppeared = true
@@ -72,7 +77,7 @@ struct DashboardView: View {
 
                 // MARK: - Date navigation
                 HStack {
-                    Button { } label: {
+                    Button { navigateDay(-1) } label: {
                         Image(systemName: "chevron.left")
                             .font(.kcIcon)
                             .foregroundStyle(Color.kcWolf)
@@ -91,7 +96,7 @@ struct DashboardView: View {
 
                     Spacer()
 
-                    Button { } label: {
+                    Button { navigateDay(1) } label: {
                         Image(systemName: "chevron.right")
                             .font(.kcIcon)
                             .foregroundStyle(Color.kcWolf)
@@ -126,6 +131,7 @@ struct DashboardView: View {
                                     .foregroundStyle(Color.kcWolf)
                             }
                         }
+                        .frame(minWidth: 200, alignment: .leading)
                     }
                     .padding(.top, 8)
                     .padding(.bottom, 28)
@@ -143,8 +149,8 @@ struct DashboardView: View {
 
                 // MARK: - Meals
                 VStack(spacing: 24) {
-                    ForEach(Array(dayLog.meals.enumerated()), id: \.element.id) { i, meal in
-                        MealSectionView(meal: meal, index: i) {
+                    ForEach(dayLog.meals) { meal in
+                        MealSectionView(meal: meal) {
                             path.append(.search(meal.type))
                         }
                     }
@@ -155,13 +161,19 @@ struct DashboardView: View {
         }
     }
 
-    private func loadToday() {
-        dayLog = try? userStore.loadDayLog(for: .now)
+    private func navigateDay(_ offset: Int) {
+        guard let newDate = Calendar.current.date(byAdding: .day, value: offset, to: currentDate) else { return }
+        currentDate = newDate
+        loadDay(newDate)
+    }
+
+    private func loadDay(_ date: Date) {
+        dayLog = try? userStore.loadDayLog(for: date)
     }
 
     private func addEntry(_ entry: FoodEntry, to mealType: MealType) {
         guard var log = dayLog else { return }
-        try? userStore.addEntry(entry, date: log.date, mealType: mealType)
+        try? userStore.addEntry(entry, date: currentDate, mealType: mealType)
         guard let idx = log.meals.firstIndex(where: { $0.type == mealType }) else { return }
         log.meals[idx].entries.append(entry)
         dayLog = log
