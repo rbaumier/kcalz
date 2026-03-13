@@ -16,6 +16,8 @@ struct FoodEntry: Identifiable, Sendable, Hashable {
     var proteins: Double { proteinsPer100g * grams / 100 }
     var carbs: Double { carbsPer100g * grams / 100 }
     var fat: Double { fatPer100g * grams / 100 }
+    var sugars: Double { (sugarsPer100g ?? 0) * grams / 100 }
+    var salt: Double { (saltPer100g ?? 0) * grams / 100 }
 
     init(
         id: UUID = UUID(),

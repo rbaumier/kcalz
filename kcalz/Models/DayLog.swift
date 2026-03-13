@@ -9,6 +9,8 @@ struct DayLog: Identifiable, Sendable, Equatable {
     var totalProteins: Double { meals.reduce(0) { $0 + $1.totalProteins } }
     var totalCarbs: Double { meals.reduce(0) { $0 + $1.totalCarbs } }
     var totalFat: Double { meals.reduce(0) { $0 + $1.totalFat } }
+    var totalSugars: Double { meals.reduce(0) { $0 + $1.totalSugars } }
+    var totalSalt: Double { meals.reduce(0) { $0 + $1.totalSalt } }
 
     func meal(for type: MealType) -> Meal? {
         meals.first { $0.type == type }

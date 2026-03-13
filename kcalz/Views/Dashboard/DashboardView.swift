@@ -6,7 +6,7 @@ struct DashboardView: View {
 
     @State private var currentDate = Date.now
     @State private var dayLog: DayLog?
-    private let goal = PreviewData.goal
+    @State private var goal = NutritionGoal()
 
     @State private var path: [Route] = []
     @State private var headerAppeared = false
@@ -59,10 +59,16 @@ struct DashboardView: View {
                         removeEntry(entry, from: mealType)
                         path = []
                     })
+                case .goals:
+                    GoalsView(current: goal) { newGoal in
+                        try? userStore.saveGoals(newGoal)
+                        goal = newGoal
+                    }
                 }
             }
             .task {
                 loadDay(currentDate)
+                goal = (try? userStore.loadGoals()) ?? NutritionGoal()
                 if reduceMotion {
                     headerAppeared = true
                     summaryAppeared = true
@@ -122,36 +128,62 @@ struct DashboardView: View {
 
                 // MARK: - Summary
                 VStack(spacing: 0) {
-                    HStack(spacing: 20) {
-                        KcalRingView(consumed: dayLog.totalKcal, goal: goal.kcal)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("CONSOMMÉ")
-                                .font(.kcLabel)
-                                .foregroundStyle(Color.kcWolf)
-                                .kerning(Theme.labelKerning)
-                            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text("\(Int(dayLog.totalKcal))")
-                                    .font(.kcNumberMedium)
-                                    .foregroundStyle(Color.kcFeather)
-                                Text("/ \(Int(goal.kcal)) kcal")
-                                    .font(.kcSecondary)
-                                    .foregroundStyle(Color.kcWolf)
+                    if goal.isEmpty {
+                        Button { path.append(.goals) } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "target")
+                                    .font(.kcIconMedium)
+                                    .foregroundStyle(Color.kcSnow)
+                                Text("Définir mes objectifs")
+                                    .font(.kcHeadline)
+                                    .foregroundStyle(Color.kcSnow)
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.kcFeather)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
                         }
-                        .frame(minWidth: 200, alignment: .leading)
-                    }
-                    .padding(.top, 8)
-                    .padding(.bottom, 28)
+                        .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
+                        .padding(.top, 20)
+                        .padding(.bottom, 32)
+                        .padding(.horizontal, -4)
+                    } else {
+                        HStack(spacing: 20) {
+                            if let kcalGoal = goal.kcal {
+                                KcalRingView(consumed: dayLog.totalKcal, goal: kcalGoal)
+                            }
 
-                    VStack(spacing: 12) {
-                        NutrientBarView(label: "Protéines", current: dayLog.totalProteins, goal: goal.proteins, color: .kcCardinal, index: 0)
-                        NutrientBarView(label: "Glucides", current: dayLog.totalCarbs, goal: goal.carbs, color: .kcMacaw, index: 1)
-                        NutrientBarView(label: "Lipides", current: dayLog.totalFat, goal: goal.fat, color: .kcBee, index: 2)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("CONSOMMÉ")
+                                    .font(.kcLabel)
+                                    .foregroundStyle(Color.kcWolf)
+                                    .kerning(Theme.labelKerning)
+                                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                    Text("\(Int(dayLog.totalKcal))")
+                                        .font(.kcNumberMedium)
+                                        .foregroundStyle(Color.kcFeather)
+                                    if let kcalGoal = goal.kcal {
+                                        Text("/ \(Int(kcalGoal)) kcal")
+                                            .font(.kcSecondary)
+                                            .foregroundStyle(Color.kcWolf)
+                                    } else {
+                                        Text("kcal")
+                                            .font(.kcSecondary)
+                                            .foregroundStyle(Color.kcWolf)
+                                    }
+                                }
+                            }
+                            .frame(minWidth: 200, alignment: .leading)
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 28)
+
+                        macrosBars(dayLog)
                     }
-                    .padding(.bottom, 32)
                 }
                 .padding(.horizontal, Theme.cardInnerPadding)
+                .contentShape(Rectangle())
+                .onTapGesture { path.append(.goals) }
                 .opacity(summaryAppeared ? 1 : 0)
                 .offset(y: summaryAppeared ? 0 : 16)
 
@@ -170,6 +202,26 @@ struct DashboardView: View {
                 .padding(.horizontal, Theme.horizontalPadding)
                 .padding(.bottom, 44)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func macrosBars(_ dayLog: DayLog) -> some View {
+        let bars: [(String, Double, Double?, Color)] = [
+            ("Protéines", dayLog.totalProteins, goal.proteins, .kcCardinal),
+            ("Glucides", dayLog.totalCarbs, goal.carbs, .kcMacaw),
+            ("Lipides", dayLog.totalFat, goal.fat, .kcBee),
+            ("Sucres", dayLog.totalSugars, goal.sugars, .kcFox),
+            ("Sel", dayLog.totalSalt, goal.salt, .kcHare),
+        ]
+        let active = bars.enumerated().filter { $0.element.2 != nil }
+        if !active.isEmpty {
+            VStack(spacing: 12) {
+                ForEach(active, id: \.offset) { index, bar in
+                    NutrientBarView(label: bar.0, current: bar.1, goal: bar.2!, color: bar.3, index: index)
+                }
+            }
+            .padding(.bottom, 32)
         }
     }
 

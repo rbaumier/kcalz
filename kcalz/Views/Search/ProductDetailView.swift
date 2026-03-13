@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 struct ProductDetailView: View {
@@ -44,6 +45,7 @@ struct ProductDetailView: View {
 
                     HStack(spacing: 8) {
                         TextField("100", text: $viewModel.gramsText)
+                            .decimalOnly($viewModel.gramsText)
                             .font(.kcNumberMedium)
                             .foregroundStyle(Color.kcEel)
                             .keyboardType(.decimalPad)
@@ -144,5 +146,16 @@ private struct NutrientDetailRow: View {
         }
         .padding(.horizontal, Theme.cardInnerPadding)
         .padding(.vertical, 12)
+    }
+}
+
+// MARK: - Decimal filter
+
+private extension View {
+    func decimalOnly(_ text: Binding<String>) -> some View {
+        onReceive(Just(text.wrappedValue)) { newValue in
+            let filtered = newValue.filter { $0.isNumber || $0 == "." || $0 == "," }
+            if filtered != newValue { text.wrappedValue = filtered }
+        }
     }
 }

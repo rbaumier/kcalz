@@ -9,6 +9,8 @@ struct Meal: Identifiable, Sendable, Hashable {
     var totalProteins: Double { entries.reduce(0) { $0 + $1.proteins } }
     var totalCarbs: Double { entries.reduce(0) { $0 + $1.carbs } }
     var totalFat: Double { entries.reduce(0) { $0 + $1.fat } }
+    var totalSugars: Double { entries.reduce(0) { $0 + $1.sugars } }
+    var totalSalt: Double { entries.reduce(0) { $0 + $1.salt } }
 
     static func == (lhs: Meal, rhs: Meal) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }

@@ -40,7 +40,6 @@ final class SearchViewModel {
                 return
             } catch {
                 if !Task.isCancelled {
-                    print("[SearchVM] search error: \(error)")
                     self.error = error
                     results = []
                     isSearching = false

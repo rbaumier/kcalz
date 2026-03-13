@@ -53,7 +53,46 @@ final class UserStore: Sendable {
             )
         }
 
+        migrator.registerMigration("v2") { db in
+            try db.create(table: "goals") { t in
+                t.column("kcal", .double)
+                t.column("proteins", .double)
+                t.column("carbs", .double)
+                t.column("fat", .double)
+                t.column("sugars", .double)
+                t.column("salt", .double)
+            }
+        }
+
         try migrator.migrate(dbQueue)
+    }
+
+    // MARK: - Goals
+
+    func loadGoals() throws -> NutritionGoal {
+        try dbQueue.read { db in
+            guard let row = try Row.fetchOne(db, sql: "SELECT * FROM goals LIMIT 1") else {
+                return NutritionGoal()
+            }
+            return NutritionGoal(
+                kcal: row["kcal"],
+                proteins: row["proteins"],
+                carbs: row["carbs"],
+                fat: row["fat"],
+                sugars: row["sugars"],
+                salt: row["salt"]
+            )
+        }
+    }
+
+    func saveGoals(_ goal: NutritionGoal) throws {
+        try dbQueue.write { db in
+            try db.execute(sql: "DELETE FROM goals")
+            try db.execute(
+                sql: "INSERT INTO goals (kcal, proteins, carbs, fat, sugars, salt) VALUES (?, ?, ?, ?, ?, ?)",
+                arguments: [goal.kcal, goal.proteins, goal.carbs, goal.fat, goal.sugars, goal.salt]
+            )
+        }
     }
 
     // MARK: - Read

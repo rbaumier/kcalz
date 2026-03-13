@@ -1,8 +1,14 @@
 import Foundation
 
 struct NutritionGoal: Sendable, Equatable {
-    let kcal: Double
-    let proteins: Double
-    let carbs: Double
-    let fat: Double
+    var kcal: Double?
+    var proteins: Double?
+    var carbs: Double?
+    var fat: Double?
+    var sugars: Double?
+    var salt: Double?
+
+    var isEmpty: Bool {
+        kcal == nil && proteins == nil && carbs == nil && fat == nil && sugars == nil && salt == nil
+    }
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 enum PreviewData {
-    static let goal = NutritionGoal(kcal: 2200, proteins: 140, carbs: 250, fat: 80)
+    static let goal = NutritionGoal(kcal: 2200, proteins: 140, carbs: 250, fat: 80, sugars: nil, salt: nil)
 
     static let dayLog = DayLog(
         date: .now,
