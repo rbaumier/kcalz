@@ -3,6 +3,7 @@ import SwiftUI
 struct MealSectionView: View {
     let meal: Meal
     let index: Int
+    var onAdd: () -> Void
 
     @State private var appeared = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -27,7 +28,7 @@ struct MealSectionView: View {
                 }
 
                 Button {
-                    // TODO: F5
+                    onAdd()
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 16, weight: .bold))
