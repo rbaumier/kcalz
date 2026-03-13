@@ -181,4 +181,55 @@ final class UserStore: Sendable {
             try db.execute(sql: "DELETE FROM food_entry WHERE id = ?", arguments: [id.uuidString])
         }
     }
+
+    func deleteEntries(ids: Set<UUID>) throws {
+        guard !ids.isEmpty else { return }
+        try dbQueue.write { db in
+            let placeholders = ids.map { _ in "?" }.joined(separator: ", ")
+            let sql = "DELETE FROM food_entry WHERE id IN (\(placeholders))"
+            try db.execute(sql: sql, arguments: StatementArguments(ids.map { $0.uuidString }))
+        }
+    }
+
+    func copyEntries(ids: Set<UUID>, toDate date: Date, mealType: MealType) throws {
+        guard !ids.isEmpty else { return }
+        let dateStr = date.kcDateString
+        let mealTypeStr = mealType.rawValue
+
+        try dbQueue.write { db in
+            let nextOrder: Int = try Int.fetchOne(
+                db,
+                sql: "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM food_entry WHERE date = ? AND meal_type = ?",
+                arguments: [dateStr, mealTypeStr]
+            ) ?? 0
+
+            let placeholders = ids.map { _ in "?" }.joined(separator: ", ")
+            let rows = try Row.fetchAll(
+                db,
+                sql: "SELECT * FROM food_entry WHERE id IN (\(placeholders)) ORDER BY sort_order",
+                arguments: StatementArguments(ids.map { $0.uuidString })
+            )
+
+            for (i, row) in rows.enumerated() {
+                let sql = """
+                    INSERT INTO food_entry (id, date, meal_type, name, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """
+                try db.execute(sql: sql, arguments: [
+                    UUID().uuidString,
+                    dateStr,
+                    mealTypeStr,
+                    row["name"] as? String ?? "",
+                    row["grams"] as? Double ?? 0,
+                    row["kcal_per_100g"] as? Double ?? 0,
+                    row["proteins_per_100g"] as? Double ?? 0,
+                    row["carbs_per_100g"] as? Double ?? 0,
+                    row["fat_per_100g"] as? Double ?? 0,
+                    row["sugars_per_100g"] as? Double,
+                    row["salt_per_100g"] as? Double,
+                    nextOrder + i,
+                ])
+            }
+        }
+    }
 }
