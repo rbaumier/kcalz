@@ -204,12 +204,14 @@ struct DashboardView: View {
                                             .foregroundStyle(Color.kcHare)
 
                                         if let kg = todayWeight {
-                                            Text(formatWeight(kg))
-                                                .font(.kcNumberSmall)
-                                                .foregroundStyle(Color.kcWolf)
-                                            Text("kg")
-                                                .font(.kcUnit)
-                                                .foregroundStyle(Color.kcHare)
+                                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                                Text(formatWeight(kg))
+                                                    .font(.kcNumberSmall)
+                                                    .foregroundStyle(Color.kcWolf)
+                                                Text("kg")
+                                                    .font(.kcUnit)
+                                                    .foregroundStyle(Color.kcHare)
+                                            }
                                             Image(systemName: weightTrend.systemImage)
                                                 .font(.system(size: 10, weight: .black))
                                                 .foregroundStyle(weightTrend.color)
