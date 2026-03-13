@@ -2,8 +2,9 @@ import SwiftUI
 
 struct DashboardView: View {
     let offStore: OFFStore
+    let userStore: UserStore
 
-    @State private var dayLog = PreviewData.dayLog
+    @State private var dayLog: DayLog?
     private let goal = PreviewData.goal
 
     @State private var path: [Route] = []
@@ -19,96 +20,17 @@ struct DashboardView: View {
     }()
 
     private var dateText: String {
-        Self.dateFormatter.string(from: dayLog.date).capitalized
+        guard let dayLog else { return "" }
+        return Self.dateFormatter.string(from: dayLog.date).capitalized
     }
 
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView {
-                VStack(spacing: 0) {
-
-                    // MARK: - Date navigation
-                    HStack {
-                        Button { } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.kcIcon)
-                                .foregroundStyle(Color.kcWolf)
-                                .frame(width: Theme.buttonSize, height: Theme.buttonSize)
-                                .background(Color.kcSnow)
-                                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
-                        }
-                        .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
-                        .accessibilityLabel("Jour précédent")
-
-                        Spacer()
-
-                        Text(dateText)
-                            .font(.kcHeadline)
-                            .foregroundStyle(Color.kcEel)
-
-                        Spacer()
-
-                        Button { } label: {
-                            Image(systemName: "chevron.right")
-                                .font(.kcIcon)
-                                .foregroundStyle(Color.kcWolf)
-                                .frame(width: Theme.buttonSize, height: Theme.buttonSize)
-                                .background(Color.kcSnow)
-                                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
-                        }
-                        .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
-                        .accessibilityLabel("Jour suivant")
-                    }
-                    .padding(.horizontal, Theme.cardInnerPadding)
-                    .padding(.top, 6)
-                    .padding(.bottom, 16)
-                    .opacity(headerAppeared ? 1 : 0)
-
-                    // MARK: - Summary (no card)
-                    VStack(spacing: 0) {
-                        HStack(spacing: 20) {
-                            KcalRingView(consumed: dayLog.totalKcal, goal: goal.kcal)
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("CONSOMMÉ")
-                                    .font(.kcLabel)
-                                    .foregroundStyle(Color.kcWolf)
-                                    .kerning(Theme.labelKerning)
-                                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                    Text("\(Int(dayLog.totalKcal))")
-                                        .font(.kcNumberMedium)
-                                        .foregroundStyle(Color.kcFeather)
-                                    Text("/ \(Int(goal.kcal)) kcal")
-                                        .font(.kcSecondary)
-                                        .foregroundStyle(Color.kcWolf)
-                                }
-                            }
-                        }
-                        .padding(.top, 8)
-                        .padding(.bottom, 28)
-
-                        // Macros — compact inline
-                        VStack(spacing: 12) {
-                            NutrientBarView(label: "Protéines", current: dayLog.totalProteins, goal: goal.proteins, color: .kcCardinal, index: 0)
-                            NutrientBarView(label: "Glucides", current: dayLog.totalCarbs, goal: goal.carbs, color: .kcMacaw, index: 1)
-                            NutrientBarView(label: "Lipides", current: dayLog.totalFat, goal: goal.fat, color: .kcBee, index: 2)
-                        }
-                        .padding(.bottom, 32)
-                    }
-                    .padding(.horizontal, Theme.cardInnerPadding)
-                    .opacity(summaryAppeared ? 1 : 0)
-                    .offset(y: summaryAppeared ? 0 : 16)
-
-                    // MARK: - Meals
-                    VStack(spacing: 24) {
-                        ForEach(Array(dayLog.meals.enumerated()), id: \.element.id) { i, meal in
-                            MealSectionView(meal: meal, index: i) {
-                                path.append(.search(meal.type))
-                            }
-                        }
-                    }
-                    .padding(.horizontal, Theme.horizontalPadding)
-                    .padding(.bottom, 44)
+            Group {
+                if let dayLog {
+                    dayContent(dayLog)
+                } else {
+                    Color.kcPolar.ignoresSafeArea()
                 }
             }
             .background(Color.kcPolar)
@@ -127,6 +49,7 @@ struct DashboardView: View {
                 }
             }
             .task {
+                loadToday()
                 if reduceMotion {
                     headerAppeared = true
                     summaryAppeared = true
@@ -142,14 +65,111 @@ struct DashboardView: View {
         }
     }
 
+    @ViewBuilder
+    private func dayContent(_ dayLog: DayLog) -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+
+                // MARK: - Date navigation
+                HStack {
+                    Button { } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.kcIcon)
+                            .foregroundStyle(Color.kcWolf)
+                            .frame(width: Theme.buttonSize, height: Theme.buttonSize)
+                            .background(Color.kcSnow)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
+                    }
+                    .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
+                    .accessibilityLabel("Jour précédent")
+
+                    Spacer()
+
+                    Text(dateText)
+                        .font(.kcHeadline)
+                        .foregroundStyle(Color.kcEel)
+
+                    Spacer()
+
+                    Button { } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.kcIcon)
+                            .foregroundStyle(Color.kcWolf)
+                            .frame(width: Theme.buttonSize, height: Theme.buttonSize)
+                            .background(Color.kcSnow)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
+                    }
+                    .buttonStyle(Kc3DButton(shadow: Color.kcSwan))
+                    .accessibilityLabel("Jour suivant")
+                }
+                .padding(.horizontal, Theme.cardInnerPadding)
+                .padding(.top, 6)
+                .padding(.bottom, 16)
+                .opacity(headerAppeared ? 1 : 0)
+
+                // MARK: - Summary
+                VStack(spacing: 0) {
+                    HStack(spacing: 20) {
+                        KcalRingView(consumed: dayLog.totalKcal, goal: goal.kcal)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("CONSOMMÉ")
+                                .font(.kcLabel)
+                                .foregroundStyle(Color.kcWolf)
+                                .kerning(Theme.labelKerning)
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text("\(Int(dayLog.totalKcal))")
+                                    .font(.kcNumberMedium)
+                                    .foregroundStyle(Color.kcFeather)
+                                Text("/ \(Int(goal.kcal)) kcal")
+                                    .font(.kcSecondary)
+                                    .foregroundStyle(Color.kcWolf)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 28)
+
+                    VStack(spacing: 12) {
+                        NutrientBarView(label: "Protéines", current: dayLog.totalProteins, goal: goal.proteins, color: .kcCardinal, index: 0)
+                        NutrientBarView(label: "Glucides", current: dayLog.totalCarbs, goal: goal.carbs, color: .kcMacaw, index: 1)
+                        NutrientBarView(label: "Lipides", current: dayLog.totalFat, goal: goal.fat, color: .kcBee, index: 2)
+                    }
+                    .padding(.bottom, 32)
+                }
+                .padding(.horizontal, Theme.cardInnerPadding)
+                .opacity(summaryAppeared ? 1 : 0)
+                .offset(y: summaryAppeared ? 0 : 16)
+
+                // MARK: - Meals
+                VStack(spacing: 24) {
+                    ForEach(Array(dayLog.meals.enumerated()), id: \.element.id) { i, meal in
+                        MealSectionView(meal: meal, index: i) {
+                            path.append(.search(meal.type))
+                        }
+                    }
+                }
+                .padding(.horizontal, Theme.horizontalPadding)
+                .padding(.bottom, 44)
+            }
+        }
+    }
+
+    private func loadToday() {
+        dayLog = try? userStore.loadDayLog(for: .now)
+    }
+
     private func addEntry(_ entry: FoodEntry, to mealType: MealType) {
-        guard let idx = dayLog.meals.firstIndex(where: { $0.type == mealType }) else { return }
-        dayLog.meals[idx].entries.append(entry)
+        guard var log = dayLog else { return }
+        try? userStore.addEntry(entry, date: log.date, mealType: mealType)
+        guard let idx = log.meals.firstIndex(where: { $0.type == mealType }) else { return }
+        log.meals[idx].entries.append(entry)
+        dayLog = log
     }
 }
 
 #Preview {
-    if let store = try? OFFStore() {
-        DashboardView(offStore: store)
+    if let offStore = try? OFFStore(), let userStore = try? UserStore() {
+        DashboardView(offStore: offStore, userStore: userStore)
     }
 }

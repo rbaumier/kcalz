@@ -12,14 +12,15 @@ struct KcalzApp: App {
                     .ignoresSafeArea()
                     .task {
                         do {
-                            let store = try OFFStore()
-                            appState = .ready(store)
+                            let offStore = try OFFStore()
+                            let userStore = try UserStore()
+                            appState = .ready(offStore, userStore)
                         } catch {
                             appState = .failed(error)
                         }
                     }
-            case .ready(let store):
-                DashboardView(offStore: store)
+            case .ready(let offStore, let userStore):
+                DashboardView(offStore: offStore, userStore: userStore)
             case .failed(let error):
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -44,6 +45,6 @@ struct KcalzApp: App {
 
 private enum AppState {
     case loading
-    case ready(OFFStore)
+    case ready(OFFStore, UserStore)
     case failed(Error)
 }

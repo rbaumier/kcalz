@@ -1,7 +1,7 @@
 import Foundation
 
 struct FoodEntry: Identifiable, Sendable, Hashable {
-    let id = UUID()
+    let id: UUID
     var name: String
     var grams: Double
     var kcalPer100g: Double
@@ -10,11 +10,36 @@ struct FoodEntry: Identifiable, Sendable, Hashable {
     var fatPer100g: Double
     var sugarsPer100g: Double?
     var saltPer100g: Double?
+    var sortOrder: Int
 
     var kcal: Double { kcalPer100g * grams / 100 }
     var proteins: Double { proteinsPer100g * grams / 100 }
     var carbs: Double { carbsPer100g * grams / 100 }
     var fat: Double { fatPer100g * grams / 100 }
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        grams: Double,
+        kcalPer100g: Double,
+        proteinsPer100g: Double,
+        carbsPer100g: Double,
+        fatPer100g: Double,
+        sugarsPer100g: Double? = nil,
+        saltPer100g: Double? = nil,
+        sortOrder: Int = 0
+    ) {
+        self.id = id
+        self.name = name
+        self.grams = grams
+        self.kcalPer100g = kcalPer100g
+        self.proteinsPer100g = proteinsPer100g
+        self.carbsPer100g = carbsPer100g
+        self.fatPer100g = fatPer100g
+        self.sugarsPer100g = sugarsPer100g
+        self.saltPer100g = saltPer100g
+        self.sortOrder = sortOrder
+    }
 
     static func == (lhs: FoodEntry, rhs: FoodEntry) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }

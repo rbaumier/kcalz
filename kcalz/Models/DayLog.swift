@@ -4,7 +4,6 @@ struct DayLog: Identifiable, Sendable, Equatable {
     let id = UUID()
     var date: Date
     var meals: [Meal]
-    var weight: Double?
 
     var totalKcal: Double { meals.reduce(0) { $0 + $1.totalKcal } }
     var totalProteins: Double { meals.reduce(0) { $0 + $1.totalProteins } }
