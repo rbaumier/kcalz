@@ -68,9 +68,7 @@ struct GoalsView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
-                .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
-                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+                .kcCard()
 
                 // MARK: - Macros grid
                 Text("MACRONUTRIMENTS")
@@ -163,8 +161,6 @@ private struct MacroCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .background(Color.kcSnow)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
-        .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+        .kcCard(radius: Theme.cornerRadiusL)
     }
 }

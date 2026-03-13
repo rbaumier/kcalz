@@ -71,6 +71,20 @@ final class UserStore: Sendable {
             }
         }
 
+        migrator.registerMigration("v4") { db in
+            try db.create(
+                index: "idx_food_entry_name",
+                on: "food_entry",
+                columns: ["name"]
+            )
+        }
+
+        migrator.registerMigration("v5") { db in
+            try db.alter(table: "food_entry") { t in
+                t.add(column: "brands", .text)
+            }
+        }
+
         try migrator.migrate(dbQueue)
     }
 
@@ -122,20 +136,7 @@ final class UserStore: Sendable {
 
         let meals = MealType.allCases.map { mealType in
             let rows = grouped[mealType.rawValue] ?? []
-            let foodEntries = rows.map { row -> FoodEntry in
-                FoodEntry(
-                    id: UUID(uuidString: row["id"] as? String ?? "") ?? UUID(),
-                    name: row["name"] as? String ?? "",
-                    grams: row["grams"] as? Double ?? 0,
-                    kcalPer100g: row["kcal_per_100g"] as? Double ?? 0,
-                    proteinsPer100g: row["proteins_per_100g"] as? Double ?? 0,
-                    carbsPer100g: row["carbs_per_100g"] as? Double ?? 0,
-                    fatPer100g: row["fat_per_100g"] as? Double ?? 0,
-                    sugarsPer100g: row["sugars_per_100g"] as? Double,
-                    saltPer100g: row["salt_per_100g"] as? Double,
-                    sortOrder: row["sort_order"] as? Int ?? 0
-                )
-            }
+            let foodEntries = rows.map { Self.foodEntry(from: $0) }
             return Meal(type: mealType, entries: foodEntries)
         }
 
@@ -154,14 +155,15 @@ final class UserStore: Sendable {
 
         try dbQueue.write { db in
             let sql = """
-                INSERT INTO food_entry (id, date, meal_type, name, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
             try db.execute(sql: sql, arguments: [
                 entry.id.uuidString,
                 dateStr,
                 mealType.rawValue,
                 entry.name,
+                entry.brands,
                 entry.grams,
                 entry.kcalPer100g,
                 entry.proteinsPer100g,
@@ -196,6 +198,50 @@ final class UserStore: Sendable {
             let sql = "DELETE FROM food_entry WHERE id IN (\(placeholders))"
             try db.execute(sql: sql, arguments: StatementArguments(ids.map { $0.uuidString }))
         }
+    }
+
+    // MARK: - Recents & Frequents
+
+    func recentFoods(limit: Int = 20) throws -> [FoodEntry] {
+        try dbQueue.read { db in
+            let sql = """
+                SELECT *, MAX(rowid) as max_rowid FROM food_entry
+                GROUP BY name
+                ORDER BY max_rowid DESC
+                LIMIT ?
+                """
+            let rows = try Row.fetchAll(db, sql: sql, arguments: [limit])
+            return rows.map { Self.foodEntry(from: $0) }
+        }
+    }
+
+    func frequentFoods(limit: Int = 20) throws -> [FoodEntry] {
+        try dbQueue.read { db in
+            let sql = """
+                SELECT *, COUNT(*) as cnt, MAX(rowid) as max_rowid FROM food_entry
+                GROUP BY name
+                ORDER BY cnt DESC, max_rowid DESC
+                LIMIT ?
+                """
+            let rows = try Row.fetchAll(db, sql: sql, arguments: [limit])
+            return rows.map { Self.foodEntry(from: $0) }
+        }
+    }
+
+    private static func foodEntry(from row: Row) -> FoodEntry {
+        FoodEntry(
+            id: UUID(uuidString: row["id"] as? String ?? "") ?? UUID(),
+            name: row["name"] as? String ?? "",
+            brands: row["brands"] as? String,
+            grams: row["grams"] as? Double ?? 100,
+            kcalPer100g: row["kcal_per_100g"] as? Double ?? 0,
+            proteinsPer100g: row["proteins_per_100g"] as? Double ?? 0,
+            carbsPer100g: row["carbs_per_100g"] as? Double ?? 0,
+            fatPer100g: row["fat_per_100g"] as? Double ?? 0,
+            sugarsPer100g: row["sugars_per_100g"] as? Double,
+            saltPer100g: row["salt_per_100g"] as? Double,
+            sortOrder: row["sort_order"] as? Int ?? 0
+        )
     }
 
     // MARK: - Weight
@@ -269,14 +315,15 @@ final class UserStore: Sendable {
 
             for (i, row) in rows.enumerated() {
                 let sql = """
-                    INSERT INTO food_entry (id, date, meal_type, name, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """
                 try db.execute(sql: sql, arguments: [
                     UUID().uuidString,
                     dateStr,
                     mealTypeStr,
                     row["name"] as? String ?? "",
+                    row["brands"] as? String,
                     row["grams"] as? Double ?? 0,
                     row["kcal_per_100g"] as? Double ?? 0,
                     row["proteins_per_100g"] as? Double ?? 0,

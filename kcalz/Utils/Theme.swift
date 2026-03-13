@@ -90,6 +90,17 @@ enum Theme {
     static let ringLabelKerning: CGFloat = 0.6
 }
 
+// MARK: - Card style
+
+extension View {
+    func kcCard(radius: CGFloat = Theme.cornerRadiusXL) -> some View {
+        self
+            .background(Color.kcSnow)
+            .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+    }
+}
+
 // MARK: - Animations — smooth deceleration, no bounce
 
 extension Animation {

@@ -31,6 +31,8 @@ struct DashboardView: View {
 
     private var dateText: String {
         if isToday { return "Aujourd'hui" }
+        if Calendar.current.isDateInYesterday(currentDate) { return "Hier" }
+        if Calendar.current.isDateInTomorrow(currentDate) { return "Demain" }
         return Self.dateFormatter.string(from: currentDate).capitalized
     }
 
@@ -48,12 +50,19 @@ struct DashboardView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .search(let mealType):
-                    SearchView(store: offStore) { product in
+                    SearchView(store: offStore, userStore: userStore, onSelect: { product in
                         path.append(.detail(product, mealType))
-                    }
+                    }, onSelectRecent: { entry in
+                        path.append(.addRecent(entry, mealType))
+                    })
                 case .detail(let product, let mealType):
                     ProductDetailView(product: product, onSave: { entry in
                         addEntry(entry, to: mealType)
+                        path = []
+                    })
+                case .addRecent(let entry, let mealType):
+                    ProductDetailView(recentEntry: entry, onSave: { newEntry in
+                        addEntry(newEntry, to: mealType)
                         path = []
                     })
                 case .edit(let entry, let mealType):

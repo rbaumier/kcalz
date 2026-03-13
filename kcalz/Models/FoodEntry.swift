@@ -3,6 +3,7 @@ import Foundation
 struct FoodEntry: Identifiable, Sendable, Hashable {
     let id: UUID
     var name: String
+    var brands: String?
     var grams: Double
     var kcalPer100g: Double
     var proteinsPer100g: Double
@@ -22,6 +23,7 @@ struct FoodEntry: Identifiable, Sendable, Hashable {
     init(
         id: UUID = UUID(),
         name: String,
+        brands: String? = nil,
         grams: Double,
         kcalPer100g: Double,
         proteinsPer100g: Double,
@@ -33,6 +35,7 @@ struct FoodEntry: Identifiable, Sendable, Hashable {
     ) {
         self.id = id
         self.name = name
+        self.brands = brands
         self.grams = grams
         self.kcalPer100g = kcalPer100g
         self.proteinsPer100g = proteinsPer100g

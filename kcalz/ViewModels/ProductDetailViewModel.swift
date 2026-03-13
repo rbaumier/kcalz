@@ -30,9 +30,24 @@ final class ProductDetailViewModel {
         self.gramsText = "100"
     }
 
+    init(recentEntry entry: FoodEntry) {
+        self.name = entry.name
+        self.brands = entry.brands
+        self.kcalPer100g = entry.kcalPer100g
+        self.proteinsPer100g = entry.proteinsPer100g
+        self.carbsPer100g = entry.carbsPer100g
+        self.fatPer100g = entry.fatPer100g
+        self.sugarsPer100g = entry.sugarsPer100g
+        self.saltPer100g = entry.saltPer100g
+        self.existingEntryId = nil
+        self.gramsText = entry.grams.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(entry.grams))
+            : String(entry.grams)
+    }
+
     init(entry: FoodEntry) {
         self.name = entry.name
-        self.brands = nil
+        self.brands = entry.brands
         self.kcalPer100g = entry.kcalPer100g
         self.proteinsPer100g = entry.proteinsPer100g
         self.carbsPer100g = entry.carbsPer100g
@@ -67,6 +82,7 @@ final class ProductDetailViewModel {
         FoodEntry(
             id: existingEntryId ?? UUID(),
             name: name,
+            brands: brands,
             grams: grams ?? 0,
             kcalPer100g: kcalPer100g,
             proteinsPer100g: proteinsPer100g,

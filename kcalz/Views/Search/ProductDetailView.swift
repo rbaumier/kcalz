@@ -12,6 +12,12 @@ struct ProductDetailView: View {
         self.onDelete = nil
     }
 
+    init(recentEntry: FoodEntry, onSave: @escaping (FoodEntry) -> Void) {
+        _viewModel = State(initialValue: ProductDetailViewModel(recentEntry: recentEntry))
+        self.onSave = onSave
+        self.onDelete = nil
+    }
+
     init(entry: FoodEntry, onSave: @escaping (FoodEntry) -> Void, onDelete: @escaping () -> Void) {
         _viewModel = State(initialValue: ProductDetailViewModel(entry: entry))
         self.onSave = onSave
@@ -52,9 +58,7 @@ struct ProductDetailView: View {
                             .multilineTextAlignment(.center)
                             .frame(width: 100)
                             .padding(.vertical, 12)
-                            .background(Color.kcSnow)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusM, style: .continuous))
-                            .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+                            .kcCard(radius: Theme.cornerRadiusM)
 
                         Text("grammes")
                             .font(.kcBody)
@@ -72,9 +76,7 @@ struct ProductDetailView: View {
                     NutrientDetailRow(label: "Sucres", value: String(format: "%.1f", viewModel.sugars), unit: "g", color: .kcFox)
                     NutrientDetailRow(label: "Sel", value: String(format: "%.2f", viewModel.salt), unit: "g", color: .kcHare)
                 }
-                .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
-                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+                .kcCard()
                 .padding(.horizontal, Theme.horizontalPadding)
 
                 // Save button

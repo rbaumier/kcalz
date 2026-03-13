@@ -83,9 +83,7 @@ struct WeightView: View {
                 }
                 .padding(.horizontal, Theme.cardInnerPadding)
                 .padding(.vertical, 16)
-                .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
-                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+                .kcCard(radius: Theme.cornerRadiusL)
 
                 Button {
                     saveWeight()
@@ -144,9 +142,7 @@ struct WeightView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 40)
-            .background(Color.kcSnow)
-            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
-            .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+            .kcCard()
         } else {
             let minKg = (entries.map(\.kg).min() ?? 0) - 1
             let maxKg = (entries.map(\.kg).max() ?? 0) + 1
@@ -220,9 +216,7 @@ struct WeightView: View {
                 .frame(height: 220)
             }
             .padding(Theme.cardInnerPadding)
-            .background(Color.kcSnow)
-            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
-            .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+            .kcCard()
         }
     }
 

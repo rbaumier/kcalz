@@ -23,9 +23,6 @@ struct MealSectionView: View {
                     Text("\(Int(meal.totalKcal))")
                         .font(.kcNumberSmall)
                         .foregroundStyle(Color.kcFeather)
-                    Text("kcal")
-                        .font(.kcUnit)
-                        .foregroundStyle(Color.kcWolf)
                 }
 
                 Button {
@@ -55,9 +52,7 @@ struct MealSectionView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
-                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+                .kcCard()
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(meal.entries.enumerated()), id: \.element.id) { i, entry in
@@ -88,9 +83,7 @@ struct MealSectionView: View {
                         )
                     }
                 }
-                .background(Color.kcSnow)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXL, style: .continuous))
-                .shadow(color: Color.kcSwan, radius: 0, x: 0, y: 4)
+                .kcCard()
             }
         }
         .padding(.bottom, 4)
