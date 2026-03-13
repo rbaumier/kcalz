@@ -9,24 +9,26 @@
 - **F5** — Ajout d'aliment (SearchView → ProductDetailView → ajout au repas, NavigationStack)
 - **F6** — Persistance des données utilisateur (GRDB read-write, user.sqlite, auto-save immédiat)
 - **F7** — Navigation entre jours (chevrons fonctionnels, passé/futur, "Aujourd'hui")
+- **F8** — Modifier un aliment (tap sur un aliment du dashboard → même écran que l'ajout, modifier le grammage, bouton supprimer)
 
 ## Next
 
 ### Gestion des aliments
-- **F8** — Modifier un aliment (tap sur un aliment du dashboard → même écran que l'ajout, modifier le grammage, bouton supprimer)
 - **F9** — Sélection multiple d'aliments (long press → mode sélection, barre d'actions : supprimer ou copier vers un autre repas avec choix date + type de repas via calendrier)
 - **F10** — Détail d'un repas (tap sur le titre "Petit déjeuner" → écran avec détails nutriments du repas)
+- **F11** — Poids par défaut pré-remplis quand on ajoute un aliment
+
 
 ### Recherche avancée
-- **F11** — Scan code-barres (recherche OFF par code EAN lors de l'ajout d'un aliment)
-- **F12** — Recherche par kcal (taper un nombre de kcal/100g dans la barre de recherche pour filtrer)
-- **F13** — Aliments récents / favoris (accès rapide sans recherche)
-- **F14** — Aliments custom (créer un aliment non présent dans OFF)
+- **F12** — Scan code-barres (recherche OFF par code EAN lors de l'ajout d'un aliment)
+- **F13** — Recherche par kcal (taper un nombre de kcal/100g dans la barre dcope recherche pour filtrer)
+- **F14** — Aliments récents / favoris (accès rapide sans recherche)
+- **F15** — Aliments custom (créer un aliment non présent dans OFF)
 
 ### Objectifs & suivi
-- **F15** — Modifier les objectifs (tap sur la zone nutrition du dashboard → écran pour modifier kcal/macros)
-- **F16** — Suivi du poids (zone poids sur le dashboard, tap → modifier le poids du jour + graphe d'évolution avec période ajustable)
-- **F17** — Onboarding (saisie objectifs, poids initial au premier lancement)
+- **F16** — Modifier les objectifs (tap sur la zone nutrition du dashboard → écran pour modifier kcal/macros)
+- **F17** — Suivi du poids (zone poids sur le dashboard, tap → modifier le poids du jour + graphe d'évolution avec période ajustable)
+- **F18** — Onboarding (saisie objectifs, poids initial au premier lancement)
 
 ### Stats
-- **F18** — Historique & stats (résumé hebdo/mensuel, moyennes, tendances)
+- **F19** — Historique & stats (résumé hebdo/mensuel, moyennes, tendances)

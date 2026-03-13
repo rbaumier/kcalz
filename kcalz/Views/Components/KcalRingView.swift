@@ -13,7 +13,7 @@ struct KcalRingView: View {
     }
 
     private var remaining: Int {
-        max(Int(goal) - Int(consumed), 0)
+        Int(goal) - Int(consumed)
     }
 
     private var percentage: Int {
@@ -36,7 +36,7 @@ struct KcalRingView: View {
             VStack(spacing: 2) {
                 Text("\(remaining)")
                     .font(.kcNumberLarge)
-                    .foregroundStyle(Color.kcEel)
+                    .foregroundStyle(remaining < 0 ? Color.kcCardinal : Color.kcEel)
                     .contentTransition(.numericText())
 
                 Text("RESTANTES")
@@ -55,6 +55,11 @@ struct KcalRingView: View {
                 withAnimation(.easeOut(duration: 0.8).delay(0.1)) {
                     animatedProgress = progress
                 }
+            }
+        }
+        .onChange(of: consumed) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                animatedProgress = progress
             }
         }
     }

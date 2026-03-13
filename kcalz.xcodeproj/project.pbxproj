@@ -16,10 +16,12 @@
 		531EE84FA009171248F048CC /* OFFStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3C0CEB310EEC20A6BBC13E /* OFFStore.swift */; };
 		57228AEBFB8014D474B0D958 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4705209801A8C8A0568515 /* SearchView.swift */; };
 		66A931D0C90F8B11CE16FC45 /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096377ADAE50ACD3669DEAC4 /* GoalsView.swift */; };
+		6EB05477096356755BEAC505 /* SelectionActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70E8ABEA7BA9FDABF81A91B /* SelectionActionBar.swift */; };
 		7EAB58F4443DEADE34697B7F /* DayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DFA3157E328E08C5F334B2A /* DayLog.swift */; };
 		861B32CA4817A02F6DDFDE33 /* off_fr.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = D83F8F942C4E69A7FDCBB6C8 /* off_fr.sqlite */; };
 		862406CBA9E723F771D01DFA /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23E76738361BAD8310D02FA /* SearchViewModel.swift */; };
 		88A7EC4D77F38AFAABD289E7 /* NutrientBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CB331B6E6F1EB6E1E7CD52E /* NutrientBarView.swift */; };
+		8FF51C97D46C7C4F0D06DC70 /* CopySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362E89531990B200904D3803 /* CopySheet.swift */; };
 		92EE7F3763029BFEB7AA6459 /* ProductDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB50F54B29ADF3ABF113D1C4 /* ProductDetailViewModel.swift */; };
 		99A7AFC157E3C4603E543CCE /* OFFProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659721DEC158D12DB5C6A8B9 /* OFFProduct.swift */; };
 		9C23321EBAB0836EF5C921D1 /* KcalzApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876D09937D7B03D21473BBEC /* KcalzApp.swift */; };
@@ -42,6 +44,7 @@
 		2A7F7EBBFFE15ED428346C5B /* UserStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStore.swift; sourceTree = "<group>"; };
 		2D17B2D0B4EDB4F7166620F2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2DFA3157E328E08C5F334B2A /* DayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayLog.swift; sourceTree = "<group>"; };
+		362E89531990B200904D3803 /* CopySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopySheet.swift; sourceTree = "<group>"; };
 		36A061E751C3A1F1637FA6C4 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		4FC1EBE88460455845F261A1 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		577C59F5760C1550043B4462 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -58,6 +61,7 @@
 		D83F8F942C4E69A7FDCBB6C8 /* off_fr.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = off_fr.sqlite; sourceTree = "<group>"; };
 		DF3C0CEB310EEC20A6BBC13E /* OFFStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFFStore.swift; sourceTree = "<group>"; };
 		F2A1EF63A724FB484CF86874 /* NutritionGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionGoal.swift; sourceTree = "<group>"; };
+		F70E8ABEA7BA9FDABF81A91B /* SelectionActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionActionBar.swift; sourceTree = "<group>"; };
 		FB50F54B29ADF3ABF113D1C4 /* ProductDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewModel.swift; sourceTree = "<group>"; };
 		FDF9EAF8890FC4D1F5C2833B /* MealSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealSectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -103,9 +107,11 @@
 		618EFB7C368E74871E86B9DA /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				362E89531990B200904D3803 /* CopySheet.swift */,
 				C3A1E4DA012CF597BDA53DDA /* KcalRingView.swift */,
 				FDF9EAF8890FC4D1F5C2833B /* MealSectionView.swift */,
 				5CB331B6E6F1EB6E1E7CD52E /* NutrientBarView.swift */,
+				F70E8ABEA7BA9FDABF81A91B /* SelectionActionBar.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -293,6 +299,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FF51C97D46C7C4F0D06DC70 /* CopySheet.swift in Sources */,
 				30DB1BD2479A16AFB5BED807 /* DashboardView.swift in Sources */,
 				9C96C5B1BC364DAD1A0D8E38 /* DateFormatting.swift in Sources */,
 				7EAB58F4443DEADE34697B7F /* DayLog.swift in Sources */,
@@ -313,6 +320,7 @@
 				084998051F311C8C833B8084 /* Route.swift in Sources */,
 				57228AEBFB8014D474B0D958 /* SearchView.swift in Sources */,
 				862406CBA9E723F771D01DFA /* SearchViewModel.swift in Sources */,
+				6EB05477096356755BEAC505 /* SelectionActionBar.swift in Sources */,
 				F6FC664B37C4907B1FA73753 /* Theme.swift in Sources */,
 				213D787477A7B42889B60D9E /* UserStore.swift in Sources */,
 			);

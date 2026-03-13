@@ -5,6 +5,9 @@ struct MealSectionView: View {
     let onAdd: () -> Void
     let onTap: (FoodEntry) -> Void
     let onDelete: (FoodEntry) -> Void
+    let isSelecting: Bool
+    @Binding var selectedIds: Set<UUID>
+    let onLongPress: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -65,10 +68,23 @@ struct MealSectionView: View {
                                 .padding(.leading, Theme.cardInnerPadding)
                         }
 
-                        SwipeableEntryRow(
+                        EntryRow(
                             entry: entry,
+                            isSelecting: isSelecting,
+                            isSelected: selectedIds.contains(entry.id),
                             onTap: { onTap(entry) },
-                            onDelete: { onDelete(entry) }
+                            onDelete: { onDelete(entry) },
+                            onToggle: {
+                                if selectedIds.contains(entry.id) {
+                                    selectedIds.remove(entry.id)
+                                } else {
+                                    selectedIds.insert(entry.id)
+                                }
+                            },
+                            onLongPress: {
+                                onLongPress()
+                                selectedIds.insert(entry.id)
+                            }
                         )
                     }
                 }
@@ -81,12 +97,16 @@ struct MealSectionView: View {
     }
 }
 
-// MARK: - Swipe-to-delete row
+// MARK: - Entry row (unified: normal + selection mode)
 
-private struct SwipeableEntryRow: View {
+private struct EntryRow: View {
     let entry: FoodEntry
+    let isSelecting: Bool
+    let isSelected: Bool
     let onTap: () -> Void
     let onDelete: () -> Void
+    let onToggle: () -> Void
+    let onLongPress: () -> Void
 
     @State private var baseOffset: CGFloat = 0
     @State private var dragTranslation: CGFloat = 0
@@ -99,17 +119,27 @@ private struct SwipeableEntryRow: View {
 
     var body: some View {
         ZStack(alignment: .trailing) {
-            // Delete background
-            Color.kcCardinal
-                .overlay(alignment: .trailing) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.trailing, 26)
+            // Delete background (only visible when swiped)
+            if currentOffset < 0 {
+                Color.kcCardinal
+                    .overlay(alignment: .trailing) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.trailing, 26)
+                    }
+            }
+
+            // Entry content
+            HStack(spacing: 0) {
+                if isSelecting {
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 22))
+                        .foregroundStyle(isSelected ? Color.kcFeather : Color.kcHare)
+                        .padding(.trailing, 12)
+                        .transition(.scale.combined(with: .opacity))
                 }
 
-            // Entry content (slides left on swipe)
-            HStack(spacing: 0) {
                 Text(entry.name)
                     .font(.kcBody)
                     .foregroundStyle(Color.kcEel)
@@ -130,18 +160,29 @@ private struct SwipeableEntryRow: View {
             .padding(.horizontal, Theme.cardInnerPadding)
             .padding(.vertical, 14)
             .background(Color.kcSnow)
-            .offset(x: currentOffset)
+            .offset(x: isSelecting ? 0 : currentOffset)
             .contentShape(Rectangle())
             .onTapGesture {
-                if baseOffset < 0 {
+                if isSelecting {
+                    onToggle()
+                } else if baseOffset < 0 {
                     withAnimation(.easeOut(duration: 0.2)) { baseOffset = 0 }
                 } else {
                     onTap()
                 }
             }
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: 0.25)
+                    .onEnded { _ in
+                        if !isSelecting {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            onLongPress()
+                        }
+                    }
+            )
 
-            // Delete tap target (on top of everything when revealed)
-            if baseOffset < 0 {
+            // Delete tap target
+            if !isSelecting && baseOffset < 0 {
                 HStack {
                     Spacer()
                     Color.clear
@@ -152,8 +193,8 @@ private struct SwipeableEntryRow: View {
             }
         }
         .clipped()
-        .accessibilityElement(children: .combine)
         .gesture(
+            isSelecting ? nil :
             DragGesture(minimumDistance: 16)
                 .onChanged { value in
                     dragTranslation = value.translation.width
@@ -162,7 +203,6 @@ private struct SwipeableEntryRow: View {
                     baseOffset = min(baseOffset + value.translation.width, 0)
                     dragTranslation = 0
                     if baseOffset < -deleteWidth {
-                        // Full swipe → delete
                         onDelete()
                     } else {
                         withAnimation(.easeOut(duration: 0.2)) {
@@ -171,5 +211,12 @@ private struct SwipeableEntryRow: View {
                     }
                 }
         )
+        .animation(.easeOut(duration: 0.25), value: isSelecting)
+        .onChange(of: isSelecting) { _, selecting in
+            if selecting {
+                withAnimation(.easeOut(duration: 0.2)) { baseOffset = 0; dragTranslation = 0 }
+            }
+        }
     }
 }
+

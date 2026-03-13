@@ -55,5 +55,10 @@ struct NutrientBarView: View {
                 }
             }
         }
+        .onChange(of: current) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                animatedProgress = progress
+            }
+        }
     }
 }

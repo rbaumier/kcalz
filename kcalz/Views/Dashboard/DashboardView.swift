@@ -11,6 +11,9 @@ struct DashboardView: View {
     @State private var path: [Route] = []
     @State private var headerAppeared = false
     @State private var summaryAppeared = false
+    @State private var selectingMealType: MealType?
+    @State private var selectedEntryIds: Set<UUID> = []
+    @State private var showCopySheet = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let dateFormatter: DateFormatter = {
@@ -65,6 +68,26 @@ struct DashboardView: View {
                         goal = newGoal
                     }
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if selectingMealType != nil {
+                    SelectionActionBar(
+                        count: selectedEntryIds.count,
+                        onDelete: { deleteSelectedEntries() },
+                        onCopy: { showCopySheet = true },
+                        onCancel: { exitSelectionMode() }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.horizontal, Theme.horizontalPadding)
+                    .padding(.bottom, 8)
+                }
+            }
+            .animation(.easeOut(duration: 0.2), value: selectingMealType)
+            .sheet(isPresented: $showCopySheet) {
+                CopySheet { date, mealType in
+                    copySelectedEntries(to: date, mealType: mealType)
+                }
+                .presentationDetents([.medium])
             }
             .task {
                 loadDay(currentDate)
@@ -190,13 +213,15 @@ struct DashboardView: View {
                 // MARK: - Meals
                 VStack(spacing: 24) {
                     ForEach(dayLog.meals) { meal in
-                        MealSectionView(meal: meal, onAdd: {
-                            path.append(.search(meal.type))
-                        }, onTap: { entry in
-                            path.append(.edit(entry, meal.type))
-                        }, onDelete: { entry in
-                            removeEntry(entry, from: meal.type)
-                        })
+                        MealSectionView(
+                            meal: meal,
+                            onAdd: { path.append(.search(meal.type)) },
+                            onTap: { entry in path.append(.edit(entry, meal.type)) },
+                            onDelete: { entry in removeEntry(entry, from: meal.type) },
+                            isSelecting: selectingMealType == meal.type,
+                            selectedIds: $selectedEntryIds,
+                            onLongPress: { selectingMealType = meal.type }
+                        )
                     }
                 }
                 .padding(.horizontal, Theme.horizontalPadding)
@@ -247,6 +272,24 @@ struct DashboardView: View {
 
     private func removeEntry(_ entry: FoodEntry, from mealType: MealType) {
         try? userStore.deleteEntry(id: entry.id)
+        loadDay(currentDate)
+    }
+
+    private func exitSelectionMode() {
+        selectingMealType = nil
+        selectedEntryIds = []
+    }
+
+    private func deleteSelectedEntries() {
+        try? userStore.deleteEntries(ids: selectedEntryIds)
+        exitSelectionMode()
+        loadDay(currentDate)
+    }
+
+    private func copySelectedEntries(to date: Date, mealType: MealType) {
+        try? userStore.copyEntries(ids: selectedEntryIds, toDate: date, mealType: mealType)
+        exitSelectionMode()
+        currentDate = date
         loadDay(currentDate)
     }
 }
