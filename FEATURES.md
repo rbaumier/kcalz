@@ -10,11 +10,9 @@
 - **F6** — Persistance des données utilisateur (GRDB read-write, user.sqlite, auto-save immédiat)
 - **F7** — Navigation entre jours (chevrons fonctionnels, passé/futur, "Aujourd'hui")
 - **F8** — Modifier un aliment (tap sur un aliment du dashboard → même écran que l'ajout, modifier le grammage, bouton supprimer)
+- **F9** — Sélection multiple d'aliments (long press → mode sélection, barre d'actions : supprimer ou copier vers un autre repas)
 
 ## Next
-
-### Gestion des aliments
-- **F9** — Sélection multiple d'aliments (long press → mode sélection, barre d'actions : supprimer ou copier vers un autre repas avec choix date + type de repas via calendrier)
 - **F10** — Détail d'un repas (tap sur le titre "Petit déjeuner" → écran avec détails nutriments du repas)
 - **F11** — Poids par défaut pré-remplis quand on ajoute un aliment
 
