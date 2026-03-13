@@ -14,6 +14,8 @@ struct DashboardView: View {
     @State private var selectingMealType: MealType?
     @State private var selectedEntryIds: Set<UUID> = []
     @State private var showCopySheet = false
+    @State private var todayWeight: Double?
+    @State private var weightTrend: WeightTrend = .stable
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let dateFormatter: DateFormatter = {
@@ -67,6 +69,8 @@ struct DashboardView: View {
                         try? userStore.saveGoals(newGoal)
                         goal = newGoal
                     }
+                case .weight:
+                    WeightView(userStore: userStore, currentDate: currentDate)
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -89,8 +93,12 @@ struct DashboardView: View {
                 }
                 .presentationDetents([.medium])
             }
+            .onChange(of: path) {
+                if path.isEmpty { loadWeight() }
+            }
             .task {
                 loadDay(currentDate)
+                loadWeight()
                 goal = (try? userStore.loadGoals()) ?? NutritionGoal()
                 if reduceMotion {
                     headerAppeared = true
@@ -177,10 +185,6 @@ struct DashboardView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("CONSOMMÉ")
-                                    .font(.kcLabel)
-                                    .foregroundStyle(Color.kcWolf)
-                                    .kerning(Theme.labelKerning)
                                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                                     Text("\(Int(dayLog.totalKcal))")
                                         .font(.kcNumberMedium)
@@ -195,6 +199,31 @@ struct DashboardView: View {
                                             .foregroundStyle(Color.kcWolf)
                                     }
                                 }
+
+                                Button { path.append(.weight) } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "scalemass.fill")
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .foregroundStyle(Color.kcHare)
+
+                                        if let kg = todayWeight {
+                                            Text(formatWeight(kg))
+                                                .font(.kcNumberSmall)
+                                                .foregroundStyle(Color.kcWolf)
+                                            Text("kg")
+                                                .font(.kcUnit)
+                                                .foregroundStyle(Color.kcHare)
+                                            Image(systemName: weightTrend.systemImage)
+                                                .font(.system(size: 10, weight: .black))
+                                                .foregroundStyle(weightTrend.color)
+                                        } else {
+                                            Text("— kg")
+                                                .font(.kcNumberSmall)
+                                                .foregroundStyle(Color.kcHare)
+                                        }
+                                    }
+                                }
+                                .buttonStyle(.plain)
                             }
                             .frame(minWidth: 200, alignment: .leading)
                         }
@@ -254,6 +283,7 @@ struct DashboardView: View {
         guard let newDate = Calendar.current.date(byAdding: .day, value: offset, to: currentDate) else { return }
         currentDate = newDate
         loadDay(newDate)
+        loadWeight()
     }
 
     private func loadDay(_ date: Date) {
@@ -286,11 +316,48 @@ struct DashboardView: View {
         loadDay(currentDate)
     }
 
+    private func loadWeight() {
+        todayWeight = try? userStore.loadWeight(for: currentDate)
+        let recent = (try? userStore.latestWeights(limit: 7)) ?? []
+        if recent.count >= 2, let first = recent.first, let last = recent.last {
+            let diff = last.kg - first.kg
+            if diff < -0.2 { weightTrend = .down }
+            else if diff > 0.2 { weightTrend = .up }
+            else { weightTrend = .stable }
+        } else {
+            weightTrend = .stable
+        }
+    }
+
+    private func formatWeight(_ kg: Double) -> String {
+        kg.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(kg))" : String(format: "%.1f", kg)
+    }
+
     private func copySelectedEntries(to date: Date, mealType: MealType) {
         try? userStore.copyEntries(ids: selectedEntryIds, toDate: date, mealType: mealType)
         exitSelectionMode()
         currentDate = date
         loadDay(currentDate)
+    }
+}
+
+enum WeightTrend {
+    case up, down, stable
+
+    var systemImage: String {
+        switch self {
+        case .down: "arrow.down"
+        case .up: "arrow.up"
+        case .stable: "arrow.forward"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .down: .kcFeather
+        case .up: .kcCardinal
+        case .stable: .kcHare
+        }
     }
 }
 

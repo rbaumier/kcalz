@@ -64,6 +64,13 @@ final class UserStore: Sendable {
             }
         }
 
+        migrator.registerMigration("v3") { db in
+            try db.create(table: "weight_entry") { t in
+                t.primaryKey("date", .text)
+                t.column("weight_kg", .double).notNull()
+            }
+        }
+
         try migrator.migrate(dbQueue)
     }
 
@@ -188,6 +195,56 @@ final class UserStore: Sendable {
             let placeholders = ids.map { _ in "?" }.joined(separator: ", ")
             let sql = "DELETE FROM food_entry WHERE id IN (\(placeholders))"
             try db.execute(sql: sql, arguments: StatementArguments(ids.map { $0.uuidString }))
+        }
+    }
+
+    // MARK: - Weight
+
+    func saveWeight(kg: Double, date: Date) throws {
+        let dateStr = date.kcDateString
+        try dbQueue.write { db in
+            try db.execute(
+                sql: "INSERT OR REPLACE INTO weight_entry (date, weight_kg) VALUES (?, ?)",
+                arguments: [dateStr, kg]
+            )
+        }
+    }
+
+    func loadWeight(for date: Date) throws -> Double? {
+        try dbQueue.read { db in
+            try Double.fetchOne(db, sql: "SELECT weight_kg FROM weight_entry WHERE date = ?", arguments: [date.kcDateString])
+        }
+    }
+
+    func loadWeights(from start: Date, to end: Date) throws -> [WeightEntry] {
+        try dbQueue.read { db in
+            let rows = try Row.fetchAll(
+                db,
+                sql: "SELECT date, weight_kg FROM weight_entry WHERE date >= ? AND date <= ? ORDER BY date",
+                arguments: [start.kcDateString, end.kcDateString]
+            )
+            return rows.compactMap { row -> WeightEntry? in
+                guard let dateStr = row["date"] as? String,
+                      let date = Date.fromKcDateString(dateStr),
+                      let kg = row["weight_kg"] as? Double else { return nil }
+                return WeightEntry(id: dateStr, date: date, kg: kg)
+            }
+        }
+    }
+
+    func latestWeights(limit: Int) throws -> [WeightEntry] {
+        try dbQueue.read { db in
+            let rows = try Row.fetchAll(
+                db,
+                sql: "SELECT date, weight_kg FROM weight_entry ORDER BY date DESC LIMIT ?",
+                arguments: [limit]
+            )
+            return rows.compactMap { row -> WeightEntry? in
+                guard let dateStr = row["date"] as? String,
+                      let date = Date.fromKcDateString(dateStr),
+                      let kg = row["weight_kg"] as? Double else { return nil }
+                return WeightEntry(id: dateStr, date: date, kg: kg)
+            }.reversed()
         }
     }
 
