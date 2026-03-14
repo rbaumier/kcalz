@@ -49,34 +49,39 @@ struct MealSectionView: View {
 
             // Card body — entries only
             if meal.entries.isEmpty {
-                HStack(spacing: 10) {
-                    Image(systemName: "fork.knife")
-                        .font(.kcIcon)
-                        .foregroundStyle(Color.kcHare)
-                    Text("Aucun aliment")
-                        .font(.kcEmptyText)
-                        .foregroundStyle(Color.kcHare)
+                VStack(spacing: 6) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "fork.knife")
+                            .font(.kcIcon)
+                            .foregroundStyle(Color.kcHare)
+                        Text("Aucun aliment")
+                            .font(.kcEmptyText)
+                            .foregroundStyle(Color.kcHare)
+                    }
+
+                    if let prev = previousMeal {
+                        let daysAgo = Calendar.current.dateComponents([.day], from: prev.date, to: currentDate).day ?? 0
+                        let timeLabel = daysAgo == 1 ? "hier" : "il y a \(daysAgo)j"
+                        let totalKcal = Int(round(prev.entries.reduce(0.0) { $0 + $1.kcal }))
+                        let name = meal.type.displayName.lowercased()
+
+                        Text("Maintiens pour copier le \(name) d'\(timeLabel) (\(totalKcal) kcal)")
+                            .font(.kcCaption)
+                            .foregroundStyle(Color.kcHare)
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
+                .contentShape(Rectangle())
                 .kcCard()
-
-                if let prev = previousMeal {
-                    let daysAgo = Calendar.current.dateComponents([.day], from: prev.date, to: currentDate).day ?? 0
-                    let timeLabel = daysAgo == 1 ? "hier" : "il y a \(daysAgo)j"
-                    let totalKcal = Int(round(prev.entries.reduce(0.0) { $0 + $1.kcal }))
-                    let name = meal.type.displayName.lowercased()
-
-                    Text("maintiens pour copier le \(name) d'\(timeLabel) (\(totalKcal) kcal)")
-                        .font(.kcCaption)
-                        .foregroundStyle(Color.kcHare)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 4)
-                        .onLongPressGesture {
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.3)
+                        .onEnded { _ in
+                            guard previousMeal != nil else { return }
                             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                             onCopyPrevious()
                         }
-                }
+                )
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(meal.entries.enumerated()), id: \.element.id) { i, entry in

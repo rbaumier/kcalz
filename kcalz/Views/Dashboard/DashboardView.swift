@@ -359,8 +359,20 @@ struct DashboardView: View {
 
     private func copyPreviousMeal(_ mealType: MealType) {
         guard let prev = previousMeals[mealType] else { return }
-        let ids = Set(prev.entries.map(\.id))
-        try? userStore.copyEntries(ids: ids, toDate: currentDate, mealType: mealType)
+        for entry in prev.entries {
+            let copy = FoodEntry(
+                name: entry.name,
+                brands: entry.brands,
+                grams: entry.grams,
+                kcalPer100g: entry.kcalPer100g,
+                proteinsPer100g: entry.proteinsPer100g,
+                carbsPer100g: entry.carbsPer100g,
+                fatPer100g: entry.fatPer100g,
+                sugarsPer100g: entry.sugarsPer100g,
+                saltPer100g: entry.saltPer100g
+            )
+            try? userStore.addEntry(copy, date: currentDate, mealType: mealType)
+        }
         loadDay(currentDate)
     }
 

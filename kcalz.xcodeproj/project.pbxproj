@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		084998051F311C8C833B8084 /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC1EBE88460455845F261A1 /* Route.swift */; };
 		12B59D11D92C864F214344AB /* WeightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3ED1D0151CD6BC0CB3E55A /* WeightView.swift */; };
-		19ED1E6E7E27539669B6E1D4 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBC977216BF0C2394FAFEB6 /* BarcodeScannerView.swift */; };
 		213D787477A7B42889B60D9E /* UserStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F7EBBFFE15ED428346C5B /* UserStore.swift */; };
 		217F4B00DDC333760C89FD21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D17B2D0B4EDB4F7166620F2 /* Assets.xcassets */; };
 		23A0B9B826CA9671F3972F11 /* FoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4503FCAEE98D97024FE4AF7 /* FoodEntry.swift */; };
@@ -57,7 +56,6 @@
 		4FC1EBE88460455845F261A1 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		54FC63C0DD130C112C6FC283 /* user.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = user.sqlite; sourceTree = "<group>"; };
 		577C59F5760C1550043B4462 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		5BBC977216BF0C2394FAFEB6 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
 		5CB331B6E6F1EB6E1E7CD52E /* NutrientBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientBarView.swift; sourceTree = "<group>"; };
 		659721DEC158D12DB5C6A8B9 /* OFFProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFFProduct.swift; sourceTree = "<group>"; };
 		876D09937D7B03D21473BBEC /* KcalzApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KcalzApp.swift; sourceTree = "<group>"; };
@@ -163,7 +161,6 @@
 		7C7F455131F0ED722E0F682E /* Search */ = {
 			isa = PBXGroup;
 			children = (
-				5BBC977216BF0C2394FAFEB6 /* BarcodeScannerView.swift */,
 				1EC73384157AC2EBFD8C29AF /* ProductDetailView.swift */,
 				BD4705209801A8C8A0568515 /* SearchView.swift */,
 			);
@@ -331,7 +328,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				19ED1E6E7E27539669B6E1D4 /* BarcodeScannerView.swift in Sources */,
 				8FF51C97D46C7C4F0D06DC70 /* CopySheet.swift in Sources */,
 				30DB1BD2479A16AFB5BED807 /* DashboardView.swift in Sources */,
 				9C96C5B1BC364DAD1A0D8E38 /* DateFormatting.swift in Sources */,
@@ -373,7 +369,6 @@
 				ENABLE_DEBUG_DYLIB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = kcalz;
-				INFOPLIST_KEY_NSCameraUsageDescription = "kcalz utilise la caméra pour scanner les codes-barres des produits alimentaires.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -397,7 +392,6 @@
 				ENABLE_DEBUG_DYLIB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = kcalz;
-				INFOPLIST_KEY_NSCameraUsageDescription = "kcalz utilise la caméra pour scanner les codes-barres des produits alimentaires.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

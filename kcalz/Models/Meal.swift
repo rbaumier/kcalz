@@ -1,7 +1,7 @@
 import Foundation
 
 struct Meal: Identifiable, Sendable, Hashable {
-    let id = UUID()
+    var id: String { type.rawValue }
     var type: MealType
     var entries: [FoodEntry]
 
@@ -12,6 +12,6 @@ struct Meal: Identifiable, Sendable, Hashable {
     var totalSugars: Double { entries.reduce(0) { $0 + $1.sugars } }
     var totalSalt: Double { entries.reduce(0) { $0 + $1.salt } }
 
-    static func == (lhs: Meal, rhs: Meal) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    static func == (lhs: Meal, rhs: Meal) -> Bool { lhs.type == rhs.type }
+    func hash(into hasher: inout Hasher) { hasher.combine(type) }
 }

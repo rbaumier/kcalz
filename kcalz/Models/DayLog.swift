@@ -1,7 +1,7 @@
 import Foundation
 
 struct DayLog: Identifiable, Sendable, Equatable {
-    let id = UUID()
+    var id: String { date.kcDateString }
     var date: Date
     var meals: [Meal]
 

@@ -340,7 +340,7 @@ final class UserStore: Sendable {
             let rows = try Row.fetchAll(
                 db,
                 sql: "SELECT * FROM food_entry WHERE id IN (\(placeholders)) ORDER BY sort_order",
-                arguments: StatementArguments(ids.map { $0.uuidString })
+                arguments: StatementArguments(ids.map { $0.uuidString.lowercased() })
             )
 
             for (i, row) in rows.enumerated() {
