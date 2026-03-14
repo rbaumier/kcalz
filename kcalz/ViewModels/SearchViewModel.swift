@@ -31,7 +31,13 @@ final class SearchViewModel {
             guard !Task.isCancelled else { return }
 
             do {
-                let found = try store.search(query: query)
+                var found = try store.search(query: query)
+                // If query looks like a barcode, try exact code lookup
+                if found.isEmpty, query.allSatisfy(\.isNumber), query.count >= 8 {
+                    if let product = store.findByBarcode(query) {
+                        found = [product]
+                    }
+                }
                 if !Task.isCancelled {
                     results = found
                     isSearching = false
