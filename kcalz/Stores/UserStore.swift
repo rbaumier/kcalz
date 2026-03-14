@@ -244,6 +244,36 @@ final class UserStore: Sendable {
         )
     }
 
+    // MARK: - Previous Meal
+
+    func findLastMealEntries(type: MealType, before date: Date) -> (date: Date, entries: [FoodEntry])? {
+        guard let minDate = Calendar.current.date(byAdding: .day, value: -7, to: date) else { return nil }
+        let dateStr = date.kcDateString
+        let minDateStr = minDate.kcDateString
+
+        let rows = try? dbQueue.read { db in
+            let sql = """
+                SELECT * FROM food_entry
+                WHERE meal_type = ? AND date < ? AND date >= ?
+                ORDER BY date DESC, sort_order
+                """
+            return try Row.fetchAll(db, sql: sql, arguments: [type.rawValue, dateStr, minDateStr])
+        }
+
+        guard let rows, !rows.isEmpty else { return nil }
+
+        let grouped = Dictionary(grouping: rows) { $0["date"] as? String ?? "" }
+        let sortedDates = grouped.keys.sorted(by: >)
+
+        for dateKey in sortedDates {
+            guard let entries = grouped[dateKey], !entries.isEmpty,
+                  let foundDate = Date.fromKcDateString(dateKey) else { continue }
+            return (date: foundDate, entries: entries.map { Self.foodEntry(from: $0) })
+        }
+
+        return nil
+    }
+
     // MARK: - Weight
 
     func saveWeight(kg: Double, date: Date) throws {

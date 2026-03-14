@@ -18,6 +18,8 @@ targets:
       - path: kcalz
       - path: data/off_fr.sqlite
         buildPhase: resources
+      - path: data/user.sqlite
+        buildPhase: resources
     settings:
       base:
         GENERATE_INFOPLIST_FILE: true
@@ -26,6 +28,7 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_CFBundleDisplayName: kcalz
+        INFOPLIST_KEY_NSCameraUsageDescription: "kcalz utilise la caméra pour scanner les codes-barres des produits alimentaires."
         SWIFT_STRICT_CONCURRENCY: complete
         ENABLE_DEBUG_DYLIB: false
     dependencies:

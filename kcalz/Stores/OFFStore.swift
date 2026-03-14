@@ -23,6 +23,12 @@ final class OFFStore: Sendable {
         dbQueue = try DatabaseQueue(path: path, configuration: config)
     }
 
+    func findByBarcode(_ code: String) -> OFFProduct? {
+        try? dbQueue.read { db in
+            try OFFProduct.fetchOne(db, sql: "SELECT * FROM products WHERE code = ?", arguments: [code])
+        }
+    }
+
     func search(query: String) throws -> [OFFProduct] {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 2 else { return [] }

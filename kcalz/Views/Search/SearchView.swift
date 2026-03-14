@@ -5,16 +5,18 @@ struct SearchView: View {
     let userStore: UserStore
     let onSelect: (OFFProduct) -> Void
     let onSelectRecent: (FoodEntry) -> Void
+    let onScan: () -> Void
 
     @State private var recentFoods: [FoodEntry] = []
     @State private var frequentFoods: [FoodEntry] = []
     @AppStorage("searchShowFrequent") private var showFrequent = false
 
-    init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void) {
+    init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void, onScan: @escaping () -> Void) {
         _viewModel = State(initialValue: SearchViewModel(store: store))
         self.userStore = userStore
         self.onSelect = onSelect
         self.onSelectRecent = onSelectRecent
+        self.onScan = onScan
     }
 
     @FocusState private var isSearchFocused: Bool
@@ -50,6 +52,12 @@ struct SearchView: View {
                             .font(.kcIconMedium)
                             .foregroundStyle(Color.kcHare)
                     }
+                }
+
+                Button { onScan() } label: {
+                    Image(systemName: "barcode.viewfinder")
+                        .font(.kcIconMedium)
+                        .foregroundStyle(Color.kcFeather)
                 }
             }
             .padding(.horizontal, Theme.horizontalPadding)

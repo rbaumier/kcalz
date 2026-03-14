@@ -14,6 +14,7 @@ struct DashboardView: View {
     @State private var selectingMealType: MealType?
     @State private var selectedEntryIds: Set<UUID> = []
     @State private var showCopySheet = false
+    @State private var previousMeals: [MealType: (date: Date, entries: [FoodEntry])] = [:]
     @State private var todayWeight: Double?
     @State private var weightTrend: WeightTrend = .stable
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -54,7 +55,13 @@ struct DashboardView: View {
                         path.append(.detail(product, mealType))
                     }, onSelectRecent: { entry in
                         path.append(.addRecent(entry, mealType))
+                    }, onScan: {
+                        path.append(.scan(mealType))
                     })
+                case .scan(let mealType):
+                    BarcodeScannerView(offStore: offStore) { product in
+                        path.append(.detail(product, mealType))
+                    }
                 case .detail(let product, let mealType):
                     ProductDetailView(product: product, onSave: { entry in
                         addEntry(entry, to: mealType)
@@ -251,7 +258,10 @@ struct DashboardView: View {
                             onDelete: { entry in removeEntry(entry, from: meal.type) },
                             isSelecting: selectingMealType == meal.type,
                             selectedIds: $selectedEntryIds,
-                            onLongPress: { selectingMealType = meal.type }
+                            onLongPress: { selectingMealType = meal.type },
+                            currentDate: currentDate,
+                            previousMeal: previousMeals[meal.type],
+                            onCopyPrevious: { copyPreviousMeal(meal.type) }
                         )
                     }
                 }
@@ -290,6 +300,18 @@ struct DashboardView: View {
 
     private func loadDay(_ date: Date) {
         dayLog = try? userStore.loadDayLog(for: date)
+        loadPreviousMeals(date)
+    }
+
+    private func loadPreviousMeals(_ date: Date) {
+        var result: [MealType: (date: Date, entries: [FoodEntry])] = [:]
+        guard let dayLog else { previousMeals = result; return }
+        for meal in dayLog.meals where meal.entries.isEmpty {
+            if let prev = userStore.findLastMealEntries(type: meal.type, before: date) {
+                result[meal.type] = prev
+            }
+        }
+        previousMeals = result
     }
 
     private func addEntry(_ entry: FoodEntry, to mealType: MealType) {
@@ -333,6 +355,13 @@ struct DashboardView: View {
 
     private func formatWeight(_ kg: Double) -> String {
         kg.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(kg))" : String(format: "%.1f", kg)
+    }
+
+    private func copyPreviousMeal(_ mealType: MealType) {
+        guard let prev = previousMeals[mealType] else { return }
+        let ids = Set(prev.entries.map(\.id))
+        try? userStore.copyEntries(ids: ids, toDate: currentDate, mealType: mealType)
+        loadDay(currentDate)
     }
 
     private func copySelectedEntries(to date: Date, mealType: MealType) {

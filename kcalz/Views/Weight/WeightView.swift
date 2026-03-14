@@ -10,6 +10,7 @@ struct WeightView: View {
     @State private var selectedPeriod: Period = .month
     @State private var selectedEntry: WeightEntry?
     @State private var saved = false
+    @FocusState private var inputFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
     enum Period: String, CaseIterable, Identifiable {
@@ -48,6 +49,7 @@ struct WeightView: View {
                 weightText = formatKg(kg)
             }
             loadEntries()
+            inputFocused = true
         }
     }
 
@@ -65,6 +67,7 @@ struct WeightView: View {
             HStack(spacing: 12) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     KcNumericField(placeholder: "0.0", text: $weightText)
+                                        .focused($inputFocused)
 
                     Text("kg")
                         .font(.kcSecondary)

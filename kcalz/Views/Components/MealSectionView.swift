@@ -9,6 +9,9 @@ struct MealSectionView: View {
     let isSelecting: Bool
     @Binding var selectedIds: Set<UUID>
     let onLongPress: () -> Void
+    var currentDate: Date = .now
+    var previousMeal: (date: Date, entries: [FoodEntry])? = nil
+    var onCopyPrevious: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -57,6 +60,23 @@ struct MealSectionView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .kcCard()
+
+                if let prev = previousMeal {
+                    let daysAgo = Calendar.current.dateComponents([.day], from: prev.date, to: currentDate).day ?? 0
+                    let timeLabel = daysAgo == 1 ? "hier" : "il y a \(daysAgo)j"
+                    let totalKcal = Int(round(prev.entries.reduce(0.0) { $0 + $1.kcal }))
+                    let name = meal.type.displayName.lowercased()
+
+                    Text("maintiens pour copier le \(name) d'\(timeLabel) (\(totalKcal) kcal)")
+                        .font(.kcCaption)
+                        .foregroundStyle(Color.kcHare)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                        .onLongPressGesture {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            onCopyPrevious()
+                        }
+                }
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(meal.entries.enumerated()), id: \.element.id) { i, entry in
