@@ -63,7 +63,7 @@ struct DashboardView: View {
                         path.append(.detail(product, mealType))
                     }
                 case .detail(let product, let mealType):
-                    ProductDetailView(product: product, onSave: { entry in
+                    ProductDetailView(product: product, userStore: userStore, onSave: { entry in
                         addEntry(entry, to: mealType)
                         path = []
                     })

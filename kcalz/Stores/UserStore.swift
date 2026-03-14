@@ -85,6 +85,18 @@ final class UserStore: Sendable {
             }
         }
 
+        migrator.registerMigration("v6") { db in
+            try db.create(table: "product_override") { t in
+                t.primaryKey("code", .text)
+                t.column("kcal", .double).notNull()
+                t.column("proteins", .double)
+                t.column("carbs", .double)
+                t.column("fat", .double)
+                t.column("sugars", .double)
+                t.column("salt", .double)
+            }
+        }
+
         try migrator.migrate(dbQueue)
     }
 
@@ -272,6 +284,57 @@ final class UserStore: Sendable {
         }
 
         return nil
+    }
+
+    // MARK: - Product Overrides
+
+    struct ProductOverride: Sendable {
+        let code: String
+        let kcal: Double
+        let proteins: Double?
+        let carbs: Double?
+        let fat: Double?
+        let sugars: Double?
+        let salt: Double?
+    }
+
+    func loadProductOverride(code: String) -> ProductOverride? {
+        try? dbQueue.read { db in
+            guard let row = try Row.fetchOne(
+                db,
+                sql: "SELECT * FROM product_override WHERE code = ?",
+                arguments: [code]
+            ) else { return nil }
+            return ProductOverride(
+                code: row["code"],
+                kcal: row["kcal"],
+                proteins: row["proteins"],
+                carbs: row["carbs"],
+                fat: row["fat"],
+                sugars: row["sugars"],
+                salt: row["salt"]
+            )
+        }
+    }
+
+    func saveProductOverride(_ override: ProductOverride) throws {
+        try dbQueue.write { db in
+            try db.execute(
+                sql: """
+                    INSERT OR REPLACE INTO product_override (code, kcal, proteins, carbs, fat, sugars, salt)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                arguments: [
+                    override.code,
+                    override.kcal,
+                    override.proteins,
+                    override.carbs,
+                    override.fat,
+                    override.sugars,
+                    override.salt,
+                ]
+            )
+        }
     }
 
     // MARK: - Weight
