@@ -1,5 +1,14 @@
 import SwiftUI
 
+// MARK: - Preference key for entry row frames
+
+private struct EntryFrameKey: PreferenceKey {
+    nonisolated(unsafe) static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue()) { $1 }
+    }
+}
+
 struct MealSectionView: View {
     let meal: Meal
     let onTitleTap: () -> Void
@@ -12,6 +21,9 @@ struct MealSectionView: View {
     var currentDate: Date = .now
     var previousMeal: (date: Date, entries: [FoodEntry])? = nil
     var onCopyPrevious: () -> Void = {}
+
+    @State private var entryFrames: [UUID: CGRect] = [:]
+    @State private var dragSelectActive = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -108,14 +120,48 @@ struct MealSectionView: View {
                             onLongPress: {
                                 onLongPress()
                                 selectedIds.insert(entry.id)
+                                dragSelectActive = true
+                            }
+                        )
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(
+                                    key: EntryFrameKey.self,
+                                    value: [entry.id: geo.frame(in: .named("mealEntries"))]
+                                )
                             }
                         )
                     }
                 }
+                .coordinateSpace(name: "mealEntries")
+                .onPreferenceChange(EntryFrameKey.self) { entryFrames = $0 }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0, coordinateSpace: .named("mealEntries"))
+                        .onChanged { value in
+                            // dragSelectActive: long-press just fired, drag continues without release
+                            // isSelecting + moved >10pt: already in selection mode, user is dragging
+                            let isDragging = dragSelectActive ||
+                                (isSelecting && hypot(value.translation.width, value.translation.height) > 10)
+                            guard isDragging else { return }
+                            if let id = entryId(at: value.location) {
+                                selectedIds.insert(id)
+                            }
+                        }
+                        .onEnded { _ in
+                            dragSelectActive = false
+                        }
+                )
                 .kcCard()
             }
         }
         .padding(.bottom, 4)
+    }
+
+    private func entryId(at point: CGPoint) -> UUID? {
+        for (id, frame) in entryFrames {
+            if frame.contains(point) { return id }
+        }
+        return nil
     }
 }
 
@@ -241,4 +287,3 @@ private struct EntryRow: View {
         }
     }
 }
-
