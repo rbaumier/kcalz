@@ -15,10 +15,15 @@
 
 - **F14** — Aliments récents / fréquents (historique filtrable, toggle récents/fréquents, brands persistées)
 
-## Next
-- **F10** — Détail d'un repas (tap sur le titre "Petit déjeuner" → écran avec détails nutriments du repas)
-- **F11** — Poids par défaut pré-remplis quand on ajoute un aliment
+- **F10** — Détail d'un repas (tap sur le titre → écran avec détails nutriments du repas)
+- **F11** — Copier le repas précédent depuis une section vide
 - **F12** — Scan code-barres (recherche OFF par code EAN lors de l'ajout d'un aliment)
+
+## Next
+- **F13** — Poids par défaut pré-remplis quand on ajoute un aliment
 - **F15** — Aliments custom (créer un aliment non présent dans OFF)
 - **F18** — Onboarding (saisie objectifs, poids initial au premier lancement)
 - **F19** — Historique & stats (résumé hebdo/mensuel, moyennes, tendances)
+
+## Investigate
+- Vérifier pourquoi le Coca-Cola Zero (EAN 5449000214799) n'est pas dans la base OFF France — dump trop ancien ou filtre `off-reduce` trop restrictif ?
