@@ -32,17 +32,23 @@ final class SearchViewModel {
             try? await Task.sleep(for: .milliseconds(150))
             guard !Task.isCancelled else { return }
 
-            do {
-                var found = try store.search(query: currentQuery)
-                if found.isEmpty, currentQuery.allSatisfy(\.isNumber), currentQuery.count >= 8 {
-                    if let product = store.findByBarcode(currentQuery) {
-                        found = [product]
+            // Barcode lookup first if query is all digits
+            if currentQuery.allSatisfy(\.isNumber), currentQuery.count >= 8 {
+                if let product = store.findByBarcode(currentQuery) {
+                    guard !Task.isCancelled else { return }
+                    await MainActor.run {
+                        self.results = [product]
+                        self.isSearching = false
                     }
+                    return
                 }
+            }
+
+            do {
+                let found = try store.search(query: currentQuery)
                 guard !Task.isCancelled else { return }
-                let results = found
                 await MainActor.run {
-                    self.results = results
+                    self.results = found
                     self.isSearching = false
                 }
             } catch is CancellationError {
