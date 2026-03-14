@@ -5,34 +5,77 @@ import Foundation
 final class ProductDetailViewModel {
     let name: String
     let brands: String?
-    let kcalPer100g: Double
-    let proteinsPer100g: Double
-    let carbsPer100g: Double
-    let fatPer100g: Double
-    let sugarsPer100g: Double?
-    let saltPer100g: Double?
+    let productCode: String?
+    var kcalPer100g: Double
+    var proteinsPer100g: Double
+    var carbsPer100g: Double
+    var fatPer100g: Double
+    var sugarsPer100g: Double?
+    var saltPer100g: Double?
     let existingEntryId: UUID?
+    let isIncomplete: Bool
+
+    var kcalText: String
+    var proteinsText: String
+    var carbsText: String
+    var fatText: String
+    var sugarsText: String
+    var saltText: String
 
     var gramsText: String
 
     var isEditing: Bool { existingEntryId != nil }
 
-    init(product: OFFProduct) {
+    init(product: OFFProduct, override: UserStore.ProductOverride? = nil) {
         self.name = product.name
         self.brands = product.brands
-        self.kcalPer100g = product.kcal ?? 0
-        self.proteinsPer100g = product.proteins ?? 0
-        self.carbsPer100g = product.carbs ?? 0
-        self.fatPer100g = product.fat ?? 0
-        self.sugarsPer100g = product.sugars
-        self.saltPer100g = product.salt
+        self.productCode = product.code
         self.existingEntryId = nil
-        self.gramsText = "100"
+
+        if let ov = override {
+            self.kcalPer100g = ov.kcal
+            self.proteinsPer100g = ov.proteins ?? 0
+            self.carbsPer100g = ov.carbs ?? 0
+            self.fatPer100g = ov.fat ?? 0
+            self.sugarsPer100g = ov.sugars
+            self.saltPer100g = ov.salt
+            self.isIncomplete = false
+        } else if product.kcal != nil {
+            self.kcalPer100g = product.kcal ?? 0
+            self.proteinsPer100g = product.proteins ?? 0
+            self.carbsPer100g = product.carbs ?? 0
+            self.fatPer100g = product.fat ?? 0
+            self.sugarsPer100g = product.sugars
+            self.saltPer100g = product.salt
+            self.isIncomplete = false
+        } else {
+            self.kcalPer100g = 0
+            self.proteinsPer100g = 0
+            self.carbsPer100g = 0
+            self.fatPer100g = 0
+            self.sugarsPer100g = nil
+            self.saltPer100g = nil
+            self.isIncomplete = true
+        }
+
+        self.kcalText = ""
+        self.proteinsText = ""
+        self.carbsText = ""
+        self.fatText = ""
+        self.sugarsText = ""
+        self.saltText = ""
+
+        let defaultGrams = Self.parseQuantityGrams(product.quantity) ?? 100
+        self.gramsText = defaultGrams.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(defaultGrams))
+            : String(defaultGrams)
     }
 
     init(recentEntry entry: FoodEntry) {
         self.name = entry.name
         self.brands = entry.brands
+        self.productCode = nil
+        self.isIncomplete = false
         self.kcalPer100g = entry.kcalPer100g
         self.proteinsPer100g = entry.proteinsPer100g
         self.carbsPer100g = entry.carbsPer100g
@@ -40,6 +83,12 @@ final class ProductDetailViewModel {
         self.sugarsPer100g = entry.sugarsPer100g
         self.saltPer100g = entry.saltPer100g
         self.existingEntryId = nil
+        self.kcalText = ""
+        self.proteinsText = ""
+        self.carbsText = ""
+        self.fatText = ""
+        self.sugarsText = ""
+        self.saltText = ""
         self.gramsText = entry.grams.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(entry.grams))
             : String(entry.grams)
@@ -48,6 +97,8 @@ final class ProductDetailViewModel {
     init(entry: FoodEntry) {
         self.name = entry.name
         self.brands = entry.brands
+        self.productCode = nil
+        self.isIncomplete = false
         self.kcalPer100g = entry.kcalPer100g
         self.proteinsPer100g = entry.proteinsPer100g
         self.carbsPer100g = entry.carbsPer100g
@@ -55,6 +106,12 @@ final class ProductDetailViewModel {
         self.sugarsPer100g = entry.sugarsPer100g
         self.saltPer100g = entry.saltPer100g
         self.existingEntryId = entry.id
+        self.kcalText = ""
+        self.proteinsText = ""
+        self.carbsText = ""
+        self.fatText = ""
+        self.sugarsText = ""
+        self.saltText = ""
         self.gramsText = entry.grams.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(entry.grams))
             : String(entry.grams)
@@ -65,7 +122,13 @@ final class ProductDetailViewModel {
         return v
     }
 
-    var isValidInput: Bool { grams != nil }
+    var isValidInput: Bool {
+        guard grams != nil else { return false }
+        if isIncomplete {
+            return Double(kcalText) != nil
+        }
+        return true
+    }
 
     var kcal: Double { scaled(kcalPer100g) }
     var proteins: Double { scaled(proteinsPer100g) }
@@ -76,6 +139,40 @@ final class ProductDetailViewModel {
 
     private func scaled(_ valuePer100g: Double?) -> Double {
         (valuePer100g ?? 0) * (grams ?? 0) / 100
+    }
+
+    func applyOverrideTexts() {
+        if isIncomplete {
+            kcalPer100g = Double(kcalText) ?? 0
+            proteinsPer100g = Double(proteinsText) ?? 0
+            carbsPer100g = Double(carbsText) ?? 0
+            fatPer100g = Double(fatText) ?? 0
+            sugarsPer100g = Double(sugarsText)
+            saltPer100g = Double(saltText)
+        }
+    }
+
+    static func parseQuantityGrams(_ quantity: String?) -> Double? {
+        guard let q = quantity?.trimmingCharacters(in: .whitespaces), !q.isEmpty else { return nil }
+
+        // Pattern: optional "N x " prefix, then a number, then a unit
+        // Examples: "250 g", "2 x 80 g", "0,320 kg", "500 ml", "1 l", "75 cl", "500gr", "1 litre"
+        let pattern = /(?:(\d+)\s*x\s*)?(\d+(?:[.,]\d+)?)\s*(gr|g|kg|ml|cl|l|litre|litres)\b/
+        guard let match = q.lowercased().firstMatch(of: pattern) else { return nil }
+
+        let numberStr = String(match.2).replacingOccurrences(of: ",", with: ".")
+        guard let value = Double(numberStr) else { return nil }
+
+        let unit = String(match.3)
+        let grams: Double = switch unit {
+        case "kg": value * 1000
+        case "l", "litre", "litres": value * 1000
+        case "cl": value * 10
+        case "ml": value
+        default: value // "g", "gr"
+        }
+
+        return grams > 0 ? grams : nil
     }
 
     func makeFoodEntry() -> FoodEntry {
