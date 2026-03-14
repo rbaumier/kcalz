@@ -19,6 +19,10 @@
 - **F16** — Enrichissement produits OFF incomplets (overrides utilisateur dans user.sqlite, bannière + champs éditables)
 - **F17** — Suivi du poids (zone poids sur le dashboard, tap → graphe d'évolution avec période ajustable)
 
+## Tooling
+- **Import MFP v2** — Pipeline mapping interactif (generate-candidates → mapping.html/server.ts → import.ts), 87% mapping, 12% FTS5, 1% brut
+- **Match Drive U** — Matching EAN courses U ↔ produits OFF pour enrichir le mapping MFP
+
 ## Next
 - **F15** — Aliments custom (créer un aliment non présent dans OFF)
 - **F18** — Onboarding (saisie objectifs, poids initial au premier lancement)
