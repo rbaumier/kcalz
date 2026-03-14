@@ -65,7 +65,7 @@ final class ProductDetailViewModel {
         self.sugarsText = ""
         self.saltText = ""
 
-        let defaultGrams = Self.parseQuantityGrams(product.quantity) ?? 100
+        let defaultGrams = Self.defaultGrams(product: product)
         self.gramsText = defaultGrams.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(defaultGrams))
             : String(defaultGrams)
@@ -152,27 +152,17 @@ final class ProductDetailViewModel {
         }
     }
 
-    static func parseQuantityGrams(_ quantity: String?) -> Double? {
-        guard let q = quantity?.trimmingCharacters(in: .whitespaces), !q.isEmpty else { return nil }
-
-        // Pattern: optional "N x " prefix, then a number, then a unit
-        // Examples: "250 g", "2 x 80 g", "0,320 kg", "500 ml", "1 l", "75 cl", "500gr", "1 litre"
-        let pattern = /(?:(\d+)\s*x\s*)?(\d+(?:[.,]\d+)?)\s*(gr|g|kg|ml|cl|l|litre|litres)\b/
-        guard let match = q.lowercased().firstMatch(of: pattern) else { return nil }
-
-        let numberStr = String(match.2).replacingOccurrences(of: ",", with: ".")
-        guard let value = Double(numberStr) else { return nil }
-
-        let unit = String(match.3)
-        let grams: Double = switch unit {
+    static func defaultGrams(product: OFFProduct) -> Double {
+        guard let value = product.product_quantity, value > 0 else { return 100 }
+        let unit = product.product_quantity_unit?.lowercased() ?? "g"
+        let grams = switch unit {
         case "kg": value * 1000
-        case "l", "litre", "litres": value * 1000
+        case "l": value * 1000
         case "cl": value * 10
         case "ml": value
-        default: value // "g", "gr"
+        default: value // "g"
         }
-
-        return grams > 0 ? grams : nil
+        return grams > 0 ? grams : 100
     }
 
     func makeFoodEntry() -> FoodEntry {

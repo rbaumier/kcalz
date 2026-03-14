@@ -18,6 +18,8 @@ struct Product {
     salt: Option<f64>,
     nutriscore: Option<String>,
     quantity: Option<String>,
+    product_quantity: Option<f64>,
+    product_quantity_unit: Option<String>,
     scans: Option<u64>,
 }
 
@@ -58,6 +60,8 @@ fn main() {
             salt REAL,
             nutriscore TEXT,
             quantity TEXT,
+            product_quantity REAL,
+            product_quantity_unit TEXT,
             scans INTEGER
         );",
     )
@@ -155,8 +159,8 @@ fn insert_batch(db: &Connection, batch: &[Product]) {
     let mut stmt = db
         .prepare_cached(
             "INSERT OR IGNORE INTO products
-             (code, name, brands, categories, kcal, proteins, carbs, fat, sugars, salt, nutriscore, quantity, scans)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+             (code, name, brands, categories, kcal, proteins, carbs, fat, sugars, salt, nutriscore, quantity, product_quantity, product_quantity_unit, scans)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
         )
         .unwrap();
 
@@ -174,6 +178,8 @@ fn insert_batch(db: &Connection, batch: &[Product]) {
             p.salt,
             p.nutriscore,
             p.quantity,
+            p.product_quantity,
+            p.product_quantity_unit,
             p.scans,
         ])
         .unwrap();

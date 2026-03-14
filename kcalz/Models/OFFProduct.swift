@@ -15,6 +15,8 @@ struct OFFProduct: Decodable, FetchableRecord, Identifiable, Sendable, Hashable 
     let salt: Double?
     let nutriscore: String?
     let quantity: String?
+    let product_quantity: Double?
+    let product_quantity_unit: String?
     let scans: Int?
 
     static func == (lhs: OFFProduct, rhs: OFFProduct) -> Bool {
