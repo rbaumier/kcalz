@@ -6,17 +6,22 @@ struct SearchView: View {
     let onSelect: (OFFProduct) -> Void
     let onSelectRecent: (FoodEntry) -> Void
     let onScan: () -> Void
+    let onCreateFood: (String) -> Void
+    let onSelectCustom: (UserStore.ProductOverride) -> Void
 
+    @State private var customFoods: [UserStore.ProductOverride] = []
     @State private var recentFoods: [FoodEntry] = []
     @State private var frequentFoods: [FoodEntry] = []
     @AppStorage("searchShowFrequent") private var showFrequent = false
 
-    init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void, onScan: @escaping () -> Void) {
+    init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void, onScan: @escaping () -> Void, onCreateFood: @escaping (String) -> Void, onSelectCustom: @escaping (UserStore.ProductOverride) -> Void) {
         _viewModel = State(initialValue: SearchViewModel(store: store))
         self.userStore = userStore
         self.onSelect = onSelect
         self.onSelectRecent = onSelectRecent
         self.onScan = onScan
+        self.onCreateFood = onCreateFood
+        self.onSelectCustom = onSelectCustom
     }
 
     @FocusState private var isSearchFocused: Bool
@@ -42,6 +47,7 @@ struct SearchView: View {
                     .focused($isSearchFocused)
                     .onChange(of: viewModel.query) {
                         viewModel.onQueryChanged()
+                        customFoods = userStore.searchCustomFoods(query: viewModel.query)
                     }
 
                 if !viewModel.query.isEmpty {
@@ -119,6 +125,34 @@ struct SearchView: View {
                         }
                     }
 
+                    // MARK: - Mes aliments
+                    if !customFoods.isEmpty {
+                        VStack(spacing: 8) {
+                            Text("Mes aliments")
+                                .font(.kcHeadline)
+                                .foregroundStyle(Color.kcEel)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 4)
+
+                            LazyVStack(spacing: 0) {
+                                ForEach(Array(customFoods.enumerated()), id: \.element.code) { i, custom in
+                                    if i > 0 {
+                                        Rectangle()
+                                            .fill(Color.kcPolar)
+                                            .frame(height: 2)
+                                            .padding(.leading, Theme.cardInnerPadding)
+                                    }
+                                    Button { onSelectCustom(custom) } label: {
+                                        CustomFoodRow(custom: custom)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .kcCard()
+                        }
+                    }
+
                     // MARK: - Tous les résultats
                     if viewModel.query.count >= 2 {
                         VStack(spacing: 8) {
@@ -136,18 +170,33 @@ struct SearchView: View {
                                     Spacer()
                                 }
                                 .padding(.vertical, 20)
-                            } else if viewModel.results.isEmpty {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "fork.knife")
-                                        .font(.kcIcon)
-                                        .foregroundStyle(Color.kcHare)
-                                    Text("Aucun résultat")
-                                        .font(.kcEmptyText)
-                                        .foregroundStyle(Color.kcHare)
+                            } else if viewModel.results.isEmpty && customFoods.isEmpty {
+                                VStack(spacing: 12) {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "fork.knife")
+                                            .font(.kcIcon)
+                                            .foregroundStyle(Color.kcHare)
+                                        Text("Aucun résultat")
+                                            .font(.kcEmptyText)
+                                            .foregroundStyle(Color.kcHare)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .kcCard()
+
+                                    Button { onCreateFood(viewModel.query) } label: {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "plus.circle.fill")
+                                                .font(.kcIconMedium)
+                                            Text("Créer « \(viewModel.query) »")
+                                                .font(.kcBody)
+                                        }
+                                        .foregroundStyle(Color.kcFeather)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 14)
+                                        .kcCard()
+                                    }
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .kcCard()
                             } else {
                                 LazyVStack(spacing: 0) {
                                     ForEach(Array(viewModel.results.enumerated()), id: \.element.id) { i, product in
@@ -248,6 +297,34 @@ private struct RecentFoodRow: View {
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.kcFeather)
                     Text("kcal / \(Int(entry.grams))g")
+                        .font(.kcCaption)
+                        .foregroundStyle(Color.kcWolf)
+                }
+            }
+        }
+        .padding(.horizontal, Theme.cardInnerPadding)
+        .padding(.vertical, 14)
+    }
+}
+
+private struct CustomFoodRow: View {
+    let custom: UserStore.ProductOverride
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(custom.name ?? "")
+                .font(.kcBody)
+                .foregroundStyle(Color.kcEel)
+                .lineLimit(1)
+
+            HStack(spacing: 8) {
+                Spacer()
+
+                HStack(spacing: 3) {
+                    Text("\(Int(custom.kcal))")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Color.kcFeather)
+                    Text("kcal / 100g")
                         .font(.kcCaption)
                         .foregroundStyle(Color.kcWolf)
                 }

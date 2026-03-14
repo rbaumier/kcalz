@@ -97,6 +97,15 @@ final class UserStore: Sendable {
             }
         }
 
+        migrator.registerMigration("v7") { db in
+            try db.alter(table: "product_override") { t in
+                t.add(column: "name", .text)
+            }
+            try db.alter(table: "product_override") { t in
+                t.add(column: "brands", .text)
+            }
+        }
+
         try migrator.migrate(dbQueue)
     }
 
@@ -296,6 +305,8 @@ final class UserStore: Sendable {
         let fat: Double?
         let sugars: Double?
         let salt: Double?
+        var name: String?
+        var brands: String?
     }
 
     func loadProductOverride(code: String) -> ProductOverride? {
@@ -312,7 +323,9 @@ final class UserStore: Sendable {
                 carbs: row["carbs"],
                 fat: row["fat"],
                 sugars: row["sugars"],
-                salt: row["salt"]
+                salt: row["salt"],
+                name: row["name"],
+                brands: row["brands"]
             )
         }
     }
@@ -321,8 +334,8 @@ final class UserStore: Sendable {
         try dbQueue.write { db in
             try db.execute(
                 sql: """
-                    INSERT OR REPLACE INTO product_override (code, kcal, proteins, carbs, fat, sugars, salt)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO product_override (code, kcal, proteins, carbs, fat, sugars, salt, name, brands)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                 arguments: [
                     override.code,
@@ -332,9 +345,44 @@ final class UserStore: Sendable {
                     override.fat,
                     override.sugars,
                     override.salt,
+                    override.name,
+                    override.brands,
                 ]
             )
         }
+    }
+
+    func saveCustomFood(name: String, brands: String? = nil, kcal: Double, proteins: Double?, carbs: Double?, fat: Double?) -> ProductOverride {
+        let code = "custom:\(UUID().uuidString)"
+        let override = ProductOverride(code: code, kcal: kcal, proteins: proteins, carbs: carbs, fat: fat, sugars: nil, salt: nil, name: name, brands: brands)
+        try? saveProductOverride(override)
+        return override
+    }
+
+    func searchCustomFoods(query: String) -> [ProductOverride] {
+        guard query.count >= 2 else { return [] }
+        return (try? dbQueue.read { db in
+            let sql = """
+                SELECT * FROM product_override
+                WHERE code LIKE 'custom:%' AND name LIKE ?
+                ORDER BY name
+                LIMIT 20
+                """
+            let rows = try Row.fetchAll(db, sql: sql, arguments: ["%\(query)%"])
+            return rows.map { row in
+                ProductOverride(
+                    code: row["code"],
+                    kcal: row["kcal"],
+                    proteins: row["proteins"],
+                    carbs: row["carbs"],
+                    fat: row["fat"],
+                    sugars: row["sugars"],
+                    salt: row["salt"],
+                    name: row["name"],
+                    brands: row["brands"]
+                )
+            }
+        }) ?? []
     }
 
     // MARK: - Weight

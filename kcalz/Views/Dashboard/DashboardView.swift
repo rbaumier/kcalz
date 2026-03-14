@@ -57,7 +57,37 @@ struct DashboardView: View {
                         path.append(.addRecent(entry, mealType))
                     }, onScan: {
                         path.append(.scan(mealType))
+                    }, onCreateFood: { query in
+                        path.append(.createFood(query, mealType))
+                    }, onSelectCustom: { custom in
+                        let entry = FoodEntry(
+                            name: custom.name ?? "",
+                            brands: custom.brands,
+                            grams: 100,
+                            kcalPer100g: custom.kcal,
+                            proteinsPer100g: custom.proteins ?? 0,
+                            carbsPer100g: custom.carbs ?? 0,
+                            fatPer100g: custom.fat ?? 0,
+                            sugarsPer100g: custom.sugars,
+                            saltPer100g: custom.salt
+                        )
+                        path.append(.addRecent(entry, mealType))
                     })
+                case .createFood(let query, let mealType):
+                    CreateFoodView(initialName: query, userStore: userStore) { custom in
+                        let entry = FoodEntry(
+                            name: custom.name ?? "",
+                            brands: custom.brands,
+                            grams: 100,
+                            kcalPer100g: custom.kcal,
+                            proteinsPer100g: custom.proteins ?? 0,
+                            carbsPer100g: custom.carbs ?? 0,
+                            fatPer100g: custom.fat ?? 0,
+                            sugarsPer100g: custom.sugars,
+                            saltPer100g: custom.salt
+                        )
+                        path.append(.addRecent(entry, mealType))
+                    }
                 case .scan(let mealType):
                     BarcodeScannerView(offStore: offStore) { product in
                         path.append(.detail(product, mealType))
