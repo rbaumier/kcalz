@@ -106,6 +106,16 @@ final class UserStore: Sendable {
             }
         }
 
+        migrator.registerMigration("v8") { db in
+            try db.create(table: "weight_checkpoint") { t in
+                t.primaryKey("id", .text)
+                t.column("date", .text).notNull()
+                t.column("weight_kg", .double).notNull()
+                t.column("title", .text).notNull()
+                t.column("goal", .text).notNull()
+            }
+        }
+
         try migrator.migrate(dbQueue)
     }
 
@@ -383,6 +393,63 @@ final class UserStore: Sendable {
                 )
             }
         }) ?? []
+    }
+
+    // MARK: - Weight Checkpoints
+
+    enum CheckpointGoal: String, Sendable, CaseIterable, Identifiable {
+        case loss, gain, maintain
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .loss: "Perte"
+            case .gain: "Prise"
+            case .maintain: "Maintien"
+            }
+        }
+    }
+
+    struct WeightCheckpoint: Sendable, Identifiable {
+        let id: String
+        let date: Date
+        let weightKg: Double
+        let title: String
+        let goal: CheckpointGoal
+    }
+
+    func saveCheckpoint(title: String, weightKg: Double, date: Date, goal: CheckpointGoal) throws {
+        try dbQueue.write { db in
+            try db.execute(
+                sql: "INSERT INTO weight_checkpoint (id, date, weight_kg, title, goal) VALUES (?, ?, ?, ?, ?)",
+                arguments: [UUID().uuidString, date.kcDateString, weightKg, title, goal.rawValue]
+            )
+        }
+    }
+
+    func loadCheckpoints() -> [WeightCheckpoint] {
+        (try? dbQueue.read { db in
+            let rows = try Row.fetchAll(db, sql: "SELECT * FROM weight_checkpoint ORDER BY date DESC")
+            return rows.compactMap { row -> WeightCheckpoint? in
+                guard let id = row["id"] as? String,
+                      let dateStr = row["date"] as? String,
+                      let date = Date.fromKcDateString(dateStr),
+                      let kg = row["weight_kg"] as? Double,
+                      let title = row["title"] as? String,
+                      let goalStr = row["goal"] as? String,
+                      let goal = CheckpointGoal(rawValue: goalStr) else { return nil }
+                return WeightCheckpoint(id: id, date: date, weightKg: kg, title: title, goal: goal)
+            }
+        }) ?? []
+    }
+
+    func latestCheckpoint() -> WeightCheckpoint? {
+        loadCheckpoints().first
+    }
+
+    func deleteCheckpoint(id: String) throws {
+        try dbQueue.write { db in
+            try db.execute(sql: "DELETE FROM weight_checkpoint WHERE id = ?", arguments: [id])
+        }
     }
 
     // MARK: - Weight

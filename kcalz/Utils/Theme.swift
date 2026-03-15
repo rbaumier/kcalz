@@ -124,11 +124,16 @@ struct KcPrimaryButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(enabled ? Color.kcFeather : Color.kcSwan)
+            .background(Color.kcFeather)
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusL, style: .continuous))
         }
         .buttonStyle(Kc3DButton(shadow: .kcWing, depth: 5))
         .disabled(!enabled)
+        .opacity(enabled ? 1 : 0)
+        .scaleEffect(enabled ? 1 : 0.01)
+        .offset(y: enabled ? 0 : 12)
+        .rotationEffect(.degrees(enabled ? 0 : -2))
+        .animation(.spring(duration: 0.3, bounce: 0.4), value: enabled)
     }
 }
 

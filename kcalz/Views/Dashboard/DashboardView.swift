@@ -18,6 +18,7 @@ struct DashboardView: View {
     @State private var previousMeals: [MealType: (date: Date, entries: [FoodEntry])] = [:]
     @State private var todayWeight: Double?
     @State private var weightTrend: WeightTrend = .stable
+    @State private var checkpoint: UserStore.WeightCheckpoint?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let dateFormatter: DateFormatter = {
@@ -257,26 +258,31 @@ struct DashboardView: View {
                                 }
 
                                 Button { path.append(.weight) } label: {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "scalemass.fill")
-                                            .font(.system(size: 13, weight: .semibold))
-                                            .foregroundStyle(Color.kcHare)
-
+                                    HStack(alignment: .firstTextBaseline, spacing: 3) {
                                         if let kg = todayWeight {
-                                            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                                                Text(formatWeight(kg))
-                                                    .font(.kcNumberSmall)
-                                                    .foregroundStyle(Color.kcWolf)
-                                                Text("kg")
-                                                    .font(.kcUnit)
-                                                    .foregroundStyle(Color.kcHare)
+                                            Text(formatWeight(kg))
+                                                .font(.system(size: 20, weight: .black, design: .rounded))
+                                                .foregroundStyle(Color.kcEel)
+                                            Text("kg")
+                                                .font(.kcUnit)
+                                                .foregroundStyle(Color.kcHare)
+
+                                            if let cp = checkpoint {
+                                                let diff = kg - cp.weightKg
+                                                let sign = diff >= 0 ? "+" : ""
+                                                let color: Color = switch cp.goal {
+                                                case .loss: diff <= 0 ? .kcFeather : .kcCardinal
+                                                case .gain: diff >= 0 ? .kcFeather : .kcCardinal
+                                                case .maintain: .kcHare
+                                                }
+                                                Text("\(sign)\(formatWeight(diff))")
+                                                    .font(.system(size: 14, weight: .black, design: .rounded))
+                                                    .foregroundStyle(color)
+                                                    .padding(.leading, 3)
                                             }
-                                            Image(systemName: weightTrend.systemImage)
-                                                .font(.system(size: 10, weight: .black))
-                                                .foregroundStyle(weightTrend.color)
                                         } else {
                                             Text("— kg")
-                                                .font(.kcNumberSmall)
+                                                .font(.system(size: 20, weight: .black, design: .rounded))
                                                 .foregroundStyle(Color.kcHare)
                                         }
                                     }
@@ -391,6 +397,7 @@ struct DashboardView: View {
 
     private func loadWeight() {
         todayWeight = try? userStore.loadWeight(for: currentDate)
+        checkpoint = userStore.latestCheckpoint()
         let recent = (try? userStore.latestWeights(limit: 7)) ?? []
         if recent.count >= 2, let first = recent.first, let last = recent.last {
             let diff = last.kg - first.kg

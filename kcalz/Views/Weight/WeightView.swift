@@ -10,6 +10,12 @@ struct WeightView: View {
     @State private var selectedPeriod: Period = .month
     @State private var selectedEntry: WeightEntry?
     @State private var saved = false
+    @State private var todayWeight: Double?
+    @State private var checkpoints: [UserStore.WeightCheckpoint] = []
+    @State private var showNewCheckpoint = false
+    @State private var checkpointTitle = ""
+    @FocusState private var checkpointTitleFocused: Bool
+    @State private var checkpointGoal: UserStore.CheckpointGoal = .loss
     @FocusState private var inputFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
@@ -37,6 +43,7 @@ struct WeightView: View {
                 inputSection
                 periodPicker
                 chartSection
+                checkpointSection
             }
             .padding(.horizontal, Theme.horizontalPadding)
             .padding(.bottom, 32)
@@ -45,11 +52,16 @@ struct WeightView: View {
         .navigationTitle("Poids")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            if let kg = try? userStore.loadWeight(for: currentDate) {
+            todayWeight = try? userStore.loadWeight(for: currentDate)
+            if let kg = todayWeight {
                 weightText = formatKg(kg)
             }
             loadEntries()
+            checkpoints = userStore.loadCheckpoints()
             inputFocused = true
+        }
+        .sheet(isPresented: $showNewCheckpoint) {
+            newCheckpointSheet
         }
     }
 
@@ -214,6 +226,135 @@ struct WeightView: View {
             .padding(Theme.cardInnerPadding)
             .kcCard()
         }
+    }
+
+    // MARK: - Objectifs
+
+    @ViewBuilder
+    private var checkpointSection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Objectifs")
+                    .font(.kcHeadline)
+                    .foregroundStyle(Color.kcEel)
+                Spacer()
+                Button { showNewCheckpoint = true } label: {
+                    Image(systemName: "plus")
+                        .font(.kcIconMedium)
+                        .foregroundStyle(Color.kcSnow)
+                        .frame(width: Theme.buttonSize, height: 36)
+                        .background(Color.kcFeather)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusS, style: .continuous))
+                }
+                .buttonStyle(Kc3DButton(shadow: .kcWing))
+            }
+
+            if checkpoints.isEmpty {
+                HStack(spacing: 10) {
+                    Image(systemName: "flag")
+                        .font(.kcIcon)
+                        .foregroundStyle(Color.kcHare)
+                    Text("Aucun objectif")
+                        .font(.kcEmptyText)
+                        .foregroundStyle(Color.kcHare)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .kcCard()
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(checkpoints.enumerated()), id: \.element.id) { i, cp in
+                        if i > 0 {
+                            Rectangle()
+                                .fill(Color.kcPolar)
+                                .frame(height: 2)
+                                .padding(.leading, Theme.cardInnerPadding)
+                        }
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(cp.title)
+                                    .font(.kcBody)
+                                    .foregroundStyle(Color.kcEel)
+                                HStack(spacing: 6) {
+                                    Text(formatDateLabel(cp.date))
+                                        .font(.kcCaption)
+                                        .foregroundStyle(Color.kcWolf)
+                                    Text(cp.goal.label)
+                                        .font(.kcCaption)
+                                        .foregroundStyle(Color.kcHare)
+                                }
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text("\(formatKg(cp.weightKg)) kg")
+                                    .font(.kcNumberSmall)
+                                    .foregroundStyle(Color.kcEel)
+
+                                // Diff: vs next checkpoint (i-1) or vs current weight for latest
+                                let refKg: Double? = i == 0 ? todayWeight : checkpoints[i - 1].weightKg
+                                if let ref = refKg {
+                                    let diff = ref - cp.weightKg
+                                    let sign = diff >= 0 ? "+" : ""
+                                    let color: Color = switch cp.goal {
+                                    case .loss: diff <= 0 ? .kcFeather : .kcCardinal
+                                    case .gain: diff >= 0 ? .kcFeather : .kcCardinal
+                                    case .maintain: .kcHare
+                                    }
+                                    Text("\(sign)\(formatKg(diff)) kg")
+                                        .font(.kcBadge)
+                                        .foregroundStyle(color)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, Theme.cardInnerPadding)
+                        .padding(.vertical, 12)
+                    }
+                }
+                .kcCard()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var newCheckpointSheet: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                TextField("Ex : Sèche hiver", text: $checkpointTitle)
+                    .font(.kcBody)
+                    .focused($checkpointTitleFocused)
+                    .padding(.horizontal, Theme.cardInnerPadding)
+                    .padding(.vertical, 14)
+                    .kcCard(radius: Theme.cornerRadiusM)
+
+                Picker("Type", selection: $checkpointGoal) {
+                    ForEach(UserStore.CheckpointGoal.allCases) { goal in
+                        Text(goal.label).tag(goal)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                KcPrimaryButton(label: "Créer", icon: "flag", enabled: !checkpointTitle.trimmingCharacters(in: .whitespaces).isEmpty && todayWeight != nil) {
+                    if let kg = todayWeight {
+                        try? userStore.saveCheckpoint(title: checkpointTitle.trimmingCharacters(in: .whitespaces), weightKg: kg, date: currentDate, goal: checkpointGoal)
+                        checkpoints = userStore.loadCheckpoints()
+                        checkpointTitle = ""
+                        showNewCheckpoint = false
+                    }
+                }
+
+                Spacer()
+            }
+            .padding(Theme.horizontalPadding)
+            .navigationTitle("Nouvel objectif")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annuler") { showNewCheckpoint = false }
+                }
+            }
+            .onAppear { checkpointTitleFocused = true }
+        }
+        .presentationDetents([.medium])
     }
 
     // MARK: - Helpers
