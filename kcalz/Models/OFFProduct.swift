@@ -19,12 +19,4 @@ struct OFFProduct: Decodable, FetchableRecord, Identifiable, Sendable, Hashable 
     let product_quantity: Double?
     let product_quantity_unit: String?
     let scans: Int?
-
-    static func == (lhs: OFFProduct, rhs: OFFProduct) -> Bool {
-        lhs.code == rhs.code
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(code)
-    }
 }

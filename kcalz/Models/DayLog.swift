@@ -17,5 +17,4 @@ struct DayLog: Identifiable, Sendable, Equatable {
         meals.first { $0.type == type }
     }
 
-    static func == (lhs: DayLog, rhs: DayLog) -> Bool { lhs.id == rhs.id }
 }

@@ -188,12 +188,13 @@ final class UserStore: Sendable {
     func addEntry(_ entry: FoodEntry, date: Date, mealType: MealType) throws {
         let dateStr = date.kcDateString
 
-        let nextOrder = try dbQueue.read { db -> Int in
-            let sql = "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM food_entry WHERE date = ? AND meal_type = ?"
-            return try Int.fetchOne(db, sql: sql, arguments: [dateStr, mealType.rawValue]) ?? 0
-        }
-
         try dbQueue.write { db in
+            let nextOrder: Int = try Int.fetchOne(
+                db,
+                sql: "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM food_entry WHERE date = ? AND meal_type = ?",
+                arguments: [dateStr, mealType.rawValue]
+            ) ?? 0
+
             let sql = """
                 INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -385,14 +386,18 @@ final class UserStore: Sendable {
 
     func searchCustomFoods(query: String) -> [ProductOverride] {
         guard query.count >= 2 else { return [] }
+        let escaped = query
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "%", with: "\\%")
+            .replacingOccurrences(of: "_", with: "\\_")
         return (try? dbQueue.read { db in
             let sql = """
                 SELECT * FROM product_override
-                WHERE code LIKE 'custom:%' AND name LIKE ?
+                WHERE code LIKE 'custom:%' AND name LIKE ? ESCAPE '\\'
                 ORDER BY name
                 LIMIT 20
                 """
-            let rows = try Row.fetchAll(db, sql: sql, arguments: ["%\(query)%"])
+            let rows = try Row.fetchAll(db, sql: sql, arguments: ["%\(escaped)%"])
             return rows.map { row in
                 ProductOverride(
                     code: row["code"],

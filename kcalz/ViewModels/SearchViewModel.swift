@@ -17,51 +17,45 @@ final class SearchViewModel {
 
     func onQueryChanged() {
         searchTask?.cancel()
+        isSearching = false
         error = nil
 
         guard query.count >= 2 else {
             results = []
-            isSearching = false
             return
         }
 
         isSearching = true
-        let currentQuery = query
-        let store = store
-        searchTask = Task.detached {
+        searchTask = Task {
             try? await Task.sleep(for: .milliseconds(150))
             guard !Task.isCancelled else { return }
 
-            // Barcode lookup first if query is all digits
-            if currentQuery.allSatisfy(\.isNumber), currentQuery.count >= 8 {
-                if let product = store.findByBarcode(currentQuery) {
-                    guard !Task.isCancelled else { return }
-                    await MainActor.run {
-                        self.results = [product]
-                        self.isSearching = false
-                    }
-                    return
-                }
-            }
+            let currentQuery = query
+            let store = store
 
             do {
-                let found = try store.search(query: currentQuery)
-                guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    self.results = found
-                    self.isSearching = false
-                }
+                let found = try await performSearch(query: currentQuery, store: store)
+                guard currentQuery == self.query, !Task.isCancelled else { return }
+                results = found
+                isSearching = false
             } catch is CancellationError {
                 return
             } catch {
-                guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    self.error = error
-                    self.results = []
-                    self.isSearching = false
-                }
+                guard currentQuery == self.query, !Task.isCancelled else { return }
+                self.error = error
+                results = []
+                isSearching = false
             }
         }
+    }
+
+    nonisolated private func performSearch(query: String, store: OFFStore) async throws -> [OFFProduct] {
+        if query.allSatisfy(\.isNumber), query.count >= 8 {
+            if let product = store.findByBarcode(query) {
+                return [product]
+            }
+        }
+        return try store.search(query: query)
     }
 
     func clearSearch() {

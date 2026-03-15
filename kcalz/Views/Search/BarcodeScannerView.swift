@@ -151,8 +151,6 @@ private struct CameraPreview: UIViewRepresentable {
             let impact = UIImpactFeedbackGenerator(style: .medium)
             impact.impactOccurred()
 
-            print("[BarcodeScan] code=\(code)")
-
             // Try exact match first, then padded to 13 digits (OFF stores some codes with leading zeros)
             let padded = code.count < 13
                 ? String(repeating: "0", count: 13 - code.count) + code

@@ -3,20 +3,15 @@ import UniformTypeIdentifiers
 
 struct SqliteDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.database] }
-    var data: Data
 
-    init() {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dbURL = appSupport.appendingPathComponent("user.sqlite")
-        self.data = (try? Data(contentsOf: dbURL)) ?? Data()
-    }
+    init() {}
 
-    init(configuration: ReadConfiguration) throws {
-        self.data = configuration.file.regularFileContents ?? Data()
-    }
+    init(configuration: ReadConfiguration) throws {}
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        FileWrapper(regularFileWithContents: data)
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dbURL = appSupport.appendingPathComponent("user.sqlite")
+        return try FileWrapper(url: dbURL, options: .immediate)
     }
 }
 

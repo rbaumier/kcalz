@@ -17,7 +17,6 @@ struct DashboardView: View {
     @State private var showDatePicker = false
     @State private var previousMeals: [MealType: (date: Date, entries: [FoodEntry])] = [:]
     @State private var todayWeight: Double?
-    @State private var weightTrend: WeightTrend = .stable
     @State private var checkpoint: UserStore.WeightCheckpoint?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -62,35 +61,11 @@ struct DashboardView: View {
                     }, onCreateFood: { query in
                         path.append(.createFood(query, mealType))
                     }, onSelectCustom: { custom in
-                        let entry = FoodEntry(
-                            name: custom.name ?? "",
-                            brands: custom.brands,
-                            grams: 100,
-                            kcalPer100g: custom.kcal,
-                            proteinsPer100g: custom.proteins ?? 0,
-                            carbsPer100g: custom.carbs ?? 0,
-                            fatPer100g: custom.fat ?? 0,
-                            sugarsPer100g: custom.sugars,
-                            saltPer100g: custom.salt,
-                            fiberPer100g: custom.fiber
-                        )
-                        path.append(.addRecent(entry, mealType))
+                        path.append(.addRecent(foodEntry(from: custom), mealType))
                     })
                 case .createFood(let query, let mealType):
                     CreateFoodView(initialName: query, userStore: userStore) { custom in
-                        let entry = FoodEntry(
-                            name: custom.name ?? "",
-                            brands: custom.brands,
-                            grams: 100,
-                            kcalPer100g: custom.kcal,
-                            proteinsPer100g: custom.proteins ?? 0,
-                            carbsPer100g: custom.carbs ?? 0,
-                            fatPer100g: custom.fat ?? 0,
-                            sugarsPer100g: custom.sugars,
-                            saltPer100g: custom.salt,
-                            fiberPer100g: custom.fiber
-                        )
-                        path.append(.addRecent(entry, mealType))
+                        path.append(.addRecent(foodEntry(from: custom), mealType))
                     }
                 case .scan(let mealType):
                     BarcodeScannerView(offStore: offStore) { product in
@@ -262,7 +237,7 @@ struct DashboardView: View {
                                 Button { path.append(.weight) } label: {
                                     HStack(alignment: .firstTextBaseline, spacing: 3) {
                                         if let kg = todayWeight {
-                                            Text(formatWeight(kg))
+                                            Text(kg.kcFormatted)
                                                 .font(.system(size: 20, weight: .black, design: .rounded))
                                                 .foregroundStyle(Color.kcEel)
                                             Text("kg")
@@ -277,7 +252,7 @@ struct DashboardView: View {
                                                 case .gain: diff >= 0 ? .kcFeather : .kcCardinal
                                                 case .maintain: .kcHare
                                                 }
-                                                Text("\(sign)\(formatWeight(diff))")
+                                                Text("\(sign)\(diff.kcFormatted)")
                                                     .font(.system(size: 14, weight: .black, design: .rounded))
                                                     .foregroundStyle(color)
                                                     .padding(.leading, 3)
@@ -336,6 +311,7 @@ struct DashboardView: View {
             ("Lipides", dayLog.totalFat, goal.fat, .kcBee),
             ("Sucres", dayLog.totalSugars, goal.sugars, .kcFox),
             ("Sel", dayLog.totalSalt, goal.salt, .kcHare),
+            // 15g fibres / 1000 kcal (recommandation nutritionnelle standard)
             ("Fibres", dayLog.totalFiber, goal.kcal.map { $0 / 1000 * 15 }, .kcHare),
         ]
         let active = bars.enumerated().filter { $0.element.2 != nil }
@@ -352,8 +328,6 @@ struct DashboardView: View {
     private func navigateDay(_ offset: Int) {
         guard let newDate = Calendar.current.date(byAdding: .day, value: offset, to: currentDate) else { return }
         currentDate = newDate
-        loadDay(newDate)
-        loadWeight()
     }
 
     private func loadDay(_ date: Date) {
@@ -401,19 +375,6 @@ struct DashboardView: View {
     private func loadWeight() {
         todayWeight = try? userStore.loadWeight(for: currentDate)
         checkpoint = userStore.latestCheckpoint()
-        let recent = (try? userStore.latestWeights(limit: 7)) ?? []
-        if recent.count >= 2, let first = recent.first, let last = recent.last {
-            let diff = last.kg - first.kg
-            if diff < -0.2 { weightTrend = .down }
-            else if diff > 0.2 { weightTrend = .up }
-            else { weightTrend = .stable }
-        } else {
-            weightTrend = .stable
-        }
-    }
-
-    private func formatWeight(_ kg: Double) -> String {
-        kg.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(kg))" : String(format: "%.1f", kg)
     }
 
     private func copyPreviousMeal(_ mealType: MealType) {
@@ -442,30 +403,27 @@ struct DashboardView: View {
         currentDate = date
         loadDay(currentDate)
     }
-}
 
-enum WeightTrend {
-    case up, down, stable
-
-    var systemImage: String {
-        switch self {
-        case .down: "arrow.down"
-        case .up: "arrow.up"
-        case .stable: "arrow.forward"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .down: .kcFeather
-        case .up: .kcCardinal
-        case .stable: .kcHare
-        }
+    private func foodEntry(from custom: UserStore.ProductOverride) -> FoodEntry {
+        FoodEntry(
+            name: custom.name ?? "",
+            brands: custom.brands,
+            grams: 100,
+            kcalPer100g: custom.kcal,
+            proteinsPer100g: custom.proteins ?? 0,
+            carbsPer100g: custom.carbs ?? 0,
+            fatPer100g: custom.fat ?? 0,
+            sugarsPer100g: custom.sugars,
+            saltPer100g: custom.salt,
+            fiberPer100g: custom.fiber
+        )
     }
 }
 
 #Preview {
     if let offStore = try? OFFStore(), let userStore = try? UserStore() {
         DashboardView(offStore: offStore, userStore: userStore)
+    } else {
+        Text("Preview unavailable — missing database files")
     }
 }

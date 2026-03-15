@@ -55,7 +55,7 @@ struct WeightView: View {
         .task {
             todayWeight = try? userStore.loadWeight(for: currentDate)
             if let kg = todayWeight {
-                weightText = formatKg(kg)
+                weightText = kg.kcFormatted
             }
             loadEntries()
             checkpoints = userStore.loadCheckpoints()
@@ -88,7 +88,7 @@ struct WeightView: View {
     @ViewBuilder
     private var inputSection: some View {
         VStack(spacing: 12) {
-            Text("AUJOURD'HUI")
+            Text(Calendar.current.isDateInToday(currentDate) ? "AUJOURD'HUI" : formatDateLabel(currentDate).uppercased())
                 .font(.kcLabel)
                 .foregroundStyle(Color.kcWolf)
                 .kerning(Theme.labelKerning)
@@ -176,7 +176,7 @@ struct WeightView: View {
                         Text(formatDateLabel(selected.date))
                             .font(.kcSmallLabel)
                             .foregroundStyle(Color.kcWolf)
-                        Text("\(formatKg(selected.kg)) kg")
+                        Text("\(selected.kg.kcFormatted) kg")
                             .font(.kcNumberSmall)
                             .foregroundStyle(Color.kcFeather)
                     }
@@ -227,7 +227,7 @@ struct WeightView: View {
                     }
                 }
                 .chartOverlay { proxy in
-                    GeometryReader { geo in
+                    GeometryReader { _ in
                         Rectangle()
                             .fill(Color.clear)
                             .contentShape(Rectangle())
@@ -304,7 +304,7 @@ struct WeightView: View {
                             }
                             Spacer()
                             VStack(alignment: .trailing, spacing: 4) {
-                                Text("\(formatKg(cp.weightKg)) kg")
+                                Text("\(cp.weightKg.kcFormatted) kg")
                                     .font(.kcNumberSmall)
                                     .foregroundStyle(Color.kcEel)
 
@@ -318,7 +318,7 @@ struct WeightView: View {
                                     case .gain: diff >= 0 ? .kcFeather : .kcCardinal
                                     case .maintain: .kcHare
                                     }
-                                    Text("\(sign)\(formatKg(diff)) kg")
+                                    Text("\(sign)\(diff.kcFormatted) kg")
                                         .font(.kcBadge)
                                         .foregroundStyle(color)
                                 }
@@ -388,7 +388,7 @@ struct WeightView: View {
 
     private func loadEntries() {
         let cal = Calendar.current
-        let end = cal.startOfDay(for: .now.addingTimeInterval(86400))
+        let end = cal.startOfDay(for: cal.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate)
         if let days = selectedPeriod.days {
             let start = cal.date(byAdding: .day, value: -days, to: end) ?? end
             entries = (try? userStore.loadWeights(from: start, to: end)) ?? []
@@ -397,24 +397,37 @@ struct WeightView: View {
         }
     }
 
-    private func formatKg(_ kg: Double) -> String {
-        kg.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(kg))" : String(format: "%.1f", kg)
-    }
+    private static let dateLabelFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "fr_FR")
+        f.dateFormat = "d MMM"
+        return f
+    }()
+
+    private static let axisDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "fr_FR")
+        f.dateFormat = "d/M"
+        return f
+    }()
+
+    private static let axisWeekFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "fr_FR")
+        f.dateFormat = "EEE"
+        return f
+    }()
 
     private func formatDateLabel(_ date: Date) -> String {
         let cal = Calendar.current
         if cal.isDateInToday(date) { return "Aujourd'hui" }
         if cal.isDateInYesterday(date) { return "Hier" }
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "fr_FR")
-        f.dateFormat = "d MMM"
-        return f.string(from: date)
+        return Self.dateLabelFormatter.string(from: date)
     }
 
     private func formatAxisDate(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "fr_FR")
-        f.dateFormat = selectedPeriod == .week ? "EEE" : "d/M"
-        return f.string(from: date)
+        selectedPeriod == .week
+            ? Self.axisWeekFormatter.string(from: date)
+            : Self.axisDateFormatter.string(from: date)
     }
 }

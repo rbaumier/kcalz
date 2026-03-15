@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Preference key for entry row frames
 
 private struct EntryFrameKey: PreferenceKey {
+    // Safe: value-type default, never mutated concurrently
     nonisolated(unsafe) static var defaultValue: [UUID: CGRect] = [:]
     static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
         value.merge(nextValue()) { $1 }

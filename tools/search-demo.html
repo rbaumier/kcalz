@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kcalz — recherche OFF</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f7f7f7; padding: 24px; }
+h1 { font-size: 1.4rem; font-weight: 700; color: #333; margin-bottom: 16px; }
+input {
+  width: 100%; max-width: 500px; padding: 12px 16px; font-size: 1rem;
+  border: 2px solid #ddd; border-radius: 12px; outline: none;
+  transition: border-color .2s;
+}
+input:focus { border-color: #58CC02; }
+#status { color: #999; font-size: .85rem; margin-top: 8px; }
+#results { margin-top: 16px; max-width: 500px; }
+.item {
+  background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+}
+.item-name { font-weight: 600; color: #333; }
+.item-brand { font-size: .85rem; color: #888; }
+.item-macros { display: flex; gap: 12px; margin-top: 6px; font-size: .8rem; }
+.macro { padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+.macro-kcal { background: #FFF3E0; color: #FF9600; }
+.macro-p { background: #FFEBEE; color: #FF4B4B; }
+.macro-c { background: #E3F2FD; color: #1CB0F6; }
+.macro-f { background: #FFFDE7; color: #F9A825; }
+.item-meta { font-size: .75rem; color: #bbb; margin-top: 4px; }
+</style>
+</head>
+<body>
+<h1>🔍 Recherche OpenFoodFacts</h1>
+<input id="search" type="text" placeholder="Chercher un aliment..." autofocus>
+<div id="status">Chargement de la base (195 Mo)...</div>
+<div id="results"></div>
+
+<script>
+let db = null;
+let debounceTimer = null;
+
+async function init() {
+  const SQL = await initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/${f}` });
+  const statusEl = document.getElementById('status');
+
+  statusEl.textContent = 'Téléchargement de la base...';
+  const resp = await fetch('/data/off_fr.sqlite');
+  const buf = await resp.arrayBuffer();
+
+  statusEl.textContent = 'Ouverture...';
+  db = new SQL.Database(new Uint8Array(buf));
+  statusEl.textContent = '785k produits chargés. Tapez pour chercher.';
+}
+
+function search(query) {
+  if (!db || !query.trim()) {
+    document.getElementById('results').innerHTML = '';
+    return;
+  }
+
+  const ftsQuery = query.trim().split(/\s+/).map(w => `"${w}"*`).join(' ');
+  const t0 = performance.now();
+
+  const results = db.exec(`
+    SELECT p.code, p.name, p.brands, p.kcal, p.proteins, p.carbs, p.fat, p.nutriscore, p.scans
+    FROM products_fts f
+    JOIN products p ON p.rowid = f.rowid
+    WHERE products_fts MATCH ?
+    ORDER BY p.scans DESC
+    LIMIT 20
+  `, [ftsQuery]);
+
+  const ms = (performance.now() - t0).toFixed(1);
+
+  const el = document.getElementById('results');
+  if (!results.length || !results[0].values.length) {
+    el.innerHTML = `<div style="color:#999;font-size:.9rem">Aucun résultat (${ms}ms)</div>`;
+    return;
+  }
+
+  const rows = results[0].values;
+  document.getElementById('status').textContent = `${rows.length} résultats en ${ms}ms`;
+
+  el.innerHTML = rows.map(([code, name, brands, kcal, proteins, carbs, fat, nutriscore, scans]) => `
+    <div class="item">
+      <div class="item-name">${esc(name)}</div>
+      ${brands ? `<div class="item-brand">${esc(brands)}</div>` : ''}
+      <div class="item-macros">
+        ${kcal != null ? `<span class="macro macro-kcal">${Math.round(kcal)} kcal</span>` : ''}
+        ${proteins != null ? `<span class="macro macro-p">P ${Math.round(proteins)}g</span>` : ''}
+        ${carbs != null ? `<span class="macro macro-c">G ${Math.round(carbs)}g</span>` : ''}
+        ${fat != null ? `<span class="macro macro-f">L ${Math.round(fat)}g</span>` : ''}
+      </div>
+      <div class="item-meta">${code}${nutriscore ? ` · Nutriscore ${nutriscore.toUpperCase()}` : ''}${scans ? ` · ${scans} scans` : ''}</div>
+    </div>
+  `).join('');
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => search(e.target.value), 150);
+});
+
+init().catch(e => {
+  document.getElementById('status').textContent = 'Erreur: ' + e.message + '. Lancez: python3 -m http.server 8080 --directory data/';
+});
+</script>
+</body>
+</html>

@@ -50,6 +50,4 @@ struct FoodEntry: Identifiable, Sendable, Hashable {
         self.sortOrder = sortOrder
     }
 
-    static func == (lhs: FoodEntry, rhs: FoodEntry) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }

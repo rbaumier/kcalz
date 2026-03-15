@@ -13,6 +13,4 @@ struct Meal: Identifiable, Sendable, Hashable {
     var totalSalt: Double { entries.reduce(0) { $0 + $1.salt } }
     var totalFiber: Double { entries.reduce(0) { $0 + $1.fiber } }
 
-    static func == (lhs: Meal, rhs: Meal) -> Bool { lhs.type == rhs.type }
-    func hash(into hasher: inout Hasher) { hasher.combine(type) }
 }

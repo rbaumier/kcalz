@@ -35,7 +35,12 @@ final class OFFStore: Sendable {
 
         let tokens = trimmed.components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
-            .map { "\"\($0.replacingOccurrences(of: "\"", with: ""))\"*" }
+            .compactMap { token -> String? in
+                let cleaned = token.filter { $0.isLetter || $0.isNumber }
+                guard !cleaned.isEmpty else { return nil }
+                return "\"\(cleaned)\"*"
+            }
+        guard !tokens.isEmpty else { return [] }
         let ftsQuery = tokens.joined(separator: " ")
 
         return try dbQueue.read { db in

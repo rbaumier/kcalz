@@ -16,12 +16,12 @@ struct KcalzApp: App {
                             let userStore = try UserStore()
                             appState = .ready(offStore, userStore)
                         } catch {
-                            appState = .failed(error)
+                            appState = .failed(error.localizedDescription)
                         }
                     }
             case .ready(let offStore, let userStore):
                 DashboardView(offStore: offStore, userStore: userStore)
-            case .failed(let error):
+            case .failed(let message):
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 40))
@@ -29,7 +29,7 @@ struct KcalzApp: App {
                     Text("Impossible de charger la base")
                         .font(.kcHeadline)
                         .foregroundStyle(Color.kcEel)
-                    Text(error.localizedDescription)
+                    Text(message)
                         .font(.kcCaption)
                         .foregroundStyle(Color.kcWolf)
                         .multilineTextAlignment(.center)
@@ -46,5 +46,5 @@ struct KcalzApp: App {
 private enum AppState {
     case loading
     case ready(OFFStore, UserStore)
-    case failed(Error)
+    case failed(String)
 }

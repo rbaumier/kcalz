@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 enum PreviewData {
@@ -29,3 +30,4 @@ enum PreviewData {
         ]
     )
 }
+#endif

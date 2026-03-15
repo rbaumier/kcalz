@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 // MARK: - Couleurs — Palette Duolingo
@@ -154,17 +153,32 @@ struct KcNumericField: View {
             .keyboardType(decimals ? .decimalPad : .numberPad)
             .multilineTextAlignment(.center)
             .frame(width: width)
-            .onReceive(Just(text)) { new in
+            .onChange(of: text) { _, new in
                 let filtered: String
                 if decimals {
-                    filtered = new
-                        .filter { "0123456789.,".contains($0) }
+                    var result = new.filter { "0123456789.,".contains($0) }
                         .replacingOccurrences(of: ",", with: ".")
+                    // Keep only the first dot
+                    if let firstDot = result.firstIndex(of: ".") {
+                        let afterDot = result.index(after: firstDot)
+                        if afterDot < result.endIndex {
+                            result = String(result[..<afterDot]) + result[afterDot...].filter { $0 != "." }
+                        }
+                    }
+                    filtered = result
                 } else {
                     filtered = new.filter(\.isNumber)
                 }
                 if filtered != new { text = filtered }
             }
+    }
+}
+
+// MARK: - Formatting
+
+extension Double {
+    var kcFormatted: String {
+        truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(self))" : String(format: "%.1f", self)
     }
 }
 
