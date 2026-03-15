@@ -16,20 +16,21 @@
 - **F12** — Scan code-barres (recherche OFF par code EAN lors de l'ajout d'un aliment)
 - **F13** — Poids par défaut pré-rempli (product_quantity OFF, recherche par code EAN dans le champ texte)
 - **F14** — Aliments récents / fréquents (historique filtrable, toggle récents/fréquents, brands persistées)
+- **F15** — Aliments custom (créer un aliment non présent dans OFF, stocké dans product_override, recherchable dans "Mes aliments")
 - **F16** — Enrichissement produits OFF incomplets (overrides utilisateur dans user.sqlite, bannière + champs éditables)
 - **F17** — Suivi du poids (zone poids sur le dashboard, tap → graphe d'évolution avec période ajustable)
+- **F20** — Retirer le swipe-to-delete sur un aliment
+- **F21** — Calendrier pour changer de jour (tap sur la date → DatePicker graphical en sheet)
+- **F22** — Lisser la courbe de poids (Catmull-Rom sur grandes périodes, masquer les points >31 entrées)
+
+## À tester
+- **F25** — Objectifs poids (créer/supprimer des objectifs avec titre + type perte/prise/maintien, diff affiché sur dashboard + page poids)
 
 ## Tooling
 - **Import MFP v2** — Pipeline mapping interactif (generate-candidates → mapping.html/server.ts → import.ts), 87% mapping, 12% FTS5, 1% brut
 - **Match Drive U** — Matching EAN courses U ↔ produits OFF pour enrichir le mapping MFP
 
-- **F15** — Aliments custom (créer un aliment non présent dans OFF, stocké dans product_override, recherchable dans "Mes aliments")
-
 ## Next
-- **F20** — Retirer le swipe-to-delete sur un aliment (garder uniquement la suppression via tap → détail → supprimer)
-- **F21** — Calendrier pour changer de jour (tap sur la date du dashboard → DatePicker)
-- **F22** — Lisser la courbe de poids sur les grandes périodes (interpolation/moyenne mobile)
-- **F23** — Export manuel de la BDD (bouton "Exporter" → UIDocumentPicker, sauvegarde user.sqlite où l'utilisateur veut, rappel si dernier export >7 jours)
-- **F26** — Déploiement via AltStore/Sideloadly (re-signing automatique pour éviter l'expiration 7 jours du profil gratuit)
+- **F23** — Export manuel de la BDD (bouton "Exporter" → UIDocumentPicker, rappel si dernier export >7 jours)
 - **F24** — Fibres (ajouter le suivi des fibres, objectif 15g pour 1000 kcal)
-- **F25** — Checkpoint poids (afficher le diff poids sur le dashboard + pages détail)
+- **F26** — Déploiement via AltStore/Sideloadly (re-signing automatique pour éviter l'expiration 7 jours)

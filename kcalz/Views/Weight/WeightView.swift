@@ -16,6 +16,7 @@ struct WeightView: View {
     @State private var checkpointTitle = ""
     @FocusState private var checkpointTitleFocused: Bool
     @State private var checkpointGoal: UserStore.CheckpointGoal = .loss
+    @State private var checkpointToDelete: UserStore.WeightCheckpoint?
     @FocusState private var inputFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
@@ -62,6 +63,23 @@ struct WeightView: View {
         }
         .sheet(isPresented: $showNewCheckpoint) {
             newCheckpointSheet
+        }
+        .alert("Supprimer cet objectif ?", isPresented: Binding(
+            get: { checkpointToDelete != nil },
+            set: { if !$0 { checkpointToDelete = nil } }
+        )) {
+            Button("Annuler", role: .cancel) { checkpointToDelete = nil }
+            Button("Supprimer", role: .destructive) {
+                if let cp = checkpointToDelete {
+                    try? userStore.deleteCheckpoint(id: cp.id)
+                    checkpoints = userStore.loadCheckpoints()
+                    checkpointToDelete = nil
+                }
+            }
+        } message: {
+            if let cp = checkpointToDelete {
+                Text(cp.title)
+            }
         }
     }
 
@@ -308,6 +326,8 @@ struct WeightView: View {
                         }
                         .padding(.horizontal, Theme.cardInnerPadding)
                         .padding(.vertical, 12)
+                        .contentShape(Rectangle())
+                        .onTapGesture { checkpointToDelete = cp }
                     }
                 }
                 .kcCard()
