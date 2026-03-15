@@ -1,5 +1,8 @@
 import Foundation
 import GRDB
+import os
+
+private let logger = Logger(subsystem: "com.kcalz", category: "UserStore")
 
 enum UserStoreError: LocalizedError {
     case directoryCreationFailed
@@ -218,6 +221,27 @@ final class UserStore: Sendable {
         }
     }
 
+    func addEntries(_ entries: [FoodEntry], date: Date, mealType: MealType) throws {
+        let dateStr = date.kcDateString
+        try dbQueue.write { db in
+            var nextOrder: Int = try Int.fetchOne(db, sql: "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM food_entry WHERE date = ? AND meal_type = ?", arguments: [dateStr, mealType.rawValue]) ?? 0
+            for entry in entries {
+                let sql = """
+                    INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """
+                try db.execute(sql: sql, arguments: [
+                    entry.id.uuidString, dateStr, mealType.rawValue,
+                    entry.name, entry.brands, entry.grams,
+                    entry.kcalPer100g, entry.proteinsPer100g, entry.carbsPer100g,
+                    entry.fatPer100g, entry.sugarsPer100g, entry.saltPer100g,
+                    entry.fiberPer100g, nextOrder,
+                ])
+                nextOrder += 1
+            }
+        }
+    }
+
     func updateEntryGrams(id: UUID, grams: Double) throws {
         try dbQueue.write { db in
             try db.execute(
@@ -380,7 +404,8 @@ final class UserStore: Sendable {
     func saveCustomFood(name: String, brands: String? = nil, kcal: Double, proteins: Double?, carbs: Double?, fat: Double?, fiber: Double? = nil) -> ProductOverride {
         let code = "custom:\(UUID().uuidString)"
         let override = ProductOverride(code: code, kcal: kcal, proteins: proteins, carbs: carbs, fat: fat, sugars: nil, salt: nil, fiber: fiber, name: name, brands: brands)
-        try? saveProductOverride(override)
+        do { try saveProductOverride(override) }
+        catch { logger.error("saveCustomFood failed: \(error)") }
         return override
     }
 

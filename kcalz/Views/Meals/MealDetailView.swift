@@ -22,9 +22,15 @@ struct MealDetailView: View {
                     MacroRow(label: "Protéines", value: meal.totalProteins, color: .kcCardinal)
                     MacroRow(label: "Glucides", value: meal.totalCarbs, color: .kcMacaw)
                     MacroRow(label: "Lipides", value: meal.totalFat, color: .kcBee)
-                    MacroRow(label: "Sucres", value: meal.totalSugars, color: .kcFox)
-                    MacroRow(label: "Sel", value: meal.totalSalt, color: .kcHare)
-                    MacroRow(label: "Fibres", value: meal.totalFiber, color: .kcHare)
+                    if meal.totalSugars > 0 {
+                        MacroRow(label: "Sucres", value: meal.totalSugars, color: .kcFox)
+                    }
+                    if meal.totalSalt > 0 {
+                        MacroRow(label: "Sel", value: meal.totalSalt, color: .kcHare)
+                    }
+                    if meal.totalFiber > 0 {
+                        MacroRow(label: "Fibres", value: meal.totalFiber, color: .kcHare)
+                    }
                 }
                 .padding(Theme.cardInnerPadding)
                 .kcCard()

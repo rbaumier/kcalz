@@ -8,6 +8,15 @@ struct NutritionGoal: Sendable, Equatable {
     var sugars: Double?
     var salt: Double?
 
+    init(kcal: Double? = nil, proteins: Double? = nil, carbs: Double? = nil, fat: Double? = nil, sugars: Double? = nil, salt: Double? = nil) {
+        self.kcal = kcal
+        self.proteins = proteins
+        self.carbs = carbs
+        self.fat = fat
+        self.sugars = sugars
+        self.salt = salt
+    }
+
     var isEmpty: Bool {
         kcal == nil && proteins == nil && carbs == nil && fat == nil && sugars == nil && salt == nil
     }

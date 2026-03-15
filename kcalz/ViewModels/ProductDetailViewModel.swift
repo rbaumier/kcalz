@@ -77,7 +77,7 @@ final class ProductDetailViewModel {
             : String(defaultGrams)
     }
 
-    init(recentEntry entry: FoodEntry) {
+    init(entry: FoodEntry, editing: Bool = false) {
         self.name = entry.name
         self.brands = entry.brands
         self.productCode = nil
@@ -89,32 +89,7 @@ final class ProductDetailViewModel {
         self.sugarsPer100g = entry.sugarsPer100g
         self.saltPer100g = entry.saltPer100g
         self.fiberPer100g = entry.fiberPer100g
-        self.existingEntryId = nil
-        self.kcalText = ""
-        self.proteinsText = ""
-        self.carbsText = ""
-        self.fatText = ""
-        self.sugarsText = ""
-        self.saltText = ""
-        self.fiberText = ""
-        self.gramsText = entry.grams.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(entry.grams))
-            : String(entry.grams)
-    }
-
-    init(entry: FoodEntry) {
-        self.name = entry.name
-        self.brands = entry.brands
-        self.productCode = nil
-        self.isIncomplete = false
-        self.kcalPer100g = entry.kcalPer100g
-        self.proteinsPer100g = entry.proteinsPer100g
-        self.carbsPer100g = entry.carbsPer100g
-        self.fatPer100g = entry.fatPer100g
-        self.sugarsPer100g = entry.sugarsPer100g
-        self.saltPer100g = entry.saltPer100g
-        self.fiberPer100g = entry.fiberPer100g
-        self.existingEntryId = entry.id
+        self.existingEntryId = editing ? entry.id : nil
         self.kcalText = ""
         self.proteinsText = ""
         self.carbsText = ""

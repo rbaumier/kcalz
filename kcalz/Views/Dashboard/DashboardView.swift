@@ -1,4 +1,7 @@
+import os
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.kcalz", category: "DashboardView")
 
 struct DashboardView: View {
     let offStore: OFFStore
@@ -93,7 +96,8 @@ struct DashboardView: View {
                     MealDetailView(meal: meal)
                 case .goals:
                     GoalsView(current: goal, onSave: { newGoal in
-                        try? userStore.saveGoals(newGoal)
+                        do { try userStore.saveGoals(newGoal) }
+                        catch { logger.error("saveGoals failed: \(error)") }
                         goal = newGoal
                     }, userStore: userStore)
                 case .weight:
@@ -347,17 +351,20 @@ struct DashboardView: View {
     }
 
     private func addEntry(_ entry: FoodEntry, to mealType: MealType) {
-        try? userStore.addEntry(entry, date: currentDate, mealType: mealType)
+        do { try userStore.addEntry(entry, date: currentDate, mealType: mealType) }
+        catch { logger.error("addEntry failed: \(error)") }
         loadDay(currentDate)
     }
 
     private func updateEntry(_ entry: FoodEntry, in mealType: MealType) {
-        try? userStore.updateEntryGrams(id: entry.id, grams: entry.grams)
+        do { try userStore.updateEntryGrams(id: entry.id, grams: entry.grams) }
+        catch { logger.error("updateEntry failed: \(error)") }
         loadDay(currentDate)
     }
 
     private func removeEntry(_ entry: FoodEntry, from mealType: MealType) {
-        try? userStore.deleteEntry(id: entry.id)
+        do { try userStore.deleteEntry(id: entry.id) }
+        catch { logger.error("removeEntry failed: \(error)") }
         loadDay(currentDate)
     }
 
@@ -367,7 +374,8 @@ struct DashboardView: View {
     }
 
     private func deleteSelectedEntries() {
-        try? userStore.deleteEntries(ids: selectedEntryIds)
+        do { try userStore.deleteEntries(ids: selectedEntryIds) }
+        catch { logger.error("deleteSelectedEntries failed: \(error)") }
         exitSelectionMode()
         loadDay(currentDate)
     }
@@ -379,26 +387,21 @@ struct DashboardView: View {
 
     private func copyPreviousMeal(_ mealType: MealType) {
         guard let prev = previousMeals[mealType] else { return }
-        for entry in prev.entries {
-            let copy = FoodEntry(
-                name: entry.name,
-                brands: entry.brands,
-                grams: entry.grams,
-                kcalPer100g: entry.kcalPer100g,
-                proteinsPer100g: entry.proteinsPer100g,
-                carbsPer100g: entry.carbsPer100g,
-                fatPer100g: entry.fatPer100g,
-                sugarsPer100g: entry.sugarsPer100g,
-                saltPer100g: entry.saltPer100g,
-                fiberPer100g: entry.fiberPer100g
-            )
-            try? userStore.addEntry(copy, date: currentDate, mealType: mealType)
+        let copies = prev.entries.map { entry in
+            FoodEntry(name: entry.name, brands: entry.brands, grams: entry.grams,
+                      kcalPer100g: entry.kcalPer100g, proteinsPer100g: entry.proteinsPer100g,
+                      carbsPer100g: entry.carbsPer100g, fatPer100g: entry.fatPer100g,
+                      sugarsPer100g: entry.sugarsPer100g, saltPer100g: entry.saltPer100g,
+                      fiberPer100g: entry.fiberPer100g)
         }
+        do { try userStore.addEntries(copies, date: currentDate, mealType: mealType) }
+        catch { logger.error("copyPreviousMeal failed: \(error)") }
         loadDay(currentDate)
     }
 
     private func copySelectedEntries(to date: Date, mealType: MealType) {
-        try? userStore.copyEntries(ids: selectedEntryIds, toDate: date, mealType: mealType)
+        do { try userStore.copyEntries(ids: selectedEntryIds, toDate: date, mealType: mealType) }
+        catch { logger.error("copySelectedEntries failed: \(error)") }
         exitSelectionMode()
         currentDate = date
         loadDay(currentDate)

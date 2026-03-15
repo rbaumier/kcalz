@@ -1,4 +1,7 @@
+import os
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.kcalz", category: "ProductDetailView")
 
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
@@ -15,14 +18,14 @@ struct ProductDetailView: View {
     }
 
     init(recentEntry: FoodEntry, onSave: @escaping (FoodEntry) -> Void) {
-        _viewModel = State(initialValue: ProductDetailViewModel(recentEntry: recentEntry))
+        _viewModel = State(initialValue: ProductDetailViewModel(entry: recentEntry))
         self.onSave = onSave
         self.onDelete = nil
         self.userStore = nil
     }
 
     init(entry: FoodEntry, onSave: @escaping (FoodEntry) -> Void, onDelete: @escaping () -> Void) {
-        _viewModel = State(initialValue: ProductDetailViewModel(entry: entry))
+        _viewModel = State(initialValue: ProductDetailViewModel(entry: entry, editing: true))
         self.onSave = onSave
         self.onDelete = onDelete
         self.userStore = nil
@@ -101,9 +104,15 @@ struct ProductDetailView: View {
                         NutrientDetailRow(label: "Protéines", value: String(format: "%.1f", viewModel.proteins), unit: "g", color: .kcCardinal)
                         NutrientDetailRow(label: "Glucides", value: String(format: "%.1f", viewModel.carbs), unit: "g", color: .kcMacaw)
                         NutrientDetailRow(label: "Lipides", value: String(format: "%.1f", viewModel.fat), unit: "g", color: .kcBee)
-                        NutrientDetailRow(label: "Sucres", value: String(format: "%.1f", viewModel.sugars), unit: "g", color: .kcFox)
-                        NutrientDetailRow(label: "Sel", value: String(format: "%.2f", viewModel.salt), unit: "g", color: .kcHare)
-                        NutrientDetailRow(label: "Fibres", value: String(format: "%.1f", viewModel.fiber), unit: "g", color: .kcHare)
+                        if viewModel.sugarsPer100g != nil {
+                            NutrientDetailRow(label: "Sucres", value: String(format: "%.1f", viewModel.sugars), unit: "g", color: .kcFox)
+                        }
+                        if viewModel.saltPer100g != nil {
+                            NutrientDetailRow(label: "Sel", value: String(format: "%.2f", viewModel.salt), unit: "g", color: .kcHare)
+                        }
+                        if viewModel.fiberPer100g != nil {
+                            NutrientDetailRow(label: "Fibres", value: String(format: "%.1f", viewModel.fiber), unit: "g", color: .kcHare)
+                        }
                     }
                     .kcCard()
                     .padding(.horizontal, Theme.horizontalPadding)
@@ -116,16 +125,18 @@ struct ProductDetailView: View {
                 ) {
                     if viewModel.isIncomplete, let code = viewModel.productCode, let userStore {
                         viewModel.applyOverrideTexts()
-                        try? userStore.saveProductOverride(UserStore.ProductOverride(
-                            code: code,
-                            kcal: viewModel.kcalPer100g,
-                            proteins: viewModel.proteinsPer100g,
-                            carbs: viewModel.carbsPer100g,
-                            fat: viewModel.fatPer100g,
-                            sugars: viewModel.sugarsPer100g,
-                            salt: viewModel.saltPer100g,
-                            fiber: viewModel.fiberPer100g
-                        ))
+                        do {
+                            try userStore.saveProductOverride(UserStore.ProductOverride(
+                                code: code,
+                                kcal: viewModel.kcalPer100g,
+                                proteins: viewModel.proteinsPer100g,
+                                carbs: viewModel.carbsPer100g,
+                                fat: viewModel.fatPer100g,
+                                sugars: viewModel.sugarsPer100g,
+                                salt: viewModel.saltPer100g,
+                                fiber: viewModel.fiberPer100g
+                            ))
+                        } catch { logger.error("saveProductOverride failed: \(error)") }
                     }
                     onSave(viewModel.makeFoodEntry())
                 }

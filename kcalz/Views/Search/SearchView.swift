@@ -115,7 +115,7 @@ struct SearchView: View {
                                             .padding(.leading, Theme.cardInnerPadding)
                                     }
                                     Button { onSelectRecent(entry) } label: {
-                                        RecentFoodRow(entry: entry)
+                                        FoodRow(name: entry.name, brands: entry.brands, detail: "\(Int(entry.kcalPer100g * entry.grams / 100))", detailSuffix: "kcal / \(Int(entry.grams))g")
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
@@ -143,7 +143,7 @@ struct SearchView: View {
                                             .padding(.leading, Theme.cardInnerPadding)
                                     }
                                     Button { onSelectCustom(custom) } label: {
-                                        CustomFoodRow(custom: custom)
+                                        FoodRow(name: custom.name ?? "", brands: nil, detail: "\(Int(custom.kcal))", detailSuffix: "kcal / 100g")
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
@@ -207,7 +207,7 @@ struct SearchView: View {
                                                 .padding(.leading, Theme.cardInnerPadding)
                                         }
                                         Button { onSelect(product) } label: {
-                                            SearchResultRow(product: product)
+                                            FoodRow(name: product.name, brands: product.brands, detail: product.kcal.map { "\(Int($0))" } ?? "—", detailSuffix: "kcal / 100g")
                                                 .contentShape(Rectangle())
                                         }
                                         .buttonStyle(.plain)
@@ -235,55 +235,21 @@ struct SearchView: View {
 
 // MARK: - Rows
 
-private struct SearchResultRow: View {
-    let product: OFFProduct
+private struct FoodRow: View {
+    let name: String
+    let brands: String?
+    let detail: String
+    let detailSuffix: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(product.name)
+            Text(name)
                 .font(.kcBody)
                 .foregroundStyle(Color.kcEel)
                 .lineLimit(1)
 
             HStack(spacing: 8) {
-                if let brands = product.brands, !brands.isEmpty {
-                    Text(brands)
-                        .font(.kcCaption)
-                        .foregroundStyle(Color.kcWolf)
-                        .lineLimit(1)
-                }
-
-                Spacer()
-
-                if let kcal = product.kcal {
-                    HStack(spacing: 3) {
-                        Text("\(Int(kcal))")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color.kcFeather)
-                        Text("kcal / 100g")
-                            .font(.kcCaption)
-                            .foregroundStyle(Color.kcWolf)
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, Theme.cardInnerPadding)
-        .padding(.vertical, 14)
-    }
-}
-
-private struct RecentFoodRow: View {
-    let entry: FoodEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(entry.name)
-                .font(.kcBody)
-                .foregroundStyle(Color.kcEel)
-                .lineLimit(1)
-
-            HStack(spacing: 8) {
-                if let brands = entry.brands, !brands.isEmpty {
+                if let brands, !brands.isEmpty {
                     Text(brands)
                         .font(.kcCaption)
                         .foregroundStyle(Color.kcWolf)
@@ -293,38 +259,10 @@ private struct RecentFoodRow: View {
                 Spacer()
 
                 HStack(spacing: 3) {
-                    Text("\(Int(entry.kcalPer100g * entry.grams / 100))")
+                    Text(detail)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.kcFeather)
-                    Text("kcal / \(Int(entry.grams))g")
-                        .font(.kcCaption)
-                        .foregroundStyle(Color.kcWolf)
-                }
-            }
-        }
-        .padding(.horizontal, Theme.cardInnerPadding)
-        .padding(.vertical, 14)
-    }
-}
-
-private struct CustomFoodRow: View {
-    let custom: UserStore.ProductOverride
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(custom.name ?? "")
-                .font(.kcBody)
-                .foregroundStyle(Color.kcEel)
-                .lineLimit(1)
-
-            HStack(spacing: 8) {
-                Spacer()
-
-                HStack(spacing: 3) {
-                    Text("\(Int(custom.kcal))")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color.kcFeather)
-                    Text("kcal / 100g")
+                    Text(detailSuffix)
                         .font(.kcCaption)
                         .foregroundStyle(Color.kcWolf)
                 }
