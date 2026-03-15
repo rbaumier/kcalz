@@ -32,5 +32,10 @@
 - **Import MFP v2** — Pipeline mapping interactif (generate-candidates → mapping.html/server.ts → import.ts), 87% mapping, 12% FTS5, 1% brut
 - **Match Drive U** — Matching EAN courses U ↔ produits OFF pour enrichir le mapping MFP
 
+## Bugs connus
+- Sélection multiple via context menu au lieu de long press direct (SwiftUI gesture conflict avec ScrollView)
+- Toggle récents/fréquents dans SearchView ne fonctionne pas
+
 ## Next
 - **F26** — Déploiement via AltStore/Sideloadly (re-signing automatique pour éviter l'expiration 7 jours)
+- **F27** — Long press natif pour sélection sans bloquer le scroll (UIKit gesture recognizer ou refactor)
