@@ -24,3 +24,11 @@
 - **Match Drive U** — Matching EAN courses U ↔ produits OFF pour enrichir le mapping MFP
 
 - **F15** — Aliments custom (créer un aliment non présent dans OFF, stocké dans product_override, recherchable dans "Mes aliments")
+
+## Next
+- **F20** — Retirer le swipe-to-delete sur un aliment (garder uniquement la suppression via tap → détail → supprimer)
+- **F21** — Calendrier pour changer de jour (tap sur la date du dashboard → DatePicker)
+- **F22** — Lisser la courbe de poids sur les grandes périodes (interpolation/moyenne mobile)
+- **F23** — Backup iCloud (copier user.sqlite dans le container iCloud Drive une fois par jour)
+- **F24** — Fibres (ajouter le suivi des fibres, objectif 15g pour 1000 kcal)
+- **F25** — Checkpoint poids (afficher le diff poids sur le dashboard + pages détail)
