@@ -43,6 +43,7 @@ struct Nutriments {
     fat_100g: Option<f64>,
     sugars_100g: Option<f64>,
     salt_100g: Option<f64>,
+    fiber_100g: Option<f64>,
 }
 
 #[derive(Deserialize, Default)]
@@ -66,6 +67,7 @@ struct AggregatedNutrients {
     fat: Option<NutrientEntry>,
     sugars: Option<NutrientEntry>,
     salt: Option<NutrientEntry>,
+    fiber: Option<NutrientEntry>,
 }
 
 #[derive(Deserialize)]
@@ -111,6 +113,8 @@ fn process_line(line: &[u8]) -> Option<Vec<u8>> {
         .or_else(|| agg_val(ag?.sugars.as_ref()));
     let salt = product.nutriments.salt_100g
         .or_else(|| agg_val(ag?.salt.as_ref()));
+    let fiber = product.nutriments.fiber_100g
+        .or_else(|| agg_val(ag?.fiber.as_ref()));
 
     let code = product.code.filter(|s| !s.is_empty())?;
     let name = product
@@ -119,7 +123,7 @@ fn process_line(line: &[u8]) -> Option<Vec<u8>> {
         .or_else(|| product.product_name_fr.filter(|s| !s.is_empty()))?;
 
     let mut out = Vec::with_capacity(256);
-    write_product(&mut out, code, name, &product, kcal, proteins, carbs, fat, sugars, salt);
+    write_product(&mut out, code, name, &product, kcal, proteins, carbs, fat, sugars, salt, fiber);
     Some(out)
 }
 
@@ -146,7 +150,7 @@ fn write_json_str(w: &mut Vec<u8>, s: &str) {
 fn write_product(
     w: &mut Vec<u8>, code: &str, name: &str, p: &RawProduct, kcal: Option<f64>,
     proteins: Option<f64>, carbs: Option<f64>, fat: Option<f64>,
-    sugars: Option<f64>, salt: Option<f64>,
+    sugars: Option<f64>, salt: Option<f64>, fiber: Option<f64>,
 ) {
     w.extend_from_slice(b"{\"code\":");
     write_json_str(w, code);
@@ -190,6 +194,11 @@ fn write_product(
     }
     if let Some(v) = salt {
         w.extend_from_slice(b",\"salt\":");
+        let mut buf = ryu::Buffer::new();
+        w.extend_from_slice(buf.format(v).as_bytes());
+    }
+    if let Some(v) = fiber {
+        w.extend_from_slice(b",\"fiber\":");
         let mut buf = ryu::Buffer::new();
         w.extend_from_slice(buf.format(v).as_bytes());
     }

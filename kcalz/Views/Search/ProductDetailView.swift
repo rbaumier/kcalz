@@ -91,6 +91,7 @@ struct ProductDetailView: View {
                         EditableNutrientRow(label: "Lipides", unit: "g", text: $viewModel.fatText, color: .kcBee)
                         EditableNutrientRow(label: "Sucres", unit: "g", text: $viewModel.sugarsText, color: .kcFox)
                         EditableNutrientRow(label: "Sel", unit: "g", text: $viewModel.saltText, color: .kcHare)
+                        EditableNutrientRow(label: "Fibres", unit: "g", text: $viewModel.fiberText, color: .kcHare)
                     }
                     .kcCard()
                     .padding(.horizontal, Theme.horizontalPadding)
@@ -102,6 +103,7 @@ struct ProductDetailView: View {
                         NutrientDetailRow(label: "Lipides", value: String(format: "%.1f", viewModel.fat), unit: "g", color: .kcBee)
                         NutrientDetailRow(label: "Sucres", value: String(format: "%.1f", viewModel.sugars), unit: "g", color: .kcFox)
                         NutrientDetailRow(label: "Sel", value: String(format: "%.2f", viewModel.salt), unit: "g", color: .kcHare)
+                        NutrientDetailRow(label: "Fibres", value: String(format: "%.1f", viewModel.fiber), unit: "g", color: .kcHare)
                     }
                     .kcCard()
                     .padding(.horizontal, Theme.horizontalPadding)
@@ -121,7 +123,8 @@ struct ProductDetailView: View {
                             carbs: viewModel.carbsPer100g,
                             fat: viewModel.fatPer100g,
                             sugars: viewModel.sugarsPer100g,
-                            salt: viewModel.saltPer100g
+                            salt: viewModel.saltPer100g,
+                            fiber: viewModel.fiberPer100g
                         ))
                     }
                     onSave(viewModel.makeFoodEntry())

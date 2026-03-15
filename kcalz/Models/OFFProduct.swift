@@ -13,6 +13,7 @@ struct OFFProduct: Decodable, FetchableRecord, Identifiable, Sendable, Hashable 
     let fat: Double?
     let sugars: Double?
     let salt: Double?
+    let fiber: Double?
     let nutriscore: String?
     let quantity: String?
     let product_quantity: Double?

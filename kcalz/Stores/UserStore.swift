@@ -116,6 +116,15 @@ final class UserStore: Sendable {
             }
         }
 
+        migrator.registerMigration("v9") { db in
+            try db.alter(table: "food_entry") { t in
+                t.add(column: "fiber_per_100g", .double)
+            }
+            try db.alter(table: "product_override") { t in
+                t.add(column: "fiber", .double)
+            }
+        }
+
         try migrator.migrate(dbQueue)
     }
 
@@ -186,8 +195,8 @@ final class UserStore: Sendable {
 
         try dbQueue.write { db in
             let sql = """
-                INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
             try db.execute(sql: sql, arguments: [
                 entry.id.uuidString,
@@ -202,6 +211,7 @@ final class UserStore: Sendable {
                 entry.fatPer100g,
                 entry.sugarsPer100g,
                 entry.saltPer100g,
+                entry.fiberPer100g,
                 nextOrder,
             ])
         }
@@ -271,6 +281,7 @@ final class UserStore: Sendable {
             fatPer100g: row["fat_per_100g"] as? Double ?? 0,
             sugarsPer100g: row["sugars_per_100g"] as? Double,
             saltPer100g: row["salt_per_100g"] as? Double,
+            fiberPer100g: row["fiber_per_100g"] as? Double,
             sortOrder: row["sort_order"] as? Int ?? 0
         )
     }
@@ -315,6 +326,7 @@ final class UserStore: Sendable {
         let fat: Double?
         let sugars: Double?
         let salt: Double?
+        var fiber: Double?
         var name: String?
         var brands: String?
     }
@@ -334,6 +346,7 @@ final class UserStore: Sendable {
                 fat: row["fat"],
                 sugars: row["sugars"],
                 salt: row["salt"],
+                fiber: row["fiber"],
                 name: row["name"],
                 brands: row["brands"]
             )
@@ -344,8 +357,8 @@ final class UserStore: Sendable {
         try dbQueue.write { db in
             try db.execute(
                 sql: """
-                    INSERT OR REPLACE INTO product_override (code, kcal, proteins, carbs, fat, sugars, salt, name, brands)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO product_override (code, kcal, proteins, carbs, fat, sugars, salt, fiber, name, brands)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                 arguments: [
                     override.code,
@@ -355,6 +368,7 @@ final class UserStore: Sendable {
                     override.fat,
                     override.sugars,
                     override.salt,
+                    override.fiber,
                     override.name,
                     override.brands,
                 ]
@@ -362,9 +376,9 @@ final class UserStore: Sendable {
         }
     }
 
-    func saveCustomFood(name: String, brands: String? = nil, kcal: Double, proteins: Double?, carbs: Double?, fat: Double?) -> ProductOverride {
+    func saveCustomFood(name: String, brands: String? = nil, kcal: Double, proteins: Double?, carbs: Double?, fat: Double?, fiber: Double? = nil) -> ProductOverride {
         let code = "custom:\(UUID().uuidString)"
-        let override = ProductOverride(code: code, kcal: kcal, proteins: proteins, carbs: carbs, fat: fat, sugars: nil, salt: nil, name: name, brands: brands)
+        let override = ProductOverride(code: code, kcal: kcal, proteins: proteins, carbs: carbs, fat: fat, sugars: nil, salt: nil, fiber: fiber, name: name, brands: brands)
         try? saveProductOverride(override)
         return override
     }
@@ -388,6 +402,7 @@ final class UserStore: Sendable {
                     fat: row["fat"],
                     sugars: row["sugars"],
                     salt: row["salt"],
+                    fiber: row["fiber"],
                     name: row["name"],
                     brands: row["brands"]
                 )
@@ -523,8 +538,8 @@ final class UserStore: Sendable {
 
             for (i, row) in rows.enumerated() {
                 let sql = """
-                    INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """
                 try db.execute(sql: sql, arguments: [
                     UUID().uuidString,
@@ -539,6 +554,7 @@ final class UserStore: Sendable {
                     row["fat_per_100g"] as? Double ?? 0,
                     row["sugars_per_100g"] as? Double,
                     row["salt_per_100g"] as? Double,
+                    row["fiber_per_100g"] as? Double,
                     nextOrder + i,
                 ])
             }

@@ -71,7 +71,8 @@ struct DashboardView: View {
                             carbsPer100g: custom.carbs ?? 0,
                             fatPer100g: custom.fat ?? 0,
                             sugarsPer100g: custom.sugars,
-                            saltPer100g: custom.salt
+                            saltPer100g: custom.salt,
+                            fiberPer100g: custom.fiber
                         )
                         path.append(.addRecent(entry, mealType))
                     })
@@ -86,7 +87,8 @@ struct DashboardView: View {
                             carbsPer100g: custom.carbs ?? 0,
                             fatPer100g: custom.fat ?? 0,
                             sugarsPer100g: custom.sugars,
-                            saltPer100g: custom.salt
+                            saltPer100g: custom.salt,
+                            fiberPer100g: custom.fiber
                         )
                         path.append(.addRecent(entry, mealType))
                     }
@@ -334,6 +336,7 @@ struct DashboardView: View {
             ("Lipides", dayLog.totalFat, goal.fat, .kcBee),
             ("Sucres", dayLog.totalSugars, goal.sugars, .kcFox),
             ("Sel", dayLog.totalSalt, goal.salt, .kcHare),
+            ("Fibres", dayLog.totalFiber, goal.kcal.map { $0 / 1000 * 15 }, .kcHare),
         ]
         let active = bars.enumerated().filter { $0.element.2 != nil }
         if !active.isEmpty {
@@ -425,7 +428,8 @@ struct DashboardView: View {
                 carbsPer100g: entry.carbsPer100g,
                 fatPer100g: entry.fatPer100g,
                 sugarsPer100g: entry.sugarsPer100g,
-                saltPer100g: entry.saltPer100g
+                saltPer100g: entry.saltPer100g,
+                fiberPer100g: entry.fiberPer100g
             )
             try? userStore.addEntry(copy, date: currentDate, mealType: mealType)
         }

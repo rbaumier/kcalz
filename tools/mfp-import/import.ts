@@ -201,7 +201,7 @@ db.exec(`
   PRAGMA synchronous = NORMAL;
 
   CREATE TABLE grdb_migrations (identifier TEXT NOT NULL PRIMARY KEY);
-  INSERT INTO grdb_migrations VALUES ('v1'), ('v2'), ('v3'), ('v4'), ('v5'), ('v6');
+  INSERT INTO grdb_migrations VALUES ('v1'), ('v2'), ('v3'), ('v4'), ('v5'), ('v6'), ('v7'), ('v8'), ('v9');
 
   CREATE TABLE food_entry (
     id TEXT PRIMARY KEY,
@@ -216,6 +216,7 @@ db.exec(`
     fat_per_100g REAL NOT NULL,
     sugars_per_100g REAL,
     salt_per_100g REAL,
+    fiber_per_100g REAL,
     sort_order INTEGER NOT NULL DEFAULT 0
   );
   CREATE INDEX idx_food_entry_date ON food_entry(date);
@@ -230,15 +231,25 @@ db.exec(`
     carbs REAL,
     fat REAL,
     sugars REAL,
-    salt REAL
+    salt REAL,
+    name TEXT,
+    brands TEXT,
+    fiber REAL
+  );
+  CREATE TABLE weight_checkpoint (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL,
+    weight_kg REAL NOT NULL,
+    title TEXT NOT NULL,
+    goal TEXT NOT NULL
   );
 `);
 
 const insFood = db.prepare(`
   INSERT INTO food_entry
-    (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, sort_order)
+    (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order)
   VALUES
-    ($id, $date, $meal, $name, $brands, $grams, $kcal, $prot, $carbs, $fat, $sugars, $salt, $order)
+    ($id, $date, $meal, $name, $brands, $grams, $kcal, $prot, $carbs, $fat, $sugars, $salt, $fiber, $order)
 `);
 
 const insWeight = db.prepare(
@@ -379,6 +390,7 @@ const run = db.transaction(() => {
           $fat: fat,
           $sugars: sugars,
           $salt: salt,
+          $fiber: null,
           $order: i,
         });
       }

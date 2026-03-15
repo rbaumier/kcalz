@@ -9,6 +9,7 @@ struct CreateFoodView: View {
     @State private var proteinsText = ""
     @State private var carbsText = ""
     @State private var fatText = ""
+    @State private var fiberText = ""
 
     init(initialName: String, userStore: UserStore, onCreated: @escaping (UserStore.ProductOverride) -> Void) {
         _name = State(initialValue: initialName)
@@ -52,6 +53,7 @@ struct CreateFoodView: View {
                         NutrientInputRow(label: "Protéines", unit: "g", text: $proteinsText, color: .kcCardinal)
                         NutrientInputRow(label: "Glucides", unit: "g", text: $carbsText, color: .kcMacaw)
                         NutrientInputRow(label: "Lipides", unit: "g", text: $fatText, color: .kcBee)
+                        NutrientInputRow(label: "Fibres", unit: "g", text: $fiberText, color: .kcHare)
                     }
                     .kcCard()
                     .padding(.horizontal, Theme.horizontalPadding)
@@ -64,7 +66,8 @@ struct CreateFoodView: View {
                         kcal: Double(kcalText) ?? 0,
                         proteins: Double(proteinsText),
                         carbs: Double(carbsText),
-                        fat: Double(fatText)
+                        fat: Double(fatText),
+                        fiber: Double(fiberText)
                     )
                     onCreated(override)
                 }

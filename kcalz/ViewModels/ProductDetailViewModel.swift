@@ -12,6 +12,7 @@ final class ProductDetailViewModel {
     var fatPer100g: Double
     var sugarsPer100g: Double?
     var saltPer100g: Double?
+    var fiberPer100g: Double?
     let existingEntryId: UUID?
     let isIncomplete: Bool
 
@@ -21,6 +22,7 @@ final class ProductDetailViewModel {
     var fatText: String
     var sugarsText: String
     var saltText: String
+    var fiberText: String
 
     var gramsText: String
 
@@ -39,6 +41,7 @@ final class ProductDetailViewModel {
             self.fatPer100g = ov.fat ?? 0
             self.sugarsPer100g = ov.sugars
             self.saltPer100g = ov.salt
+            self.fiberPer100g = ov.fiber
             self.isIncomplete = false
         } else if product.kcal != nil {
             self.kcalPer100g = product.kcal ?? 0
@@ -47,6 +50,7 @@ final class ProductDetailViewModel {
             self.fatPer100g = product.fat ?? 0
             self.sugarsPer100g = product.sugars
             self.saltPer100g = product.salt
+            self.fiberPer100g = product.fiber
             self.isIncomplete = false
         } else {
             self.kcalPer100g = 0
@@ -55,6 +59,7 @@ final class ProductDetailViewModel {
             self.fatPer100g = 0
             self.sugarsPer100g = nil
             self.saltPer100g = nil
+            self.fiberPer100g = nil
             self.isIncomplete = true
         }
 
@@ -64,6 +69,7 @@ final class ProductDetailViewModel {
         self.fatText = ""
         self.sugarsText = ""
         self.saltText = ""
+        self.fiberText = ""
 
         let defaultGrams = Self.defaultGrams(product: product)
         self.gramsText = defaultGrams.truncatingRemainder(dividingBy: 1) == 0
@@ -82,6 +88,7 @@ final class ProductDetailViewModel {
         self.fatPer100g = entry.fatPer100g
         self.sugarsPer100g = entry.sugarsPer100g
         self.saltPer100g = entry.saltPer100g
+        self.fiberPer100g = entry.fiberPer100g
         self.existingEntryId = nil
         self.kcalText = ""
         self.proteinsText = ""
@@ -89,6 +96,7 @@ final class ProductDetailViewModel {
         self.fatText = ""
         self.sugarsText = ""
         self.saltText = ""
+        self.fiberText = ""
         self.gramsText = entry.grams.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(entry.grams))
             : String(entry.grams)
@@ -105,6 +113,7 @@ final class ProductDetailViewModel {
         self.fatPer100g = entry.fatPer100g
         self.sugarsPer100g = entry.sugarsPer100g
         self.saltPer100g = entry.saltPer100g
+        self.fiberPer100g = entry.fiberPer100g
         self.existingEntryId = entry.id
         self.kcalText = ""
         self.proteinsText = ""
@@ -112,6 +121,7 @@ final class ProductDetailViewModel {
         self.fatText = ""
         self.sugarsText = ""
         self.saltText = ""
+        self.fiberText = ""
         self.gramsText = entry.grams.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(entry.grams))
             : String(entry.grams)
@@ -136,6 +146,7 @@ final class ProductDetailViewModel {
     var fat: Double { scaled(fatPer100g) }
     var sugars: Double { scaled(sugarsPer100g) }
     var salt: Double { scaled(saltPer100g) }
+    var fiber: Double { scaled(fiberPer100g) }
 
     private func scaled(_ valuePer100g: Double?) -> Double {
         (valuePer100g ?? 0) * (grams ?? 0) / 100
@@ -149,6 +160,7 @@ final class ProductDetailViewModel {
             fatPer100g = Double(fatText) ?? 0
             sugarsPer100g = Double(sugarsText)
             saltPer100g = Double(saltText)
+            fiberPer100g = Double(fiberText)
         }
     }
 
@@ -176,7 +188,8 @@ final class ProductDetailViewModel {
             carbsPer100g: carbsPer100g,
             fatPer100g: fatPer100g,
             sugarsPer100g: sugarsPer100g,
-            saltPer100g: saltPer100g
+            saltPer100g: saltPer100g,
+            fiberPer100g: fiberPer100g
         )
     }
 }

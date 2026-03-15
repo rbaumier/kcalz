@@ -24,6 +24,7 @@ struct MealDetailView: View {
                     MacroRow(label: "Lipides", value: meal.totalFat, color: .kcBee)
                     MacroRow(label: "Sucres", value: meal.totalSugars, color: .kcFox)
                     MacroRow(label: "Sel", value: meal.totalSalt, color: .kcHare)
+                    MacroRow(label: "Fibres", value: meal.totalFiber, color: .kcHare)
                 }
                 .padding(Theme.cardInnerPadding)
                 .kcCard()
