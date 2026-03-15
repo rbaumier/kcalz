@@ -110,7 +110,7 @@ struct MealSectionView: View {
                                 .padding(.leading, Theme.cardInnerPadding)
                         }
 
-                        EntryRow(
+                        EntryRowButton(
                             entry: entry,
                             isSelecting: isSelecting,
                             isSelected: selectedIds.contains(entry.id),
@@ -140,21 +140,15 @@ struct MealSectionView: View {
                 }
                 .coordinateSpace(name: "mealEntries")
                 .onPreferenceChange(EntryFrameKey.self) { entryFrames = $0 }
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 0, coordinateSpace: .named("mealEntries"))
+                .gesture(
+                    // Drag-to-select only active in selection mode, doesn't block scroll otherwise.
+                    isSelecting ?
+                    DragGesture(minimumDistance: Self.dragThreshold, coordinateSpace: .named("mealEntries"))
                         .onChanged { value in
-                            // dragSelectActive: long-press just fired, drag continues without release
-                            // isSelecting + moved >10pt: already in selection mode, user is dragging
-                            let isDragging = dragSelectActive ||
-                                (isSelecting && hypot(value.translation.width, value.translation.height) > Self.dragThreshold)
-                            guard isDragging else { return }
                             if let id = entryId(at: value.location) {
                                 selectedIds.insert(id)
                             }
-                        }
-                        .onEnded { _ in
-                            dragSelectActive = false
-                        }
+                        } : nil
                 )
                 .kcCard()
             }
@@ -213,22 +207,47 @@ private struct EntryRow: View {
         .padding(.vertical, 14)
         .background(Color.kcSnow)
         .contentShape(Rectangle())
-        .onTapGesture {
-            if isSelecting {
-                onToggle()
-            } else {
-                onTap()
-            }
-        }
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: MealSectionView.longPressDuration)
-                .onEnded { _ in
-                    if !isSelecting {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        onLongPress()
-                    }
-                }
-        )
         .animation(.easeOut(duration: 0.25), value: isSelecting)
     }
 }
+
+/// Wraps EntryRow in a Button (for scroll compatibility) + long press gesture.
+private struct EntryRowButton: View {
+    let entry: FoodEntry
+    let isSelecting: Bool
+    let isSelected: Bool
+    let onTap: () -> Void
+    let onToggle: () -> Void
+    let onLongPress: () -> Void
+
+    var body: some View {
+        Button {
+            if isSelecting { onToggle() } else { onTap() }
+        } label: {
+            EntryRow(entry: entry, isSelecting: isSelecting, isSelected: isSelected)
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            if !isSelecting {
+                Button {
+                    onLongPress()
+                } label: {
+                    Label("Sélectionner", systemImage: "checkmark.circle")
+                }
+            }
+        }
+    }
+}
+
+// Keep EntryRow as a pure display component
+private extension EntryRow {
+    init(entry: FoodEntry, isSelecting: Bool, isSelected: Bool) {
+        self.entry = entry
+        self.isSelecting = isSelecting
+        self.isSelected = isSelected
+        self.onTap = {}
+        self.onToggle = {}
+        self.onLongPress = {}
+    }
+}
+
