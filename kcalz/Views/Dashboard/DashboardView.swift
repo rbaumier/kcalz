@@ -285,7 +285,6 @@ struct DashboardView: View {
                             onTitleTap: { path.append(.mealDetail(meal)) },
                             onAdd: { path.append(.search(meal.type)) },
                             onTap: { entry in path.append(.edit(entry, meal.type)) },
-                            onDelete: { entry in removeEntry(entry, from: meal.type) },
                             isSelecting: selectingMealType == meal.type,
                             selectedIds: $selectedEntryIds,
                             onLongPress: { selectingMealType = meal.type },
