@@ -29,6 +29,7 @@
 - **F20** — Retirer le swipe-to-delete sur un aliment (garder uniquement la suppression via tap → détail → supprimer)
 - **F21** — Calendrier pour changer de jour (tap sur la date du dashboard → DatePicker)
 - **F22** — Lisser la courbe de poids sur les grandes périodes (interpolation/moyenne mobile)
-- **F23** — Backup iCloud (copier user.sqlite dans le container iCloud Drive une fois par jour)
+- **F23** — Export manuel de la BDD (bouton "Exporter" → UIDocumentPicker, sauvegarde user.sqlite où l'utilisateur veut, rappel si dernier export >7 jours)
+- **F26** — Déploiement via AltStore/Sideloadly (re-signing automatique pour éviter l'expiration 7 jours du profil gratuit)
 - **F24** — Fibres (ajouter le suivi des fibres, objectif 15g pour 1000 kcal)
 - **F25** — Checkpoint poids (afficher le diff poids sur le dashboard + pages détail)
