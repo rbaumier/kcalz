@@ -117,10 +117,10 @@ struct DashboardView: View {
                 case .mealDetail(let meal):
                     MealDetailView(meal: meal)
                 case .goals:
-                    GoalsView(current: goal) { newGoal in
+                    GoalsView(current: goal, onSave: { newGoal in
                         try? userStore.saveGoals(newGoal)
                         goal = newGoal
-                    }
+                    }, userStore: userStore)
                 case .weight:
                     WeightView(userStore: userStore, currentDate: currentDate)
                 }

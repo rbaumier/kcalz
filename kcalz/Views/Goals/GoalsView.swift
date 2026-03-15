@@ -1,8 +1,29 @@
 import SwiftUI
+import UniformTypeIdentifiers
+
+struct SqliteDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.database] }
+    var data: Data
+
+    init() {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dbURL = appSupport.appendingPathComponent("user.sqlite")
+        self.data = (try? Data(contentsOf: dbURL)) ?? Data()
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        self.data = configuration.file.regularFileContents ?? Data()
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
+    }
+}
 
 struct GoalsView: View {
     let current: NutritionGoal
     let onSave: (NutritionGoal) -> Void
+    let userStore: UserStore?
 
     @State private var kcalText: String
     @State private var proteinsText: String
@@ -10,12 +31,14 @@ struct GoalsView: View {
     @State private var fatText: String
     @State private var sugarsText: String
     @State private var saltText: String
+    @State private var showExporter = false
 
     @Environment(\.dismiss) private var dismiss
 
-    init(current: NutritionGoal, onSave: @escaping (NutritionGoal) -> Void) {
+    init(current: NutritionGoal, onSave: @escaping (NutritionGoal) -> Void, userStore: UserStore? = nil) {
         self.current = current
         self.onSave = onSave
+        self.userStore = userStore
         _kcalText = State(initialValue: current.kcal.map { String(Int($0)) } ?? "")
         _proteinsText = State(initialValue: current.proteins.map { String(Int($0)) } ?? "")
         _carbsText = State(initialValue: current.carbs.map { String(Int($0)) } ?? "")
@@ -88,6 +111,29 @@ struct GoalsView: View {
                     dismiss()
                 }
                 .padding(.top, 8)
+
+                // MARK: - Export
+                if userStore != nil {
+                    Button { showExporter = true } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.kcIconMedium)
+                            Text("Exporter mes données")
+                                .font(.kcBody)
+                        }
+                        .foregroundStyle(Color.kcWolf)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                    }
+                    .padding(.top, 16)
+
+                    if let lastExport = UserDefaults.standard.object(forKey: "lastExportDate") as? Date {
+                        let days = Calendar.current.dateComponents([.day], from: lastExport, to: .now).day ?? 0
+                        Text("Dernier export : il y a \(days) jour\(days > 1 ? "s" : "")")
+                            .font(.kcCaption)
+                            .foregroundStyle(days > 7 ? Color.kcFox : Color.kcHare)
+                    }
+                }
             }
             .padding(.horizontal, Theme.horizontalPadding)
             .padding(.top, Theme.horizontalPadding)
@@ -96,6 +142,16 @@ struct GoalsView: View {
         .background(Color.kcPolar)
         .navigationTitle("Objectifs")
         .navigationBarTitleDisplayMode(.inline)
+        .fileExporter(
+            isPresented: $showExporter,
+            document: SqliteDocument(),
+            contentType: .database,
+            defaultFilename: "kcalz-\(Date.now.kcDateString).sqlite"
+        ) { result in
+            if case .success = result {
+                UserDefaults.standard.set(Date.now, forKey: "lastExportDate")
+            }
+        }
     }
 }
 
