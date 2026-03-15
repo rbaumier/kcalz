@@ -160,13 +160,16 @@ struct WeightView: View {
                     )
                     .foregroundStyle(Color.kcFeather)
                     .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .interpolationMethod(entries.count > 14 ? .catmullRom : .linear)
 
-                    PointMark(
-                        x: .value("Date", entry.date),
-                        y: .value("Poids", entry.kg)
-                    )
-                    .foregroundStyle(selectedEntry?.id == entry.id ? Color.kcWing : Color.kcFeather)
-                    .symbolSize(selectedEntry?.id == entry.id ? 80 : 40)
+                    if entries.count <= 31 {
+                        PointMark(
+                            x: .value("Date", entry.date),
+                            y: .value("Poids", entry.kg)
+                        )
+                        .foregroundStyle(selectedEntry?.id == entry.id ? Color.kcWing : Color.kcFeather)
+                        .symbolSize(selectedEntry?.id == entry.id ? 80 : 40)
+                    }
                 }
                 .chartYScale(domain: minKg...maxKg)
                 .chartYAxis {
