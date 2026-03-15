@@ -24,6 +24,7 @@
 - **F22** — Lisser la courbe de poids (Catmull-Rom sur grandes périodes, masquer les points >31 entrées)
 
 ## À tester
+- **F23** — Export manuel de la BDD (bouton dans GoalsView → fileExporter, rappel si dernier export >7 jours)
 - **F24** — Fibres (suivi + barre dashboard, objectif auto 15g/1000 kcal, 255k produits avec données)
 - **F25** — Objectifs poids (créer/supprimer des objectifs avec titre + type perte/prise/maintien, diff affiché sur dashboard + page poids)
 
@@ -32,5 +33,4 @@
 - **Match Drive U** — Matching EAN courses U ↔ produits OFF pour enrichir le mapping MFP
 
 ## Next
-- **F23** — Export manuel de la BDD (bouton "Exporter" → UIDocumentPicker, rappel si dernier export >7 jours)
 - **F26** — Déploiement via AltStore/Sideloadly (re-signing automatique pour éviter l'expiration 7 jours)
