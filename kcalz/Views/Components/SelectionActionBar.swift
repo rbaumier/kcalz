@@ -16,9 +16,10 @@ struct SelectionActionBar: View {
 
             Spacer()
 
-            Text("\(count) sélectionné\(count > 1 ? "s" : "")")
+            Text("\(count) sél.")
                 .font(.kcBody)
                 .foregroundStyle(Color.kcSnow.opacity(0.7))
+                .lineLimit(1)
 
             Spacer()
 
