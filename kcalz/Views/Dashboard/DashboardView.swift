@@ -14,6 +14,7 @@ struct DashboardView: View {
     @State private var selectingMealType: MealType?
     @State private var selectedEntryIds: Set<UUID> = []
     @State private var showCopySheet = false
+    @State private var showDatePicker = false
     @State private var previousMeals: [MealType: (date: Date, entries: [FoodEntry])] = [:]
     @State private var todayWeight: Double?
     @State private var weightTrend: WeightTrend = .stable
@@ -141,6 +142,23 @@ struct DashboardView: View {
                 }
                 .presentationDetents([.medium])
             }
+            .sheet(isPresented: $showDatePicker) {
+                VStack(spacing: 16) {
+                    DatePicker("", selection: $currentDate, displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .environment(\.locale, Locale(identifier: "fr_FR"))
+                        .tint(Color.kcFeather)
+                        .onChange(of: currentDate) {
+                            showDatePicker = false
+                        }
+                }
+                .padding()
+                .presentationDetents([.medium])
+            }
+            .onChange(of: currentDate) {
+                loadDay(currentDate)
+                loadWeight()
+            }
             .onChange(of: path) {
                 if path.isEmpty { loadWeight() }
             }
@@ -183,9 +201,11 @@ struct DashboardView: View {
 
                     Spacer()
 
-                    Text(dateText)
-                        .font(.kcHeadline)
-                        .foregroundStyle(Color.kcEel)
+                    Button { showDatePicker = true } label: {
+                        Text(dateText)
+                            .font(.kcHeadline)
+                            .foregroundStyle(Color.kcEel)
+                    }
 
                     Spacer()
 
