@@ -25,7 +25,7 @@ final class UserStore: Sendable {
 
     private let dbQueue: DatabaseQueue
 
-    /// Opens (or creates) the user database in Application Support.
+    /// Opens the user database in Application Support, seeding from the bundled copy on first launch.
     init() throws {
         let fileManager = FileManager.default
         let appSupport = try fileManager.url(
@@ -35,6 +35,12 @@ final class UserStore: Sendable {
             create: true
         )
         let dbURL = appSupport.appendingPathComponent("user.sqlite")
+
+        // On first launch, copy the bundled seed database (pre-populated with MFP import data).
+        if !fileManager.fileExists(atPath: dbURL.path),
+           let bundled = Bundle.main.url(forResource: "user", withExtension: "sqlite") {
+            try fileManager.copyItem(at: bundled, to: dbURL)
+        }
 
         dbQueue = try DatabaseQueue(path: dbURL.path)
         try migrate()
