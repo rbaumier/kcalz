@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Circular progress ring showing remaining kilocalories for the day.
 struct KcalRingView: View {
     let consumed: Double
     let goal: Double

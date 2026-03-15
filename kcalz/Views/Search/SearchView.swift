@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Main search screen — lets the user find food by text query, history, or barcode scan.
 struct SearchView: View {
     @State private var viewModel: SearchViewModel
     let userStore: UserStore
@@ -14,6 +15,7 @@ struct SearchView: View {
     @State private var frequentFoods: [FoodEntry] = []
     @AppStorage("searchShowFrequent") private var showFrequent = false
 
+    /// Creates the search view with its dependencies and navigation callbacks.
     init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void, onScan: @escaping () -> Void, onCreateFood: @escaping (String) -> Void, onSelectCustom: @escaping (UserStore.ProductOverride) -> Void) {
         _viewModel = State(initialValue: SearchViewModel(store: store))
         self.userStore = userStore
@@ -26,6 +28,7 @@ struct SearchView: View {
 
     @FocusState private var isSearchFocused: Bool
 
+    /// Returns history entries (recent or frequent) filtered by the current query when long enough.
     private var historyFoods: [FoodEntry] {
         let source = showFrequent ? frequentFoods : recentFoods
         if viewModel.query.count < 2 { return source }
@@ -235,6 +238,7 @@ struct SearchView: View {
 
 // MARK: - Rows
 
+/// A single row displaying a food item with name, brand, and calorie summary.
 private struct FoodRow: View {
     let name: String
     let brands: String?

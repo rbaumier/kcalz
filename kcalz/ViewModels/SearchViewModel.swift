@@ -1,5 +1,6 @@
 import Foundation
 
+/// Drives the product search screen: debounced text search + barcode lookup.
 @Observable
 @MainActor
 final class SearchViewModel {
@@ -8,13 +9,19 @@ final class SearchViewModel {
     private(set) var isSearching = false
     private(set) var error: Error?
 
+    private static let debounceMs = 150
+    /// EAN-8 is the shortest standard barcode format.
+    nonisolated(unsafe) private static let minBarcodeLength = 8
+
     private let store: OFFStore
     private var searchTask: Task<Void, Never>?
 
+    /// Creates a view model backed by the given OFF store.
     init(store: OFFStore) {
         self.store = store
     }
 
+    /// Debounces the current query, then performs a barcode lookup or full-text search.
     func onQueryChanged() {
         searchTask?.cancel()
         isSearching = false
@@ -27,7 +34,7 @@ final class SearchViewModel {
 
         isSearching = true
         searchTask = Task {
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(for: .milliseconds(Self.debounceMs))
             guard !Task.isCancelled else { return }
 
             let currentQuery = query
@@ -49,8 +56,10 @@ final class SearchViewModel {
         }
     }
 
+    /// Runs barcode lookup first (if input looks numeric), then falls back to FTS.
     nonisolated private func performSearch(query: String, store: OFFStore) async throws -> [OFFProduct] {
-        if query.allSatisfy(\.isNumber), query.count >= 8 {
+        // All-digit string with >= 8 chars → likely a barcode (EAN-8 is the shortest standard).
+        if query.allSatisfy(\.isNumber), query.count >= Self.minBarcodeLength {
             if let product = store.findByBarcode(query) {
                 return [product]
             }
@@ -58,6 +67,7 @@ final class SearchViewModel {
         return try store.search(query: query)
     }
 
+    /// Resets the search state and clears results.
     func clearSearch() {
         searchTask?.cancel()
         query = ""

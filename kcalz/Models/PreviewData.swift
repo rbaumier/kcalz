@@ -1,9 +1,12 @@
 #if DEBUG
 import Foundation
 
+/// Sample data used exclusively in SwiftUI previews and tests.
 enum PreviewData {
+    /// Default nutrition goal for previews.
     static let goal = NutritionGoal(kcal: 2200, proteins: 140, carbs: 250, fat: 80, sugars: nil, salt: nil)
 
+    /// Empty day log (no entries in any meal).
     static let dayLog = DayLog(
         date: .now,
         meals: [
@@ -14,6 +17,7 @@ enum PreviewData {
         ]
     )
 
+    /// Day log with realistic breakfast and lunch entries.
     static let dayLogWithEntries = DayLog(
         date: .now,
         meals: [

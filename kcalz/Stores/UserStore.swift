@@ -4,6 +4,7 @@ import os
 
 private let logger = Logger(subsystem: "com.kcalz", category: "UserStore")
 
+/// Errors specific to the user database store.
 enum UserStoreError: LocalizedError {
     case directoryCreationFailed
 
@@ -14,9 +15,17 @@ enum UserStoreError: LocalizedError {
     }
 }
 
+/// Read-write store for user data (food log, goals, weight, custom foods).
 final class UserStore: Sendable {
+    private static let minQueryLength = 2
+    private static let defaultHistoryLimit = 20
+    private static let previousMealLookbackDays = 7
+    private static let customCodePrefix = "custom:"
+    private static let maxWeightEntries = 365
+
     private let dbQueue: DatabaseQueue
 
+    /// Opens (or creates) the user database in Application Support.
     init() throws {
         let fileManager = FileManager.default
         let appSupport = try fileManager.url(
@@ -31,6 +40,7 @@ final class UserStore: Sendable {
         try migrate()
     }
 
+    /// Runs all incremental schema migrations.
     private func migrate() throws {
         var migrator = DatabaseMigrator()
 
@@ -133,6 +143,7 @@ final class UserStore: Sendable {
 
     // MARK: - Goals
 
+    /// Loads the single nutrition goal row, or returns defaults if none set.
     func loadGoals() throws -> NutritionGoal {
         try dbQueue.read { db in
             guard let row = try Row.fetchOne(db, sql: "SELECT * FROM goals LIMIT 1") else {
@@ -149,6 +160,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Replaces the nutrition goal (single-row table, delete + insert).
     func saveGoals(_ goal: NutritionGoal) throws {
         try dbQueue.write { db in
             try db.execute(sql: "DELETE FROM goals")
@@ -161,6 +173,7 @@ final class UserStore: Sendable {
 
     // MARK: - Read
 
+    /// Loads all food entries for a given date, grouped into meals.
     func loadDayLog(for date: Date) throws -> DayLog {
         let dateStr = date.kcDateString
 
@@ -188,10 +201,12 @@ final class UserStore: Sendable {
 
     // MARK: - Write
 
+    /// Adds a single food entry to a meal, appended at the end of the sort order.
     func addEntry(_ entry: FoodEntry, date: Date, mealType: MealType) throws {
         let dateStr = date.kcDateString
 
         try dbQueue.write { db in
+            // COALESCE(MAX(sort_order), -1) + 1: use -1 as base so first entry gets sort_order 0
             let nextOrder: Int = try Int.fetchOne(
                 db,
                 sql: "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM food_entry WHERE date = ? AND meal_type = ?",
@@ -221,6 +236,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Adds multiple food entries to a meal in a single transaction.
     func addEntries(_ entries: [FoodEntry], date: Date, mealType: MealType) throws {
         let dateStr = date.kcDateString
         try dbQueue.write { db in
@@ -242,6 +258,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Updates the weight in grams for an existing food entry.
     func updateEntryGrams(id: UUID, grams: Double) throws {
         try dbQueue.write { db in
             try db.execute(
@@ -251,12 +268,14 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Deletes a single food entry by ID.
     func deleteEntry(id: UUID) throws {
         try dbQueue.write { db in
             try db.execute(sql: "DELETE FROM food_entry WHERE id = ?", arguments: [id.uuidString])
         }
     }
 
+    /// Deletes multiple food entries by their IDs in a single transaction.
     func deleteEntries(ids: Set<UUID>) throws {
         guard !ids.isEmpty else { return }
         try dbQueue.write { db in
@@ -268,7 +287,8 @@ final class UserStore: Sendable {
 
     // MARK: - Recents & Frequents
 
-    func recentFoods(limit: Int = 20) throws -> [FoodEntry] {
+    /// Returns the most recently logged distinct foods.
+    func recentFoods(limit: Int = defaultHistoryLimit) throws -> [FoodEntry] {
         try dbQueue.read { db in
             let sql = """
                 SELECT *, MAX(rowid) as max_rowid FROM food_entry
@@ -281,7 +301,8 @@ final class UserStore: Sendable {
         }
     }
 
-    func frequentFoods(limit: Int = 20) throws -> [FoodEntry] {
+    /// Returns the most frequently logged distinct foods.
+    func frequentFoods(limit: Int = defaultHistoryLimit) throws -> [FoodEntry] {
         try dbQueue.read { db in
             let sql = """
                 SELECT *, COUNT(*) as cnt, MAX(rowid) as max_rowid FROM food_entry
@@ -294,6 +315,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Maps a database row to a FoodEntry value.
     private static func foodEntry(from row: Row) -> FoodEntry {
         FoodEntry(
             id: UUID(uuidString: row["id"] as? String ?? "") ?? UUID(),
@@ -313,8 +335,9 @@ final class UserStore: Sendable {
 
     // MARK: - Previous Meal
 
+    /// Finds the most recent meal of a given type within the lookback window.
     func findLastMealEntries(type: MealType, before date: Date) -> (date: Date, entries: [FoodEntry])? {
-        guard let minDate = Calendar.current.date(byAdding: .day, value: -7, to: date) else { return nil }
+        guard let minDate = Calendar.current.date(byAdding: .day, value: -Self.previousMealLookbackDays, to: date) else { return nil }
         let dateStr = date.kcDateString
         let minDateStr = minDate.kcDateString
 
@@ -343,6 +366,7 @@ final class UserStore: Sendable {
 
     // MARK: - Product Overrides
 
+    /// User-defined nutritional override for a product (or custom food).
     struct ProductOverride: Sendable {
         let code: String
         let kcal: Double
@@ -356,6 +380,7 @@ final class UserStore: Sendable {
         var brands: String?
     }
 
+    /// Loads a product override by its code (EAN or custom:UUID).
     func loadProductOverride(code: String) -> ProductOverride? {
         try? dbQueue.read { db in
             guard let row = try Row.fetchOne(
@@ -378,6 +403,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Inserts or replaces a product override (upsert on code).
     func saveProductOverride(_ override: ProductOverride) throws {
         try dbQueue.write { db in
             try db.execute(
@@ -401,16 +427,20 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Creates and persists a custom food, returning the generated override.
     func saveCustomFood(name: String, brands: String? = nil, kcal: Double, proteins: Double?, carbs: Double?, fat: Double?, fiber: Double? = nil) -> ProductOverride {
-        let code = "custom:\(UUID().uuidString)"
+        let code = "\(Self.customCodePrefix)\(UUID().uuidString)"
         let override = ProductOverride(code: code, kcal: kcal, proteins: proteins, carbs: carbs, fat: fat, sugars: nil, salt: nil, fiber: fiber, name: name, brands: brands)
         do { try saveProductOverride(override) }
         catch { logger.error("saveCustomFood failed: \(error)") }
         return override
     }
 
+    /// Searches custom foods by name using SQL LIKE pattern matching.
     func searchCustomFoods(query: String) -> [ProductOverride] {
-        guard query.count >= 2 else { return [] }
+        guard query.count >= Self.minQueryLength else { return [] }
+        // Escape SQL LIKE wildcards: % and _ are special in LIKE patterns,
+        // backslash is the ESCAPE char itself — all must be escaped for literal matching.
         let escaped = query
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "%", with: "\\%")
@@ -418,9 +448,9 @@ final class UserStore: Sendable {
         return (try? dbQueue.read { db in
             let sql = """
                 SELECT * FROM product_override
-                WHERE code LIKE 'custom:%' AND name LIKE ? ESCAPE '\\'
+                WHERE code LIKE '\(Self.customCodePrefix)%' AND name LIKE ? ESCAPE '\\'
                 ORDER BY name
-                LIMIT 20
+                LIMIT \(Self.defaultHistoryLimit)
                 """
             let rows = try Row.fetchAll(db, sql: sql, arguments: ["%\(escaped)%"])
             return rows.map { row in
@@ -442,9 +472,11 @@ final class UserStore: Sendable {
 
     // MARK: - Weight Checkpoints
 
+    /// Goal direction for a weight checkpoint.
     enum CheckpointGoal: String, Sendable, CaseIterable, Identifiable {
         case loss, gain, maintain
         var id: String { rawValue }
+        /// Localized display label.
         var label: String {
             switch self {
             case .loss: "Perte"
@@ -454,6 +486,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// A recorded weight milestone with a title and goal direction.
     struct WeightCheckpoint: Sendable, Identifiable {
         let id: String
         let date: Date
@@ -462,6 +495,7 @@ final class UserStore: Sendable {
         let goal: CheckpointGoal
     }
 
+    /// Saves a new weight checkpoint.
     func saveCheckpoint(title: String, weightKg: Double, date: Date, goal: CheckpointGoal) throws {
         try dbQueue.write { db in
             try db.execute(
@@ -471,6 +505,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Loads all weight checkpoints, most recent first.
     func loadCheckpoints() -> [WeightCheckpoint] {
         (try? dbQueue.read { db in
             let rows = try Row.fetchAll(db, sql: "SELECT * FROM weight_checkpoint ORDER BY date DESC")
@@ -487,10 +522,12 @@ final class UserStore: Sendable {
         }) ?? []
     }
 
+    /// Returns the most recent weight checkpoint, or nil.
     func latestCheckpoint() -> WeightCheckpoint? {
         loadCheckpoints().first
     }
 
+    /// Deletes a weight checkpoint by ID.
     func deleteCheckpoint(id: String) throws {
         try dbQueue.write { db in
             try db.execute(sql: "DELETE FROM weight_checkpoint WHERE id = ?", arguments: [id])
@@ -499,6 +536,7 @@ final class UserStore: Sendable {
 
     // MARK: - Weight
 
+    /// Records a weight measurement for a given date (upsert).
     func saveWeight(kg: Double, date: Date) throws {
         let dateStr = date.kcDateString
         try dbQueue.write { db in
@@ -509,12 +547,14 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Loads the weight for a specific date, or nil if not recorded.
     func loadWeight(for date: Date) throws -> Double? {
         try dbQueue.read { db in
             try Double.fetchOne(db, sql: "SELECT weight_kg FROM weight_entry WHERE date = ?", arguments: [date.kcDateString])
         }
     }
 
+    /// Loads weight entries within a date range, ordered chronologically.
     func loadWeights(from start: Date, to end: Date) throws -> [WeightEntry] {
         try dbQueue.read { db in
             let rows = try Row.fetchAll(
@@ -531,6 +571,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Loads the N most recent weight entries, returned in chronological order.
     func latestWeights(limit: Int) throws -> [WeightEntry] {
         try dbQueue.read { db in
             let rows = try Row.fetchAll(
@@ -547,6 +588,7 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Copies food entries by ID to a different date/meal, assigning new IDs.
     func copyEntries(ids: Set<UUID>, toDate date: Date, mealType: MealType) throws {
         guard !ids.isEmpty else { return }
         let dateStr = date.kcDateString

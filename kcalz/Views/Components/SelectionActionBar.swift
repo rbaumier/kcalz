@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Floating action bar shown during multi-select mode with copy, delete, and cancel actions.
 struct SelectionActionBar: View {
     let count: Int
     let onDelete: () -> Void
@@ -27,7 +28,7 @@ struct SelectionActionBar: View {
                 Image(systemName: "doc.on.doc")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Color.kcSnow)
-                    .frame(width: 44, height: 44)
+                    .frame(width: Theme.buttonSize, height: Theme.buttonSize)
             }
             .accessibilityLabel("Copier")
             .disabled(count == 0)
@@ -37,7 +38,7 @@ struct SelectionActionBar: View {
                 Image(systemName: "trash")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Color.kcCardinal)
-                    .frame(width: 44, height: 44)
+                    .frame(width: Theme.buttonSize, height: Theme.buttonSize)
             }
             .accessibilityLabel("Supprimer")
             .disabled(count == 0)

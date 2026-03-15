@@ -37,4 +37,4 @@ targets:
 packages:
   GRDB:
     url: https://github.com/groue/GRDB.swift
-    exact: "7.10.0"
+    from: "7.10.0"

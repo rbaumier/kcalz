@@ -2,15 +2,21 @@ import SwiftUI
 
 // MARK: - Preference key for entry row frames
 
+/// Collects per-entry frames so drag-to-select can hit-test entries by position.
 private struct EntryFrameKey: PreferenceKey {
-    // Safe: value-type default, never mutated concurrently
+    // nonisolated(unsafe): required for static stored property in Sendable type;
+    // safe here because the default is a value-type dictionary never mutated concurrently.
     nonisolated(unsafe) static var defaultValue: [UUID: CGRect] = [:]
     static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
         value.merge(nextValue()) { $1 }
     }
 }
 
+/// Displays a single meal (header + entry list) with support for
+/// drag-to-select, long-press copy-previous, and inline entry management.
 struct MealSectionView: View {
+    fileprivate static let longPressDuration = 0.3
+    private static let dragThreshold: CGFloat = 10
     let meal: Meal
     let onTitleTap: () -> Void
     let onAdd: () -> Void
@@ -87,7 +93,7 @@ struct MealSectionView: View {
                 .contentShape(Rectangle())
                 .kcCard()
                 .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.3)
+                    LongPressGesture(minimumDuration: Self.longPressDuration)
                         .onEnded { _ in
                             guard previousMeal != nil else { return }
                             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -140,7 +146,7 @@ struct MealSectionView: View {
                             // dragSelectActive: long-press just fired, drag continues without release
                             // isSelecting + moved >10pt: already in selection mode, user is dragging
                             let isDragging = dragSelectActive ||
-                                (isSelecting && hypot(value.translation.width, value.translation.height) > 10)
+                                (isSelecting && hypot(value.translation.width, value.translation.height) > Self.dragThreshold)
                             guard isDragging else { return }
                             if let id = entryId(at: value.location) {
                                 selectedIds.insert(id)
@@ -156,6 +162,7 @@ struct MealSectionView: View {
         .padding(.bottom, 4)
     }
 
+    /// Returns the entry id whose frame contains `point`, or `nil` if none match.
     private func entryId(at point: CGPoint) -> UUID? {
         for (id, frame) in entryFrames {
             if frame.contains(point) { return id }
@@ -166,6 +173,7 @@ struct MealSectionView: View {
 
 // MARK: - Entry row (unified: normal + selection mode)
 
+/// A single food-entry row with tap, toggle, and long-press gestures.
 private struct EntryRow: View {
     let entry: FoodEntry
     let isSelecting: Bool
@@ -213,7 +221,7 @@ private struct EntryRow: View {
             }
         }
         .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.25)
+            LongPressGesture(minimumDuration: MealSectionView.longPressDuration)
                 .onEnded { _ in
                     if !isSelecting {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()

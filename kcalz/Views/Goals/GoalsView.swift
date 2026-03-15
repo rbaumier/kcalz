@@ -1,21 +1,14 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct SqliteDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.database] }
-
-    init() {}
-
-    init(configuration: ReadConfiguration) throws {}
-
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dbURL = appSupport.appendingPathComponent("user.sqlite")
-        return try FileWrapper(url: dbURL, options: .immediate)
-    }
-}
-
+/// Goal-editing screen for daily calorie and macronutrient targets, with database export.
 struct GoalsView: View {
+    /// UserDefaults key for the last export timestamp.
+    private static let lastExportKey = "lastExportDate"
+
+    /// Number of days after which the export warning turns orange.
+    private static let exportWarningDays = 7
+
     let current: NutritionGoal
     let onSave: (NutritionGoal) -> Void
     let userStore: UserStore?
@@ -42,12 +35,14 @@ struct GoalsView: View {
         _saltText = State(initialValue: current.salt.map { String(Int($0)) } ?? "")
     }
 
+    /// Parses a text field into a positive `Double`, returning `nil` for empty or invalid input.
     private func parseGoal(_ text: String) -> Double? {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty, let value = Double(trimmed), value > 0 else { return nil }
         return value
     }
 
+    /// Builds a `NutritionGoal` from the current text field values.
     private var goal: NutritionGoal {
         NutritionGoal(
             kcal: parseGoal(kcalText),
@@ -122,11 +117,11 @@ struct GoalsView: View {
                     }
                     .padding(.top, 16)
 
-                    if let lastExport = UserDefaults.standard.object(forKey: "lastExportDate") as? Date {
+                    if let lastExport = UserDefaults.standard.object(forKey: Self.lastExportKey) as? Date {
                         let days = Calendar.current.dateComponents([.day], from: lastExport, to: .now).day ?? 0
                         Text("Dernier export : il y a \(days) jour\(days > 1 ? "s" : "")")
                             .font(.kcCaption)
-                            .foregroundStyle(days > 7 ? Color.kcFox : Color.kcHare)
+                            .foregroundStyle(days > Self.exportWarningDays ? Color.kcFox : Color.kcHare)
                     }
                 }
             }
@@ -144,7 +139,7 @@ struct GoalsView: View {
             defaultFilename: "kcalz-\(Date.now.kcDateString).sqlite"
         ) { result in
             if case .success = result {
-                UserDefaults.standard.set(Date.now, forKey: "lastExportDate")
+                UserDefaults.standard.set(Date.now, forKey: Self.lastExportKey)
             }
         }
     }
@@ -180,5 +175,25 @@ private struct MacroCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .kcCard(radius: Theme.cornerRadiusL)
+    }
+}
+
+// MARK: - SQLite document export
+
+/// `FileDocument` wrapper that exports the user SQLite database for sharing/backup.
+struct SqliteDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.database] }
+
+    init() {}
+
+    init(configuration: ReadConfiguration) throws {}
+
+    /// Creates a file wrapper pointing to the app's SQLite database.
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        let dbURL = appSupport.appendingPathComponent("user.sqlite")
+        return try FileWrapper(url: dbURL, options: .immediate)
     }
 }

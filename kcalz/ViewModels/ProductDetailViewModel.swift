@@ -1,5 +1,6 @@
 import Foundation
 
+/// Holds nutritional data for a product and computes scaled values for a given portion.
 @Observable
 @MainActor
 final class ProductDetailViewModel {
@@ -26,22 +27,26 @@ final class ProductDetailViewModel {
 
     var gramsText: String
 
+    private static let defaultPortionGrams: Double = 100
+
+    /// True when editing an existing diary entry (vs. creating a new one).
     var isEditing: Bool { existingEntryId != nil }
 
+    /// Initializes from an OFF product, optionally applying a user override for nutritional values.
     init(product: OFFProduct, override: UserStore.ProductOverride? = nil) {
         self.name = product.name
         self.brands = product.brands
         self.productCode = product.code
         self.existingEntryId = nil
 
-        if let ov = override {
-            self.kcalPer100g = ov.kcal
-            self.proteinsPer100g = ov.proteins ?? 0
-            self.carbsPer100g = ov.carbs ?? 0
-            self.fatPer100g = ov.fat ?? 0
-            self.sugarsPer100g = ov.sugars
-            self.saltPer100g = ov.salt
-            self.fiberPer100g = ov.fiber
+        if let existingOverride = override {
+            self.kcalPer100g = existingOverride.kcal
+            self.proteinsPer100g = existingOverride.proteins ?? 0
+            self.carbsPer100g = existingOverride.carbs ?? 0
+            self.fatPer100g = existingOverride.fat ?? 0
+            self.sugarsPer100g = existingOverride.sugars
+            self.saltPer100g = existingOverride.salt
+            self.fiberPer100g = existingOverride.fiber
             self.isIncomplete = false
         } else if product.kcal != nil {
             self.kcalPer100g = product.kcal ?? 0
@@ -77,6 +82,7 @@ final class ProductDetailViewModel {
             : String(defaultGrams)
     }
 
+    /// Initializes from an existing food entry, optionally in editing mode.
     init(entry: FoodEntry, editing: Bool = false) {
         self.name = entry.name
         self.brands = entry.brands
@@ -102,11 +108,13 @@ final class ProductDetailViewModel {
             : String(entry.grams)
     }
 
+    /// Parsed portion weight in grams, nil if invalid.
     var grams: Double? {
-        guard let v = Double(gramsText), v > 0 else { return nil }
-        return v
+        guard let value = Double(gramsText), value > 0 else { return nil }
+        return value
     }
 
+    /// True when all required fields are filled (grams + kcal for incomplete products).
     var isValidInput: Bool {
         guard grams != nil else { return false }
         if isIncomplete {
@@ -115,18 +123,28 @@ final class ProductDetailViewModel {
         return true
     }
 
+    /// Scaled kcal for the current portion.
     var kcal: Double { scaled(kcalPer100g) }
+    /// Scaled proteins for the current portion.
     var proteins: Double { scaled(proteinsPer100g) }
+    /// Scaled carbs for the current portion.
     var carbs: Double { scaled(carbsPer100g) }
+    /// Scaled fat for the current portion.
     var fat: Double { scaled(fatPer100g) }
+    /// Scaled sugars for the current portion.
     var sugars: Double { scaled(sugarsPer100g) }
+    /// Scaled salt for the current portion.
     var salt: Double { scaled(saltPer100g) }
+    /// Scaled fiber for the current portion.
     var fiber: Double { scaled(fiberPer100g) }
 
+    /// Scales a per-100g value to the current portion size.
     private func scaled(_ valuePer100g: Double?) -> Double {
-        (valuePer100g ?? 0) * (grams ?? 0) / 100
+        (valuePer100g ?? 0) * (grams ?? 0) / Self.defaultPortionGrams
     }
 
+    /// Commits user-typed nutritional overrides into the per-100g fields.
+    /// Must be called before `makeFoodEntry()` so the entry captures edited values.
     func applyOverrideTexts() {
         if isIncomplete {
             kcalPer100g = Double(kcalText) ?? 0
@@ -139,19 +157,22 @@ final class ProductDetailViewModel {
         }
     }
 
+    /// Derives the default portion from the product's declared quantity.
     static func defaultGrams(product: OFFProduct) -> Double {
-        guard let value = product.product_quantity, value > 0 else { return 100 }
+        guard let value = product.product_quantity, value > 0 else { return defaultPortionGrams }
         let unit = product.product_quantity_unit?.lowercased() ?? "g"
         let grams = switch unit {
         case "kg": value * 1000
         case "l": value * 1000
         case "cl": value * 10
+        // ml → 1:1 with grams — density ≈ 1 for most beverages.
         case "ml": value
         default: value // "g"
         }
-        return grams > 0 ? grams : 100
+        return grams > 0 ? grams : defaultPortionGrams
     }
 
+    /// Builds a `FoodEntry` from the current state; reuses `existingEntryId` when editing.
     func makeFoodEntry() -> FoodEntry {
         FoodEntry(
             id: existingEntryId ?? UUID(),

@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Form for creating a custom food with name and per-100g nutrient values.
 struct CreateFoodView: View {
     let userStore: UserStore
     let onCreated: (UserStore.ProductOverride) -> Void
@@ -11,12 +12,14 @@ struct CreateFoodView: View {
     @State private var fatText = ""
     @State private var fiberText = ""
 
+    /// Creates the view with a pre-filled name and persistence dependencies.
     init(initialName: String, userStore: UserStore, onCreated: @escaping (UserStore.ProductOverride) -> Void) {
         _name = State(initialValue: initialName)
         self.userStore = userStore
         self.onCreated = onCreated
     }
 
+    /// Returns `true` when the form has a non-empty name and a valid kcal value.
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty && Double(kcalText) != nil
     }
@@ -49,11 +52,11 @@ struct CreateFoodView: View {
                         .padding(.horizontal, Theme.cardInnerPadding)
 
                     VStack(spacing: 0) {
-                        NutrientInputRow(label: "Calories", unit: "kcal", text: $kcalText, color: .kcFeather, required: true)
-                        NutrientInputRow(label: "Protéines", unit: "g", text: $proteinsText, color: .kcCardinal)
-                        NutrientInputRow(label: "Glucides", unit: "g", text: $carbsText, color: .kcMacaw)
-                        NutrientInputRow(label: "Lipides", unit: "g", text: $fatText, color: .kcBee)
-                        NutrientInputRow(label: "Fibres", unit: "g", text: $fiberText, color: .kcHare)
+                        EditableNutrientRow(label: "Calories", unit: "kcal", text: $kcalText, color: .kcFeather, required: true)
+                        EditableNutrientRow(label: "Protéines", unit: "g", text: $proteinsText, color: .kcCardinal)
+                        EditableNutrientRow(label: "Glucides", unit: "g", text: $carbsText, color: .kcMacaw)
+                        EditableNutrientRow(label: "Lipides", unit: "g", text: $fatText, color: .kcBee)
+                        EditableNutrientRow(label: "Fibres", unit: "g", text: $fiberText, color: .kcHare)
                     }
                     .kcCard()
                     .padding(.horizontal, Theme.horizontalPadding)
@@ -79,42 +82,5 @@ struct CreateFoodView: View {
         .background(Color.kcPolar)
         .navigationTitle("Créer un aliment")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-private struct NutrientInputRow: View {
-    let label: String
-    let unit: String
-    @Binding var text: String
-    let color: Color
-    var required: Bool = false
-
-    var body: some View {
-        HStack {
-            Circle()
-                .fill(color)
-                .frame(width: Theme.dotSize, height: Theme.dotSize)
-
-            Text(label)
-                .font(.kcBody)
-                .foregroundStyle(Color.kcEel)
-
-            if required {
-                Text("*")
-                    .font(.kcBody)
-                    .foregroundStyle(Color.kcCardinal)
-            }
-
-            Spacer()
-
-            KcNumericField(placeholder: "0", text: $text, font: .kcNumberSmall, width: 70)
-
-            Text(unit)
-                .font(.kcCaption)
-                .foregroundStyle(Color.kcWolf)
-                .frame(width: 30, alignment: .leading)
-        }
-        .padding(.horizontal, Theme.cardInnerPadding)
-        .padding(.vertical, 12)
     }
 }

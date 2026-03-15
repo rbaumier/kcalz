@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Horizontal progress bar for a single macronutrient (protein, carbs, fat).
 struct NutrientBarView: View {
     let label: String
     let current: Double

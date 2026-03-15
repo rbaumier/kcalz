@@ -3,12 +3,14 @@ import SwiftUI
 
 private let logger = Logger(subsystem: "com.kcalz", category: "ProductDetailView")
 
+/// Detail screen for a food product — shows nutrients and lets the user set grams before adding.
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
     let onSave: (FoodEntry) -> Void
     var onDelete: (() -> Void)?
     private let userStore: UserStore?
 
+    /// Creates the detail view from an OFF product, loading any user override.
     init(product: OFFProduct, userStore: UserStore, onSave: @escaping (FoodEntry) -> Void) {
         let override = userStore.loadProductOverride(code: product.code)
         _viewModel = State(initialValue: ProductDetailViewModel(product: product, override: override))
@@ -17,6 +19,7 @@ struct ProductDetailView: View {
         self.userStore = userStore
     }
 
+    /// Creates the detail view from a recent food entry (re-log flow).
     init(recentEntry: FoodEntry, onSave: @escaping (FoodEntry) -> Void) {
         _viewModel = State(initialValue: ProductDetailViewModel(entry: recentEntry))
         self.onSave = onSave
@@ -24,6 +27,7 @@ struct ProductDetailView: View {
         self.userStore = nil
     }
 
+    /// Creates the detail view in edit mode for an existing logged entry.
     init(entry: FoodEntry, onSave: @escaping (FoodEntry) -> Void, onDelete: @escaping () -> Void) {
         _viewModel = State(initialValue: ProductDetailViewModel(entry: entry, editing: true))
         self.onSave = onSave
@@ -166,6 +170,7 @@ struct ProductDetailView: View {
     }
 }
 
+/// Read-only row showing a nutrient label, value, and unit with a colored dot.
 private struct NutrientDetailRow: View {
     let label: String
     let value: String
@@ -198,7 +203,8 @@ private struct NutrientDetailRow: View {
     }
 }
 
-private struct EditableNutrientRow: View {
+/// Editable row for a single nutrient — used in both ProductDetailView (incomplete products) and CreateFoodView.
+struct EditableNutrientRow: View {
     let label: String
     let unit: String
     @Binding var text: String

@@ -1,6 +1,8 @@
 import SwiftUI
 
+/// Bottom sheet that lets the user pick a target date and meal type to copy entries into.
 struct CopySheet: View {
+    private static let dateRangeDays = 30
     @State private var selectedDate: Date
     @State private var selectedMealType: MealType = .breakfast
 
@@ -9,11 +11,13 @@ struct CopySheet: View {
 
     private let dates: [Date]
 
+    /// Creates the sheet with a callback invoked when the user confirms the copy target.
     init(onCopy: @escaping (Date, MealType) -> Void) {
         self.onCopy = onCopy
         let cal = Calendar.current
         let today = cal.startOfDay(for: .now)
-        let generated = (-30...30).compactMap { cal.date(byAdding: .day, value: $0, to: today) }
+        let range = Self.dateRangeDays
+        let generated = (-range...range).compactMap { cal.date(byAdding: .day, value: $0, to: today) }
         self.dates = generated
         self._selectedDate = State(initialValue: today)
     }
@@ -66,6 +70,7 @@ struct CopySheet: View {
         }
     }
 
+    /// Formats a date as a relative label ("Aujourd'hui", "Hier", "Demain") or "Lun 3 Mar".
     private static func formatDate(_ date: Date) -> String {
         let cal = Calendar.current
         if cal.isDateInToday(date) { return "Aujourd'hui" }

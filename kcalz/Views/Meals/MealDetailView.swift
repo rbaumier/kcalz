@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Detail view for a single meal — shows total kcal, macronutrient summary, and per-entry breakdown.
 struct MealDetailView: View {
     let meal: Meal
 
@@ -26,7 +27,7 @@ struct MealDetailView: View {
                         MacroRow(label: "Sucres", value: meal.totalSugars, color: .kcFox)
                     }
                     if meal.totalSalt > 0 {
-                        MacroRow(label: "Sel", value: meal.totalSalt, color: .kcHare)
+                        MacroRow(label: "Sel", value: meal.totalSalt, color: .kcHare, decimals: 2)
                     }
                     if meal.totalFiber > 0 {
                         MacroRow(label: "Fibres", value: meal.totalFiber, color: .kcHare)
@@ -70,10 +71,12 @@ struct MealDetailView: View {
 
 // MARK: - Macro Row
 
+/// Single row displaying a macronutrient label, colored dot, and formatted value.
 private struct MacroRow: View {
     let label: String
     let value: Double
     let color: Color
+    var decimals: Int = 1
 
     var body: some View {
         HStack {
@@ -88,7 +91,7 @@ private struct MacroRow: View {
             Spacer()
 
             HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(String(format: label == "Sel" ? "%.2f" : "%.1f", value))
+                Text(String(format: "%.\(decimals)f", value))
                     .font(.kcNumberSmall)
                     .foregroundStyle(Color.kcEel)
                 Text("g")
@@ -101,6 +104,7 @@ private struct MacroRow: View {
 
 // MARK: - Entry Breakdown Row
 
+/// Row showing a single food entry with its name, kcal, grams, and macro pills.
 private struct EntryBreakdownRow: View {
     let entry: FoodEntry
 
@@ -116,7 +120,7 @@ private struct EntryBreakdownRow: View {
 
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text("\(Int(entry.kcal))")
-                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .font(.kcNumberInline)
                         .foregroundStyle(Color.kcFeather)
                     Text("kcal / \(Int(entry.grams))g")
                         .font(.kcCaption)
@@ -148,6 +152,7 @@ private struct EntryBreakdownRow: View {
 
 // MARK: - Macro Pill
 
+/// Compact colored pill showing a single macro initial and value (e.g. "P 12.3g").
 private struct MacroPill: View {
     let label: String
     let value: Double
@@ -159,7 +164,7 @@ private struct MacroPill: View {
                 .fill(color)
                 .frame(width: 6, height: 6)
             Text("\(label) \(String(format: "%.1f", value))g")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.kcPill)
                 .foregroundStyle(Color.kcWolf)
         }
     }

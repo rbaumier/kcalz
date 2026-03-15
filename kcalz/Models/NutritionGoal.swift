@@ -1,5 +1,6 @@
 import Foundation
 
+/// Daily macro targets set by the user (nil = no target for that nutrient).
 struct NutritionGoal: Sendable, Equatable {
     var kcal: Double?
     var proteins: Double?
@@ -17,6 +18,7 @@ struct NutritionGoal: Sendable, Equatable {
         self.salt = salt
     }
 
+    /// True when the user hasn't configured any target yet.
     var isEmpty: Bool {
         kcal == nil && proteins == nil && carbs == nil && fat == nil && sugars == nil && salt == nil
     }

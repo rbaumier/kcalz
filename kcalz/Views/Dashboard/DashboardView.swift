@@ -3,6 +3,7 @@ import SwiftUI
 
 private let logger = Logger(subsystem: "com.kcalz", category: "DashboardView")
 
+/// Main daily tracker screen showing calorie summary, macros, and meal sections.
 struct DashboardView: View {
     let offStore: OFFStore
     let userStore: UserStore
@@ -23,6 +24,17 @@ struct DashboardView: View {
     @State private var checkpoint: UserStore.WeightCheckpoint?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// Nutrient bar data for a single macro row in the summary section.
+    private struct MacroBarData {
+        let label: String
+        let current: Double
+        let goal: Double?
+        let color: Color
+    }
+
+    /// Fiber recommendation: grams per 1 000 kcal.
+    private static let fiberPer1000Kcal: Double = 15
+
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "fr_FR")
@@ -30,10 +42,12 @@ struct DashboardView: View {
         return f
     }()
 
+    /// Whether `currentDate` is today.
     private var isToday: Bool {
         Calendar.current.isDateInToday(currentDate)
     }
 
+    /// Human-readable label for `currentDate` (e.g. "Aujourd'hui", "Hier", or full date).
     private var dateText: String {
         if isToday { return "Aujourd'hui" }
         if Calendar.current.isDateInYesterday(currentDate) { return "Hier" }
@@ -56,23 +70,23 @@ struct DashboardView: View {
                 switch route {
                 case .search(let mealType):
                     SearchView(store: offStore, userStore: userStore, onSelect: { product in
-                        path.append(.detail(product, mealType))
+                        path.append(.detail(product: product, mealType: mealType))
                     }, onSelectRecent: { entry in
-                        path.append(.addRecent(entry, mealType))
+                        path.append(.addRecent(entry: entry, mealType: mealType))
                     }, onScan: {
-                        path.append(.scan(mealType))
+                        path.append(.scan(mealType: mealType))
                     }, onCreateFood: { query in
-                        path.append(.createFood(query, mealType))
+                        path.append(.createFood(query: query, mealType: mealType))
                     }, onSelectCustom: { custom in
-                        path.append(.addRecent(foodEntry(from: custom), mealType))
+                        path.append(.addRecent(entry: foodEntry(from: custom), mealType: mealType))
                     })
                 case .createFood(let query, let mealType):
                     CreateFoodView(initialName: query, userStore: userStore) { custom in
-                        path.append(.addRecent(foodEntry(from: custom), mealType))
+                        path.append(.addRecent(entry: foodEntry(from: custom), mealType: mealType))
                     }
                 case .scan(let mealType):
                     BarcodeScannerView(offStore: offStore) { product in
-                        path.append(.detail(product, mealType))
+                        path.append(.detail(product: product, mealType: mealType))
                     }
                 case .detail(let product, let mealType):
                     ProductDetailView(product: product, userStore: userStore, onSave: { entry in
@@ -163,6 +177,7 @@ struct DashboardView: View {
         }
     }
 
+    /// Main scrollable content for the day: date nav, summary ring, macros, and meal sections.
     @ViewBuilder
     private func dayContent(_ dayLog: DayLog) -> some View {
         ScrollView {
@@ -289,9 +304,9 @@ struct DashboardView: View {
                     ForEach(dayLog.meals) { meal in
                         MealSectionView(
                             meal: meal,
-                            onTitleTap: { path.append(.mealDetail(meal)) },
-                            onAdd: { path.append(.search(meal.type)) },
-                            onTap: { entry in path.append(.edit(entry, meal.type)) },
+                            onTitleTap: { path.append(.mealDetail(meal: meal)) },
+                            onAdd: { path.append(.search(mealType: meal.type)) },
+                            onTap: { entry in path.append(.edit(entry: entry, mealType: meal.type)) },
                             isSelecting: selectingMealType == meal.type,
                             selectedIds: $selectedEntryIds,
                             onLongPress: { selectingMealType = meal.type },
@@ -307,38 +322,44 @@ struct DashboardView: View {
         }
     }
 
+    /// Horizontal progress bars for each macro that has a goal set.
     @ViewBuilder
     private func macrosBars(_ dayLog: DayLog) -> some View {
-        let bars: [(String, Double, Double?, Color)] = [
-            ("Protéines", dayLog.totalProteins, goal.proteins, .kcCardinal),
-            ("Glucides", dayLog.totalCarbs, goal.carbs, .kcMacaw),
-            ("Lipides", dayLog.totalFat, goal.fat, .kcBee),
-            ("Sucres", dayLog.totalSugars, goal.sugars, .kcFox),
-            ("Sel", dayLog.totalSalt, goal.salt, .kcHare),
-            // 15g fibres / 1000 kcal (recommandation nutritionnelle standard)
-            ("Fibres", dayLog.totalFiber, goal.kcal.map { $0 / 1000 * 15 }, .kcHare),
+        let bars: [MacroBarData] = [
+            MacroBarData(label: "Protéines", current: dayLog.totalProteins, goal: goal.proteins, color: .kcCardinal),
+            MacroBarData(label: "Glucides", current: dayLog.totalCarbs, goal: goal.carbs, color: .kcMacaw),
+            MacroBarData(label: "Lipides", current: dayLog.totalFat, goal: goal.fat, color: .kcBee),
+            MacroBarData(label: "Sucres", current: dayLog.totalSugars, goal: goal.sugars, color: .kcFox),
+            MacroBarData(label: "Sel", current: dayLog.totalSalt, goal: goal.salt, color: .kcHare),
+            MacroBarData(label: "Fibres", current: dayLog.totalFiber,
+                         goal: goal.kcal.map { $0 / 1000 * Self.fiberPer1000Kcal }, color: .kcHare),
         ]
-        let active = bars.enumerated().filter { $0.element.2 != nil }
+        let active = bars.enumerated().filter { $0.element.goal != nil }
         if !active.isEmpty {
             VStack(spacing: 12) {
                 ForEach(active, id: \.offset) { index, bar in
-                    NutrientBarView(label: bar.0, current: bar.1, goal: bar.2!, color: bar.3, index: index)
+                    if let goalValue = bar.goal {
+                        NutrientBarView(label: bar.label, current: bar.current, goal: goalValue, color: bar.color, index: index)
+                    }
                 }
             }
             .padding(.bottom, 32)
         }
     }
 
+    /// Moves `currentDate` forward or backward by `offset` days.
     private func navigateDay(_ offset: Int) {
         guard let newDate = Calendar.current.date(byAdding: .day, value: offset, to: currentDate) else { return }
         currentDate = newDate
     }
 
+    /// Loads the `DayLog` and previous-meal hints for the given date.
     private func loadDay(_ date: Date) {
         dayLog = try? userStore.loadDayLog(for: date)
         loadPreviousMeals(date)
     }
 
+    /// Finds the most recent entries for each empty meal slot to offer "copy previous".
     private func loadPreviousMeals(_ date: Date) {
         var result: [MealType: (date: Date, entries: [FoodEntry])] = [:]
         guard let dayLog else { previousMeals = result; return }
@@ -350,29 +371,34 @@ struct DashboardView: View {
         previousMeals = result
     }
 
+    /// Persists a new food entry and refreshes the day.
     private func addEntry(_ entry: FoodEntry, to mealType: MealType) {
         do { try userStore.addEntry(entry, date: currentDate, mealType: mealType) }
         catch { logger.error("addEntry failed: \(error)") }
         loadDay(currentDate)
     }
 
+    /// Updates the gram amount of an existing entry and refreshes the day.
     private func updateEntry(_ entry: FoodEntry, in mealType: MealType) {
         do { try userStore.updateEntryGrams(id: entry.id, grams: entry.grams) }
         catch { logger.error("updateEntry failed: \(error)") }
         loadDay(currentDate)
     }
 
+    /// Deletes a single entry and refreshes the day.
     private func removeEntry(_ entry: FoodEntry, from mealType: MealType) {
         do { try userStore.deleteEntry(id: entry.id) }
         catch { logger.error("removeEntry failed: \(error)") }
         loadDay(currentDate)
     }
 
+    /// Clears multi-select state and deselects all entries.
     private func exitSelectionMode() {
         selectingMealType = nil
         selectedEntryIds = []
     }
 
+    /// Batch-deletes all currently selected entries.
     private func deleteSelectedEntries() {
         do { try userStore.deleteEntries(ids: selectedEntryIds) }
         catch { logger.error("deleteSelectedEntries failed: \(error)") }
@@ -380,11 +406,13 @@ struct DashboardView: View {
         loadDay(currentDate)
     }
 
+    /// Refreshes today's weight and the latest checkpoint from the store.
     private func loadWeight() {
         todayWeight = try? userStore.loadWeight(for: currentDate)
         checkpoint = userStore.latestCheckpoint()
     }
 
+    /// Duplicates entries from the most recent occurrence of `mealType` into today.
     private func copyPreviousMeal(_ mealType: MealType) {
         guard let prev = previousMeals[mealType] else { return }
         let copies = prev.entries.map { entry in
@@ -399,6 +427,7 @@ struct DashboardView: View {
         loadDay(currentDate)
     }
 
+    /// Copies the selected entries to a different date and meal, then navigates there.
     private func copySelectedEntries(to date: Date, mealType: MealType) {
         do { try userStore.copyEntries(ids: selectedEntryIds, toDate: date, mealType: mealType) }
         catch { logger.error("copySelectedEntries failed: \(error)") }
@@ -407,6 +436,7 @@ struct DashboardView: View {
         loadDay(currentDate)
     }
 
+    /// Converts a custom product override into a `FoodEntry` with 100 g default weight.
     private func foodEntry(from custom: UserStore.ProductOverride) -> FoodEntry {
         FoodEntry(
             name: custom.name ?? "",

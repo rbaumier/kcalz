@@ -1,6 +1,7 @@
 import SwiftUI
 import Charts
 
+/// Weight tracking screen — log daily weight entries, view chart trends, and manage weight checkpoints.
 struct WeightView: View {
     let userStore: UserStore
     let currentDate: Date
@@ -20,6 +21,24 @@ struct WeightView: View {
     @FocusState private var inputFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
+    // MARK: - Layout constants
+
+    /// Height of the weight chart area.
+    private static let chartHeight: CGFloat = 220
+    /// Above this point count, use Catmull-Rom interpolation (enough data for smooth curves).
+    private static let smoothingThreshold = 14
+    /// Above this point count, hide individual dots (too dense to be readable).
+    private static let pointDisplayThreshold = 31
+    /// Symbol size when an entry is selected in the chart.
+    private static let selectedSymbolSize: CGFloat = 80
+    /// Default symbol size for unselected entries in the chart.
+    private static let defaultSymbolSize: CGFloat = 40
+    /// Stroke width for the weight chart line.
+    private static let chartLineWidth: CGFloat = 3
+    /// Vertical padding above/below the min/max weight on the Y axis, in kg.
+    private static let yAxisPaddingKg: Double = 1
+
+    /// Time period for filtering displayed weight entries.
     enum Period: String, CaseIterable, Identifiable {
         case week = "7j"
         case month = "30j"
@@ -28,6 +47,7 @@ struct WeightView: View {
 
         var id: String { rawValue }
 
+        /// Number of calendar days for the period, or `nil` for "all time".
         var days: Int? {
             switch self {
             case .week: 7
@@ -85,6 +105,7 @@ struct WeightView: View {
 
     // MARK: - Input
 
+    /// Text field + save button for logging today's weight.
     @ViewBuilder
     private var inputSection: some View {
         VStack(spacing: 12) {
@@ -129,6 +150,7 @@ struct WeightView: View {
 
     // MARK: - Period picker
 
+    /// Segmented control to switch between time periods (7j, 30j, 90j, all).
     @ViewBuilder
     private var periodPicker: some View {
         HStack(spacing: 8) {
@@ -152,6 +174,7 @@ struct WeightView: View {
 
     // MARK: - Chart
 
+    /// Line chart displaying weight entries over the selected period.
     @ViewBuilder
     private var chartSection: some View {
         if entries.isEmpty {
@@ -167,8 +190,8 @@ struct WeightView: View {
             .padding(.vertical, 40)
             .kcCard()
         } else {
-            let minKg = (entries.map(\.kg).min() ?? 0) - 1
-            let maxKg = (entries.map(\.kg).max() ?? 0) + 1
+            let minKg = (entries.map(\.kg).min() ?? 0) - Self.yAxisPaddingKg
+            let maxKg = (entries.map(\.kg).max() ?? 0) + Self.yAxisPaddingKg
 
             VStack(alignment: .leading, spacing: 12) {
                 if let selected = selectedEntry {
@@ -189,16 +212,16 @@ struct WeightView: View {
                         y: .value("Poids", entry.kg)
                     )
                     .foregroundStyle(Color.kcFeather)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                    .interpolationMethod(entries.count > 14 ? .catmullRom : .linear)
+                    .lineStyle(StrokeStyle(lineWidth: Self.chartLineWidth, lineCap: .round, lineJoin: .round))
+                    .interpolationMethod(entries.count > Self.smoothingThreshold ? .catmullRom : .linear)
 
-                    if entries.count <= 31 {
+                    if entries.count <= Self.pointDisplayThreshold {
                         PointMark(
                             x: .value("Date", entry.date),
                             y: .value("Poids", entry.kg)
                         )
                         .foregroundStyle(selectedEntry?.id == entry.id ? Color.kcWing : Color.kcFeather)
-                        .symbolSize(selectedEntry?.id == entry.id ? 80 : 40)
+                        .symbolSize(selectedEntry?.id == entry.id ? Self.selectedSymbolSize : Self.defaultSymbolSize)
                     }
                 }
                 .chartYScale(domain: minKg...maxKg)
@@ -239,7 +262,7 @@ struct WeightView: View {
                             }
                     }
                 }
-                .frame(height: 220)
+                .frame(height: Self.chartHeight)
             }
             .padding(Theme.cardInnerPadding)
             .kcCard()
@@ -248,6 +271,7 @@ struct WeightView: View {
 
     // MARK: - Objectifs
 
+    /// List of weight checkpoints (goals) with diff indicators.
     @ViewBuilder
     private var checkpointSection: some View {
         VStack(spacing: 12) {
@@ -335,6 +359,7 @@ struct WeightView: View {
         }
     }
 
+    /// Bottom sheet for creating a new weight checkpoint.
     @ViewBuilder
     private var newCheckpointSheet: some View {
         NavigationStack {
@@ -379,6 +404,7 @@ struct WeightView: View {
 
     // MARK: - Helpers
 
+    /// Persist the entered weight value and dismiss the view.
     private func saveWeight() {
         guard let kg = Double(weightText.replacingOccurrences(of: ",", with: ".")) else { return }
         try? userStore.saveWeight(kg: kg, date: currentDate)
@@ -386,6 +412,7 @@ struct WeightView: View {
         dismiss()
     }
 
+    /// Reload weight entries from the store based on the selected period.
     private func loadEntries() {
         let cal = Calendar.current
         let end = cal.startOfDay(for: cal.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate)
@@ -397,6 +424,7 @@ struct WeightView: View {
         }
     }
 
+    /// Formatter for human-readable date labels (e.g. "3 mars").
     private static let dateLabelFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "fr_FR")
@@ -404,6 +432,7 @@ struct WeightView: View {
         return f
     }()
 
+    /// Formatter for chart X-axis date labels (e.g. "3/3").
     private static let axisDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "fr_FR")
@@ -411,6 +440,7 @@ struct WeightView: View {
         return f
     }()
 
+    /// Formatter for chart X-axis day-of-week labels in week mode (e.g. "lun").
     private static let axisWeekFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "fr_FR")
@@ -418,6 +448,7 @@ struct WeightView: View {
         return f
     }()
 
+    /// Format a date as a relative label ("Aujourd'hui", "Hier") or short date.
     private func formatDateLabel(_ date: Date) -> String {
         let cal = Calendar.current
         if cal.isDateInToday(date) { return "Aujourd'hui" }
@@ -425,6 +456,7 @@ struct WeightView: View {
         return Self.dateLabelFormatter.string(from: date)
     }
 
+    /// Format a date for the chart X-axis, using day-of-week in week mode.
     private func formatAxisDate(_ date: Date) -> String {
         selectedPeriod == .week
             ? Self.axisWeekFormatter.string(from: date)

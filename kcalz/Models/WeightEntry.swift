@@ -1,7 +1,10 @@
 import Foundation
 
+/// A single body weight measurement for a given day.
 struct WeightEntry: Identifiable, Sendable {
-    let id: String // date string "yyyy-MM-dd"
+    /// Date string "yyyy-MM-dd" used as unique key.
+    let id: String
     let date: Date
+    /// Body weight in kilograms.
     let kg: Double
 }

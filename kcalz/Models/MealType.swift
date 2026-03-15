@@ -1,5 +1,6 @@
 import Foundation
 
+/// The four meal slots available in a day.
 enum MealType: String, CaseIterable, Identifiable, Sendable {
     case breakfast
     case lunch
@@ -8,6 +9,7 @@ enum MealType: String, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
+    /// Localized display name shown in the UI.
     var displayName: String {
         switch self {
         case .breakfast: "Petit déjeuner"
@@ -17,6 +19,7 @@ enum MealType: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// SF Symbol name for the meal type icon.
     var icon: String {
         switch self {
         case .breakfast: "sunrise.fill"
