@@ -547,10 +547,10 @@ final class UserStore: Sendable {
         }
     }
 
-    /// Loads the weight for a specific date, or nil if not recorded.
+    /// Loads the most recent weight on or before the given date (not future entries).
     func loadWeight(for date: Date) throws -> Double? {
         try dbQueue.read { db in
-            try Double.fetchOne(db, sql: "SELECT weight_kg FROM weight_entry WHERE date = ?", arguments: [date.kcDateString])
+            try Double.fetchOne(db, sql: "SELECT weight_kg FROM weight_entry WHERE date <= ? ORDER BY date DESC LIMIT 1", arguments: [date.kcDateString])
         }
     }
 
