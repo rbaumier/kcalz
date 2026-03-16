@@ -122,7 +122,11 @@ struct ProductDetailView: View {
                     .padding(.horizontal, Theme.horizontalPadding)
                 }
 
-                // Save button
+            }
+            .padding(.bottom, 16)
+        }
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 0) {
                 KcPrimaryButton(
                     label: viewModel.isEditing ? "Modifier" : "Ajouter",
                     enabled: viewModel.isValidInput
@@ -145,10 +149,7 @@ struct ProductDetailView: View {
                     onSave(viewModel.makeFoodEntry())
                 }
                 .accessibilityHint(viewModel.isEditing ? "Modifie le grammage" : "Ajoute cet aliment au repas")
-                .padding(.horizontal, Theme.horizontalPadding)
-                .padding(.top, 8)
 
-                // Delete button (edit mode only)
                 if let onDelete {
                     Button {
                         onDelete()
@@ -157,12 +158,13 @@ struct ProductDetailView: View {
                             .font(.kcBody)
                             .foregroundStyle(Color.kcCardinal)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, 8)
                     }
-                    .padding(.horizontal, Theme.horizontalPadding)
                 }
             }
-            .padding(.bottom, 32)
+            .padding(.horizontal, Theme.horizontalPadding)
+            .padding(.bottom, 8)
+            .background(Color.kcPolar)
         }
         .background(Color.kcPolar)
         .navigationTitle(viewModel.isEditing ? "Modifier" : "Détail")

@@ -55,12 +55,16 @@ final class OFFStore: Sendable {
         let ftsQuery = tokens.joined(separator: " ")
 
         return try dbQueue.read { db in
+            // bm25(): FTS5 built-in ranking function. Weights: name(10), brands(5), categories(1).
+            // Products with kcal data first, then by relevance, then popularity as tiebreaker.
             let sql = """
                 SELECT p.*
                 FROM products p
                 JOIN products_fts fts ON fts.rowid = p.rowid
                 WHERE products_fts MATCH ?
-                ORDER BY p.scans DESC
+                ORDER BY (CASE WHEN p.kcal IS NOT NULL THEN 0 ELSE 1 END),
+                         bm25(products_fts, 10.0, 5.0, 1.0),
+                         COALESCE(p.scans, 0) DESC
                 LIMIT \(Self.searchResultLimit)
                 """
             return try OFFProduct.fetchAll(db, sql: sql, arguments: [ftsQuery])

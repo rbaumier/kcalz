@@ -86,6 +86,8 @@ struct DashboardView: View {
                     }
                 case .scan(let mealType):
                     BarcodeScannerView(offStore: offStore) { product in
+                        // Replace scanner with detail so back goes to SearchView, not scanner.
+                        path.removeLast()
                         path.append(.detail(product: product, mealType: mealType))
                     }
                 case .detail(let product, let mealType):
