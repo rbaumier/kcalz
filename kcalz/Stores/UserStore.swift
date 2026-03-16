@@ -652,7 +652,7 @@ final class UserStore: Sendable {
                 for e in entries {
                     try db.execute(
                         sql: "INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                        arguments: [e["id"] as? String, e["date"] as? String, e["meal_type"] as? String,
+                        arguments: [(e["id"] as? String)?.uppercased(), e["date"] as? String, e["meal_type"] as? String,
                                     e["name"] as? String, e["brands"] as? String,
                                     e["grams"] as? Double, e["kcal_per_100g"] as? Double,
                                     e["proteins_per_100g"] as? Double, e["carbs_per_100g"] as? Double,
