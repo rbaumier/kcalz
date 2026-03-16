@@ -34,7 +34,6 @@
 
 ## Bugs connus
 - Sélection multiple via context menu au lieu de long press direct (SwiftUI gesture conflict avec ScrollView)
-- Toggle récents/fréquents dans SearchView ne fonctionne pas
 
 ## Next
 - **F26** — Déploiement via AltStore/Sideloadly (re-signing automatique pour éviter l'expiration 7 jours)
