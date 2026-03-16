@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -20,6 +21,9 @@ struct GoalsView: View {
     @State private var sugarsText: String
     @State private var saltText: String
     @State private var showExporter = false
+    @State private var showImporter = false
+    @State private var showImportConfirm = false
+    @State private var importURL: URL?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -117,6 +121,18 @@ struct GoalsView: View {
                     }
                     .padding(.top, 16)
 
+                    Button { showImporter = true } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "square.and.arrow.down")
+                                .font(.kcIconMedium)
+                            Text("Importer des données")
+                                .font(.kcBody)
+                        }
+                        .foregroundStyle(Color.kcWolf)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                    }
+
                     if let lastExport = UserDefaults.standard.object(forKey: Self.lastExportKey) as? Date {
                         let days = Calendar.current.dateComponents([.day], from: lastExport, to: .now).day ?? 0
                         Text("Dernier export : il y a \(days) jour\(days > 1 ? "s" : "")")
@@ -141,6 +157,50 @@ struct GoalsView: View {
             if case .success = result {
                 UserDefaults.standard.set(Date.now, forKey: Self.lastExportKey)
             }
+        }
+        .fileImporter(
+            isPresented: $showImporter,
+            allowedContentTypes: [.database, .data],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                importURL = url
+                showImportConfirm = true
+            }
+        }
+        .alert("Remplacer les données ?", isPresented: $showImportConfirm) {
+            Button("Annuler", role: .cancel) { importURL = nil }
+            Button("Remplacer", role: .destructive) {
+                if let url = importURL {
+                    importDatabase(from: url)
+                    importURL = nil
+                }
+            }
+        } message: {
+            Text("Toutes vos données actuelles seront remplacées par le fichier importé. Cette action est irréversible.")
+        }
+    }
+
+    /// Replaces the app's user.sqlite with the imported file and exits.
+    private func importDatabase(from url: URL) {
+        guard url.startAccessingSecurityScopedResource() else { return }
+        defer { url.stopAccessingSecurityScopedResource() }
+
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+        let dbURL = appSupport.appendingPathComponent("user.sqlite")
+        let fm = FileManager.default
+
+        do {
+            // Remove existing DB files (sqlite, -wal, -shm)
+            for suffix in ["", "-wal", "-shm"] {
+                let path = dbURL.path + suffix
+                if fm.fileExists(atPath: path) { try fm.removeItem(atPath: path) }
+            }
+            try fm.copyItem(at: url, to: dbURL)
+            // Force restart to reload the database
+            exit(0)
+        } catch {
+            Logger(subsystem: "com.kcalz", category: "Import").error("Import failed: \(error)")
         }
     }
 }
