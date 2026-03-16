@@ -594,6 +594,119 @@ final class UserStore: Sendable {
         }
     }
 
+    // MARK: - Import
+
+    // MARK: - JSON Export/Import
+
+    /// Exports all user data as a JSON dictionary.
+    func exportJSON() throws -> Data {
+        try dbQueue.read { db in
+            var result: [String: Any] = [:]
+
+            result["food_entries"] = try Row.fetchAll(db, sql: "SELECT * FROM food_entry ORDER BY date, meal_type, sort_order").map { row -> [String: Any?] in
+                ["id": row["id"] as? String, "date": row["date"] as? String, "meal_type": row["meal_type"] as? String,
+                 "name": row["name"] as? String, "brands": row["brands"] as? String,
+                 "grams": row["grams"] as? Double, "kcal_per_100g": row["kcal_per_100g"] as? Double,
+                 "proteins_per_100g": row["proteins_per_100g"] as? Double, "carbs_per_100g": row["carbs_per_100g"] as? Double,
+                 "fat_per_100g": row["fat_per_100g"] as? Double, "sugars_per_100g": row["sugars_per_100g"] as? Double,
+                 "salt_per_100g": row["salt_per_100g"] as? Double, "fiber_per_100g": row["fiber_per_100g"] as? Double,
+                 "sort_order": row["sort_order"] as? Int]
+            }
+
+            if let goalRow = try Row.fetchOne(db, sql: "SELECT * FROM goals LIMIT 1") {
+                result["goals"] = ["kcal": goalRow["kcal"] as? Double, "proteins": goalRow["proteins"] as? Double,
+                                   "carbs": goalRow["carbs"] as? Double, "fat": goalRow["fat"] as? Double,
+                                   "sugars": goalRow["sugars"] as? Double, "salt": goalRow["salt"] as? Double] as [String: Any?]
+            }
+
+            result["weight_entries"] = try Row.fetchAll(db, sql: "SELECT * FROM weight_entry ORDER BY date").map { row -> [String: Any?] in
+                ["date": row["date"] as? String, "weight_kg": row["weight_kg"] as? Double]
+            }
+
+            result["weight_checkpoints"] = try Row.fetchAll(db, sql: "SELECT * FROM weight_checkpoint ORDER BY date").map { row -> [String: Any?] in
+                ["id": row["id"] as? String, "date": row["date"] as? String,
+                 "weight_kg": row["weight_kg"] as? Double, "title": row["title"] as? String, "goal": row["goal"] as? String]
+            }
+
+            result["product_overrides"] = try Row.fetchAll(db, sql: "SELECT * FROM product_override").map { row -> [String: Any?] in
+                ["code": row["code"] as? String, "kcal": row["kcal"] as? Double, "proteins": row["proteins"] as? Double,
+                 "carbs": row["carbs"] as? Double, "fat": row["fat"] as? Double, "sugars": row["sugars"] as? Double,
+                 "salt": row["salt"] as? Double, "fiber": row["fiber"] as? Double,
+                 "name": row["name"] as? String, "brands": row["brands"] as? String]
+            }
+
+            return try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys])
+        }
+    }
+
+    /// Imports all user data from a JSON file, replacing existing data in a single transaction.
+    func importJSON(from data: Data) throws {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw UserStoreError.directoryCreationFailed
+        }
+
+        try dbQueue.write { db in
+            // Food entries
+            if let entries = json["food_entries"] as? [[String: Any?]] {
+                try db.execute(sql: "DELETE FROM food_entry")
+                for e in entries {
+                    try db.execute(
+                        sql: "INSERT INTO food_entry (id, date, meal_type, name, brands, grams, kcal_per_100g, proteins_per_100g, carbs_per_100g, fat_per_100g, sugars_per_100g, salt_per_100g, fiber_per_100g, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        arguments: [e["id"] as? String, e["date"] as? String, e["meal_type"] as? String,
+                                    e["name"] as? String, e["brands"] as? String,
+                                    e["grams"] as? Double, e["kcal_per_100g"] as? Double,
+                                    e["proteins_per_100g"] as? Double, e["carbs_per_100g"] as? Double,
+                                    e["fat_per_100g"] as? Double, e["sugars_per_100g"] as? Double,
+                                    e["salt_per_100g"] as? Double, e["fiber_per_100g"] as? Double,
+                                    e["sort_order"] as? Int ?? 0])
+                }
+            }
+
+            // Goals
+            if let g = json["goals"] as? [String: Any?] {
+                try db.execute(sql: "DELETE FROM goals")
+                try db.execute(
+                    sql: "INSERT INTO goals (kcal, proteins, carbs, fat, sugars, salt) VALUES (?,?,?,?,?,?)",
+                    arguments: [g["kcal"] as? Double, g["proteins"] as? Double, g["carbs"] as? Double,
+                                g["fat"] as? Double, g["sugars"] as? Double, g["salt"] as? Double])
+            }
+
+            // Weight entries
+            if let weights = json["weight_entries"] as? [[String: Any?]] {
+                try db.execute(sql: "DELETE FROM weight_entry")
+                for w in weights {
+                    try db.execute(
+                        sql: "INSERT INTO weight_entry (date, weight_kg) VALUES (?,?)",
+                        arguments: [w["date"] as? String, w["weight_kg"] as? Double])
+                }
+            }
+
+            // Weight checkpoints
+            if let cps = json["weight_checkpoints"] as? [[String: Any?]] {
+                try db.execute(sql: "DELETE FROM weight_checkpoint")
+                for cp in cps {
+                    try db.execute(
+                        sql: "INSERT INTO weight_checkpoint (id, date, weight_kg, title, goal) VALUES (?,?,?,?,?)",
+                        arguments: [cp["id"] as? String, cp["date"] as? String, cp["weight_kg"] as? Double,
+                                    cp["title"] as? String, cp["goal"] as? String])
+                }
+            }
+
+            // Product overrides
+            if let overrides = json["product_overrides"] as? [[String: Any?]] {
+                try db.execute(sql: "DELETE FROM product_override")
+                for o in overrides {
+                    try db.execute(
+                        sql: "INSERT INTO product_override (code, kcal, proteins, carbs, fat, sugars, salt, fiber, name, brands) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                        arguments: [o["code"] as? String, o["kcal"] as? Double, o["proteins"] as? Double,
+                                    o["carbs"] as? Double, o["fat"] as? Double, o["sugars"] as? Double,
+                                    o["salt"] as? Double, o["fiber"] as? Double,
+                                    o["name"] as? String, o["brands"] as? String])
+                }
+            }
+        }
+    }
+
     /// Copies food entries by ID to a different date/meal, assigning new IDs.
     func copyEntries(ids: Set<UUID>, toDate date: Date, mealType: MealType) throws {
         guard !ids.isEmpty else { return }

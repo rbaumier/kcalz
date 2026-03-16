@@ -150,9 +150,9 @@ struct GoalsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .fileExporter(
             isPresented: $showExporter,
-            document: SqliteDocument(),
-            contentType: .database,
-            defaultFilename: "kcalz-\(Date.now.kcDateString).sqlite"
+            document: JsonExportDocument(userStore: userStore),
+            contentType: .json,
+            defaultFilename: "kcalz-\(Date.now.kcDateString).json"
         ) { result in
             if case .success = result {
                 UserDefaults.standard.set(Date.now, forKey: Self.lastExportKey)
@@ -160,13 +160,23 @@ struct GoalsView: View {
         }
         .fileImporter(
             isPresented: $showImporter,
-            allowedContentTypes: [.database, .data],
+            allowedContentTypes: [.json],
             allowsMultipleSelection: false
         ) { result in
             if case .success(let urls) = result, let url = urls.first {
                 importURL = url
                 showImportConfirm = true
             }
+        }
+        .alert("Import réussi", isPresented: $showImportSuccess) {
+            Button("OK") { dismiss() }
+        } message: {
+            Text("Vos données ont été importées.")
+        }
+        .alert("Erreur d'import", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) {
+            Button("OK") {}
+        } message: {
+            Text(importError ?? "")
         }
         .alert("Remplacer les données ?", isPresented: $showImportConfirm) {
             Button("Annuler", role: .cancel) { importURL = nil }
@@ -181,25 +191,21 @@ struct GoalsView: View {
         }
     }
 
-    /// Replaces the app's user.sqlite with the imported file and exits.
+    @State private var showImportSuccess = false
+    @State private var importError: String?
+
+    /// Reads JSON export and imports all data into the active database.
     private func importDatabase(from url: URL) {
+        guard let userStore else { return }
         guard url.startAccessingSecurityScopedResource() else { return }
         defer { url.stopAccessingSecurityScopedResource() }
 
-        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
-        let dbURL = appSupport.appendingPathComponent("user.sqlite")
-        let fm = FileManager.default
-
         do {
-            // Remove existing DB files (sqlite, -wal, -shm)
-            for suffix in ["", "-wal", "-shm"] {
-                let path = dbURL.path + suffix
-                if fm.fileExists(atPath: path) { try fm.removeItem(atPath: path) }
-            }
-            try fm.copyItem(at: url, to: dbURL)
-            // Force restart to reload the database
-            exit(0)
+            let data = try Data(contentsOf: url)
+            try userStore.importJSON(from: data)
+            showImportSuccess = true
         } catch {
+            importError = error.localizedDescription
             Logger(subsystem: "com.kcalz", category: "Import").error("Import failed: \(error)")
         }
     }
@@ -238,22 +244,23 @@ private struct MacroCard: View {
     }
 }
 
-// MARK: - SQLite document export
+// MARK: - JSON document export
 
-/// `FileDocument` wrapper that exports the user SQLite database for sharing/backup.
-struct SqliteDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.database] }
+/// `FileDocument` that exports all user data as JSON for sharing/backup.
+struct JsonExportDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
 
-    init() {}
+    private let jsonData: Data
 
-    init(configuration: ReadConfiguration) throws {}
+    init(userStore: UserStore?) {
+        self.jsonData = (try? userStore?.exportJSON()) ?? Data("{}".utf8)
+    }
 
-    /// Creates a file wrapper pointing to the app's SQLite database.
+    init(configuration: ReadConfiguration) throws {
+        self.jsonData = configuration.file.regularFileContents ?? Data()
+    }
+
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            throw CocoaError(.fileNoSuchFile)
-        }
-        let dbURL = appSupport.appendingPathComponent("user.sqlite")
-        return try FileWrapper(url: dbURL, options: .immediate)
+        FileWrapper(regularFileWithContents: jsonData)
     }
 }
