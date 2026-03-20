@@ -370,6 +370,21 @@ final class UserStore: Sendable {
         return nil
     }
 
+    /// Finds entries for a specific meal type on a specific date.
+    func findMealEntries(type: MealType, on date: Date) -> [FoodEntry]? {
+        let dateStr = date.kcDateString
+        let rows = try? dbQueue.read { db in
+            let sql = """
+                SELECT * FROM food_entry
+                WHERE meal_type = ? AND date = ?
+                ORDER BY sort_order
+                """
+            return try Row.fetchAll(db, sql: sql, arguments: [type.rawValue, dateStr])
+        }
+        guard let rows, !rows.isEmpty else { return nil }
+        return rows.map { Self.foodEntry(from: $0) }
+    }
+
     // MARK: - Product Overrides
 
     /// User-defined nutritional override for a product (or custom food).

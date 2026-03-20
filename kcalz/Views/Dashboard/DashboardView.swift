@@ -362,12 +362,27 @@ struct DashboardView: View {
     }
 
     /// Finds the most recent entries for each empty meal slot to offer "copy previous".
+    /// - Lunch: proposes copying dinner from the previous day.
+    /// - Dinner: proposes copying lunch from the same day.
+    /// - Others: proposes copying the same meal type from a recent day.
     private func loadPreviousMeals(_ date: Date) {
         var result: [MealType: (date: Date, entries: [FoodEntry])] = [:]
         guard let dayLog else { previousMeals = result; return }
         for meal in dayLog.meals where meal.entries.isEmpty {
-            if let prev = userStore.findLastMealEntries(type: meal.type, before: date) {
-                result[meal.type] = prev
+            switch meal.type {
+            case .lunch:
+                if let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: date),
+                   let entries = userStore.findMealEntries(type: .dinner, on: yesterday) {
+                    result[.lunch] = (date: yesterday, entries: entries)
+                }
+            case .dinner:
+                if let entries = userStore.findMealEntries(type: .lunch, on: date) {
+                    result[.dinner] = (date: date, entries: entries)
+                }
+            default:
+                if let prev = userStore.findLastMealEntries(type: meal.type, before: date) {
+                    result[meal.type] = prev
+                }
             }
         }
         previousMeals = result

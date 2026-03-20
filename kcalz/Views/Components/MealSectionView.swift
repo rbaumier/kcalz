@@ -78,12 +78,22 @@ struct MealSectionView: View {
                     }
 
                     if let prev = previousMeal {
-                        let daysAgo = Calendar.current.dateComponents([.day], from: prev.date, to: currentDate).day ?? 0
-                        let timeLabel = daysAgo == 1 ? "hier" : "il y a \(daysAgo)j"
                         let totalKcal = Int(round(prev.entries.reduce(0.0) { $0 + $1.kcal }))
-                        let name = meal.type.displayName.lowercased()
+                        let hint: String = switch meal.type {
+                        case .lunch:
+                            "Maintiens pour copier le dîner d'hier (\(totalKcal) kcal)"
+                        case .dinner:
+                            "Maintiens pour copier le déjeuner de ce midi (\(totalKcal) kcal)"
+                        default:
+                            {
+                                let daysAgo = Calendar.current.dateComponents([.day], from: prev.date, to: currentDate).day ?? 0
+                                let timeLabel = daysAgo == 1 ? "hier" : "il y a \(daysAgo)j"
+                                let name = meal.type.displayName.lowercased()
+                                return "Maintiens pour copier le \(name) d'\(timeLabel) (\(totalKcal) kcal)"
+                            }()
+                        }
 
-                        Text("Maintiens pour copier le \(name) d'\(timeLabel) (\(totalKcal) kcal)")
+                        Text(hint)
                             .font(.kcCaption)
                             .foregroundStyle(Color.kcHare)
                     }

@@ -273,6 +273,6 @@ private struct FoodRow: View {
             }
         }
         .padding(.horizontal, Theme.cardInnerPadding)
-        .padding(.vertical, 14)
+        .padding(.vertical, 10)
     }
 }
