@@ -41,29 +41,32 @@ final class OFFStore: Sendable {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= Self.minQueryLength else { return [] }
 
-        // FTS5 tokenization: keep only alphanumeric chars to avoid FTS5 syntax errors
-        // (operators like -, +, OR are reserved). Wrap each token in quotes for literal
-        // matching, append * for prefix search (e.g. "pomm"* matches "pommes").
-        let tokens = trimmed.components(separatedBy: .whitespacesAndNewlines)
+        // FTS5 tokenization: keep only alphanumeric chars to avoid FTS5 syntax errors.
+        // Only the last token gets prefix wildcard (*) — earlier tokens are complete words
+        // and match exactly, which avoids "cuit"* matching "cuisiné", "cuisine", etc.
+        let cleaned = trimmed.components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
             .compactMap { token -> String? in
-                let cleaned = token.filter { $0.isLetter || $0.isNumber }
-                guard !cleaned.isEmpty else { return nil }
-                return "\"\(cleaned)\"*"
+                let c = token.filter { $0.isLetter || $0.isNumber }
+                return c.isEmpty ? nil : c
             }
-        guard !tokens.isEmpty else { return [] }
+        guard !cleaned.isEmpty else { return [] }
+        // FTS query targets name column only — avoids false matches from brands/categories
+        // (e.g. "Poulet au curry" matching "riz cuit" via category "Plats cuisinés au riz").
+        let tokens = cleaned.enumerated().map { i, c in
+            i == cleaned.count - 1 ? "name:\"\(c)\"*" : "name:\"\(c)\""
+        }
         let ftsQuery = tokens.joined(separator: " ")
 
         return try dbQueue.read { db in
-            // bm25(): FTS5 built-in ranking function. Weights: name(10), brands(5), categories(1).
-            // Products with kcal data first, then by relevance, then popularity as tiebreaker.
+            // Ranking: kcal exists → shorter name → popularity
             let sql = """
                 SELECT p.*
                 FROM products p
                 JOIN products_fts fts ON fts.rowid = p.rowid
                 WHERE products_fts MATCH ?
                 ORDER BY (CASE WHEN p.kcal IS NOT NULL THEN 0 ELSE 1 END),
-                         bm25(products_fts, 10.0, 5.0, 1.0),
+                         LENGTH(p.name),
                          COALESCE(p.scans, 0) DESC
                 LIMIT \(Self.searchResultLimit)
                 """

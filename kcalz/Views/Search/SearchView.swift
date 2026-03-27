@@ -28,11 +28,12 @@ struct SearchView: View {
 
     @FocusState private var isSearchFocused: Bool
 
-    /// Returns history entries (recent or frequent) filtered by the current query when long enough.
+    @State private var searchedHistory: [FoodEntry] = []
+
+    /// Returns history entries — SQL-searched when a query is active, otherwise preloaded top 20.
     private var historyFoods: [FoodEntry] {
-        let source = showFrequent ? frequentFoods : recentFoods
-        if viewModel.query.count < 2 { return source }
-        return source.filter { $0.name.localizedCaseInsensitiveContains(viewModel.query) }
+        if viewModel.query.count >= 2 { return searchedHistory }
+        return showFrequent ? frequentFoods : recentFoods
     }
 
     var body: some View {
@@ -51,6 +52,7 @@ struct SearchView: View {
                     .onChange(of: viewModel.query) {
                         viewModel.onQueryChanged()
                         customFoods = userStore.searchCustomFoods(query: viewModel.query)
+                        searchedHistory = (try? userStore.searchHistory(query: viewModel.query)) ?? []
                     }
 
                 if !viewModel.query.isEmpty {

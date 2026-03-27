@@ -321,6 +321,33 @@ final class UserStore: Sendable {
         }
     }
 
+    /// Searches history entries by name tokens (AND logic), combining frequency and recency.
+    func searchHistory(query: String, limit: Int = defaultHistoryLimit) throws -> [FoodEntry] {
+        guard query.count >= Self.minQueryLength else { return [] }
+        let tokens = query.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        guard !tokens.isEmpty else { return [] }
+        let conditions = tokens.map { _ in "name LIKE ? ESCAPE '\\'" }
+        let where_ = conditions.joined(separator: " AND ")
+        let args: [String] = tokens.map { token in
+            let escaped = token
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "%", with: "\\%")
+                .replacingOccurrences(of: "_", with: "\\_")
+            return "%\(escaped)%"
+        }
+        return try dbQueue.read { db in
+            let sql = """
+                SELECT *, COUNT(*) as cnt, MAX(rowid) as max_rowid FROM food_entry
+                WHERE \(where_)
+                GROUP BY name
+                ORDER BY cnt DESC, max_rowid DESC
+                LIMIT ?
+                """
+            let rows = try Row.fetchAll(db, sql: sql, arguments: StatementArguments(args + ["\(limit)"]))
+            return rows.map { Self.foodEntry(from: $0) }
+        }
+    }
+
     /// Maps a database row to a FoodEntry value.
     private static func foodEntry(from row: Row) -> FoodEntry {
         FoodEntry(
