@@ -36,9 +36,10 @@ struct NutrientBarView: View {
             .frame(height: Theme.barHeight)
 
             HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(Int(current))")
+                let remaining = Int(goal - current)
+                Text(remaining >= 0 ? "-\(remaining)" : "+\(-remaining)")
                     .font(.kcSmallNumber)
-                    .foregroundStyle(Color.kcEel)
+                    .foregroundStyle(remaining >= 0 ? Color.kcEel : Color.kcCardinal)
                 Text("/ \(Int(goal))g")
                     .font(.kcUnit)
                     .foregroundStyle(Color.kcWolf)
@@ -46,7 +47,7 @@ struct NutrientBarView: View {
             .frame(minWidth: 56, alignment: .trailing)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label): \(Int(current)) sur \(Int(goal)) grammes")
+        .accessibilityLabel("\(label): \(Int(goal - current)) grammes restants sur \(Int(goal))")
         .task {
             if reduceMotion {
                 animatedProgress = progress
