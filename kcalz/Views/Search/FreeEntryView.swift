@@ -14,6 +14,7 @@ struct FreeEntryView: View {
     @State private var proteinsText = ""
     @State private var carbsText = ""
     @State private var fatText = ""
+    @FocusState private var isNameFocused: Bool
 
     /// Fallback entry name when the name field is left blank.
     private static let defaultName = "Saisie libre"
@@ -45,6 +46,7 @@ struct FreeEntryView: View {
 
                     TextField(Self.defaultName, text: $nameText)
                         .font(.kcBody)
+                        .focused($isNameFocused)
                         .padding(.horizontal, Theme.cardInnerPadding)
                         .padding(.vertical, 14)
                         .kcCard(radius: Theme.cornerRadiusM)
@@ -124,6 +126,9 @@ struct FreeEntryView: View {
         .background(Color.kcPolar)
         .navigationTitle("Saisie libre")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            isNameFocused = true
+        }
     }
 
     /// Builds a per-100g `FoodEntry` from the absolute portion values.

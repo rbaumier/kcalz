@@ -48,6 +48,18 @@ struct ProductDetailView: View {
         self.goalKcal = goalKcal
     }
 
+    /// Tap action for the day stat — fills the grams field so the projected day total
+    /// lands on the kcal goal. `nil` when there is no goal, no room left below it, or
+    /// the product has no calories (grams can't influence the total).
+    private var dayGoalTapAction: (() -> Void)? {
+        guard let goalKcal, viewModel.kcalPer100g > 0 else { return nil }
+        let remaining = goalKcal - dayBaseKcal
+        guard remaining > 0 else { return nil }
+        return {
+            viewModel.gramsText = (remaining / viewModel.kcalPer100g * FoodEntry.per100gBase).rounded().kcFormatted
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -143,9 +155,11 @@ struct ProductDetailView: View {
                 ProjectedTotalsRow(
                     mealKcal: mealBaseKcal + viewModel.kcal,
                     dayKcal: dayBaseKcal + viewModel.kcal,
-                    goalKcal: goalKcal
+                    goalKcal: goalKcal,
+                    onDayTap: dayGoalTapAction
                 )
-                .padding(.bottom, 10)
+                .padding(.top, 14)
+                .padding(.bottom, 12)
 
                 KcPrimaryButton(
                     label: viewModel.isEditing ? "Modifier" : "Ajouter",
@@ -199,6 +213,8 @@ struct ProjectedTotalsRow: View {
     let mealKcal: Double
     let dayKcal: Double
     let goalKcal: Double?
+    /// When set, the day stat becomes tappable (used to auto-fill grams toward the goal).
+    var onDayTap: (() -> Void)? = nil
 
     private static let formatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -214,21 +230,45 @@ struct ProjectedTotalsRow: View {
     }
 
     var body: some View {
-        let meal = Text("Repas ").foregroundStyle(Color.kcWolf)
-            + Text(Self.kcal(mealKcal)).foregroundStyle(Color.kcFeather)
-            + Text(" kcal").foregroundStyle(Color.kcWolf)
-        let day: Text = {
-            let total = Text("Journée ").foregroundStyle(Color.kcWolf)
-                + Text(Self.kcal(dayKcal)).foregroundStyle(Color.kcFeather)
-            if let goalKcal {
-                return total + Text(" / \(Self.kcal(goalKcal)) kcal").foregroundStyle(Color.kcWolf)
-            }
-            return total + Text(" kcal").foregroundStyle(Color.kcWolf)
-        }()
+        HStack(spacing: 0) {
+            stat(label: "REPAS", value: Self.kcal(mealKcal), suffix: "kcal")
 
-        (meal + Text(" · ").foregroundStyle(Color.kcWolf) + day)
-            .font(.kcCaption)
-            .frame(maxWidth: .infinity)
+            Rectangle()
+                .fill(Color.kcEel.opacity(0.1))
+                .frame(width: 1.5)
+
+            if let onDayTap {
+                Button(action: onDayTap) { dayStat }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Ajuste la quantité pour atteindre l'objectif kcal de la journée")
+            } else {
+                dayStat
+            }
+        }
+        // Bound the divider to the stats' height instead of the proposed footer height.
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var dayStat: some View {
+        stat(
+            label: "JOURNÉE",
+            value: Self.kcal(dayKcal),
+            suffix: goalKcal.map { "/ \(Self.kcal($0))" } ?? "kcal"
+        )
+    }
+
+    /// One centered mini-stat: uppercase label above the green value and its grey suffix.
+    private func stat(label: String, value: String, suffix: String) -> some View {
+        VStack(spacing: 3) {
+            Text(label)
+                .font(.kcLabel)
+                .kerning(Theme.labelKerning)
+                .foregroundStyle(Color.kcHare)
+
+            (Text(value).font(.kcNumberSmall).foregroundStyle(Color.kcFeather)
+                + Text(" \(suffix)").font(.kcSmallLabel).foregroundStyle(Color.kcHare))
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
