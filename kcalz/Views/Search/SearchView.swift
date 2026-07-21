@@ -72,6 +72,13 @@ struct SearchView: View {
                         .font(.kcIconMedium)
                         .foregroundStyle(Color.kcFeather)
                 }
+
+                Button { onFreeEntry() } label: {
+                    Image(systemName: "square.and.pencil")
+                        .font(.kcIconMedium)
+                        .foregroundStyle(Color.kcFeather)
+                }
+                .accessibilityLabel("Saisie libre")
             }
             .padding(.horizontal, Theme.horizontalPadding)
             .padding(.vertical, 12)
@@ -84,20 +91,6 @@ struct SearchView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // MARK: - Saisie libre
-                    Button { onFreeEntry() } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "square.and.pencil")
-                                .font(.kcIconMedium)
-                            Text("Saisie libre")
-                                .font(.kcBody)
-                        }
-                        .foregroundStyle(Color.kcFeather)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .kcCard()
-                    }
-
                     // MARK: - Historique
                     if !historyFoods.isEmpty {
                         VStack(spacing: 8) {
