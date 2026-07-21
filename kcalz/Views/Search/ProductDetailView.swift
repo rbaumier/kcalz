@@ -9,30 +9,43 @@ struct ProductDetailView: View {
     let onSave: (FoodEntry) -> Void
     var onDelete: (() -> Void)?
     private let userStore: UserStore?
+    private let mealBaseKcal: Double
+    private let dayBaseKcal: Double
+    private let goalKcal: Double?
 
     /// Creates the detail view from an OFF product, loading any user override.
-    init(product: OFFProduct, userStore: UserStore, onSave: @escaping (FoodEntry) -> Void) {
+    init(product: OFFProduct, userStore: UserStore, mealBaseKcal: Double, dayBaseKcal: Double, goalKcal: Double?, onSave: @escaping (FoodEntry) -> Void) {
         let override = userStore.loadProductOverride(code: product.code)
         _viewModel = State(initialValue: ProductDetailViewModel(product: product, override: override))
         self.onSave = onSave
         self.onDelete = nil
         self.userStore = userStore
+        self.mealBaseKcal = mealBaseKcal
+        self.dayBaseKcal = dayBaseKcal
+        self.goalKcal = goalKcal
     }
 
     /// Creates the detail view from a recent food entry (re-log flow).
-    init(recentEntry: FoodEntry, onSave: @escaping (FoodEntry) -> Void) {
+    init(recentEntry: FoodEntry, mealBaseKcal: Double, dayBaseKcal: Double, goalKcal: Double?, onSave: @escaping (FoodEntry) -> Void) {
         _viewModel = State(initialValue: ProductDetailViewModel(entry: recentEntry))
         self.onSave = onSave
         self.onDelete = nil
         self.userStore = nil
+        self.mealBaseKcal = mealBaseKcal
+        self.dayBaseKcal = dayBaseKcal
+        self.goalKcal = goalKcal
     }
 
     /// Creates the detail view in edit mode for an existing logged entry.
-    init(entry: FoodEntry, onSave: @escaping (FoodEntry) -> Void, onDelete: @escaping () -> Void) {
+    /// Callers pass bases already net of this entry's kcal so the projection reflects a replacement, not a duplicate.
+    init(entry: FoodEntry, mealBaseKcal: Double, dayBaseKcal: Double, goalKcal: Double?, onSave: @escaping (FoodEntry) -> Void, onDelete: @escaping () -> Void) {
         _viewModel = State(initialValue: ProductDetailViewModel(entry: entry, editing: true))
         self.onSave = onSave
         self.onDelete = onDelete
         self.userStore = nil
+        self.mealBaseKcal = mealBaseKcal
+        self.dayBaseKcal = dayBaseKcal
+        self.goalKcal = goalKcal
     }
 
     var body: some View {
@@ -127,6 +140,13 @@ struct ProductDetailView: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
+                ProjectedTotalsRow(
+                    mealKcal: mealBaseKcal + viewModel.kcal,
+                    dayKcal: dayBaseKcal + viewModel.kcal,
+                    goalKcal: goalKcal
+                )
+                .padding(.bottom, 10)
+
                 KcPrimaryButton(
                     label: viewModel.isEditing ? "Modifier" : "Ajouter",
                     enabled: viewModel.isValidInput
@@ -169,6 +189,46 @@ struct ProductDetailView: View {
         .background(Color.kcPolar)
         .navigationTitle(viewModel.isEditing ? "Modifier" : "Détail")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// Compact footer row showing the projected meal and day calorie totals — including the
+/// portion currently being added — so the user can tune grams toward a goal without mental
+/// math. Shared by the product-detail and free-entry footers. The day goal is shown only when set.
+struct ProjectedTotalsRow: View {
+    let mealKcal: Double
+    let dayKcal: Double
+    let goalKcal: Double?
+
+    private static let formatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.locale = Locale(identifier: "fr_FR")
+        f.maximumFractionDigits = 0
+        return f
+    }()
+
+    /// Rounds to whole kcal and groups thousands the French way (e.g. `1 450`).
+    private static func kcal(_ value: Double) -> String {
+        formatter.string(from: NSNumber(value: value.rounded())) ?? "\(Int(value))"
+    }
+
+    var body: some View {
+        let meal = Text("Repas ").foregroundStyle(Color.kcWolf)
+            + Text(Self.kcal(mealKcal)).foregroundStyle(Color.kcFeather)
+            + Text(" kcal").foregroundStyle(Color.kcWolf)
+        let day: Text = {
+            let total = Text("Journée ").foregroundStyle(Color.kcWolf)
+                + Text(Self.kcal(dayKcal)).foregroundStyle(Color.kcFeather)
+            if let goalKcal {
+                return total + Text(" / \(Self.kcal(goalKcal)) kcal").foregroundStyle(Color.kcWolf)
+            }
+            return total + Text(" kcal").foregroundStyle(Color.kcWolf)
+        }()
+
+        (meal + Text(" · ").foregroundStyle(Color.kcWolf) + day)
+            .font(.kcCaption)
+            .frame(maxWidth: .infinity)
     }
 }
 
