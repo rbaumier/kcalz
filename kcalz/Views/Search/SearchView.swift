@@ -8,6 +8,7 @@ struct SearchView: View {
     let onSelectRecent: (FoodEntry) -> Void
     let onScan: () -> Void
     let onCreateFood: (String) -> Void
+    let onFreeEntry: () -> Void
     let onSelectCustom: (UserStore.ProductOverride) -> Void
 
     @State private var customFoods: [UserStore.ProductOverride] = []
@@ -16,13 +17,14 @@ struct SearchView: View {
     @AppStorage("searchShowFrequent") private var showFrequent = false
 
     /// Creates the search view with its dependencies and navigation callbacks.
-    init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void, onScan: @escaping () -> Void, onCreateFood: @escaping (String) -> Void, onSelectCustom: @escaping (UserStore.ProductOverride) -> Void) {
+    init(store: OFFStore, userStore: UserStore, onSelect: @escaping (OFFProduct) -> Void, onSelectRecent: @escaping (FoodEntry) -> Void, onScan: @escaping () -> Void, onCreateFood: @escaping (String) -> Void, onFreeEntry: @escaping () -> Void, onSelectCustom: @escaping (UserStore.ProductOverride) -> Void) {
         _viewModel = State(initialValue: SearchViewModel(store: store))
         self.userStore = userStore
         self.onSelect = onSelect
         self.onSelectRecent = onSelectRecent
         self.onScan = onScan
         self.onCreateFood = onCreateFood
+        self.onFreeEntry = onFreeEntry
         self.onSelectCustom = onSelectCustom
     }
 
@@ -82,6 +84,20 @@ struct SearchView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
+                    // MARK: - Saisie libre
+                    Button { onFreeEntry() } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "square.and.pencil")
+                                .font(.kcIconMedium)
+                            Text("Saisie libre")
+                                .font(.kcBody)
+                        }
+                        .foregroundStyle(Color.kcFeather)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .kcCard()
+                    }
+
                     // MARK: - Historique
                     if !historyFoods.isEmpty {
                         VStack(spacing: 8) {

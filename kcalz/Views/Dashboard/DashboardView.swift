@@ -77,6 +77,8 @@ struct DashboardView: View {
                         path.append(.scan(mealType: mealType))
                     }, onCreateFood: { query in
                         path.append(.createFood(query: query, mealType: mealType))
+                    }, onFreeEntry: {
+                        path.append(.freeEntry(mealType: mealType))
                     }, onSelectCustom: { custom in
                         path.append(.addRecent(entry: foodEntry(from: custom), mealType: mealType))
                     })
@@ -84,6 +86,11 @@ struct DashboardView: View {
                     CreateFoodView(initialName: query, userStore: userStore) { custom in
                         path.append(.addRecent(entry: foodEntry(from: custom), mealType: mealType))
                     }
+                case .freeEntry(let mealType):
+                    FreeEntryView(onSave: { entry in
+                        addEntry(entry, to: mealType)
+                        path = []
+                    })
                 case .scan(let mealType):
                     BarcodeScannerView(offStore: offStore) { product in
                         // Replace scanner with detail so back goes to SearchView, not scanner.
