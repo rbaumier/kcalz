@@ -4,6 +4,9 @@ import SwiftUI
 /// without selecting a food. Calories are derived live from the macros (Atwater
 /// factors) and the portion is stored as a standard per-100g `FoodEntry`.
 struct FreeEntryView: View {
+    let mealBaseKcal: Double
+    let dayBaseKcal: Double
+    let goalKcal: Double?
     let onSave: (FoodEntry) -> Void
 
     @State private var nameText = ""
@@ -104,6 +107,11 @@ struct FreeEntryView: View {
                 .padding(.horizontal, Theme.horizontalPadding)
                 .accessibilityElement(children: .combine)
 
+                // Projected totals — meal + day including this portion's live Atwater kcal.
+                ProjectedTotalsRow(mealKcal: mealBaseKcal + kcal, dayKcal: dayBaseKcal + kcal, goalKcal: goalKcal)
+                    .padding(.horizontal, Theme.horizontalPadding)
+                    .padding(.top, 8)
+
                 // Add
                 KcPrimaryButton(label: "Ajouter", icon: "plus", enabled: isValid) {
                     onSave(makeEntry())
@@ -137,6 +145,6 @@ struct FreeEntryView: View {
 
 #Preview {
     NavigationStack {
-        FreeEntryView { _ in }
+        FreeEntryView(mealBaseKcal: 500, dayBaseKcal: 1200, goalKcal: 2000) { _ in }
     }
 }
