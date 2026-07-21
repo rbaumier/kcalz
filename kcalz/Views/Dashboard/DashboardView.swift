@@ -87,10 +87,15 @@ struct DashboardView: View {
                         path.append(.addRecent(entry: foodEntry(from: custom), mealType: mealType))
                     }
                 case .freeEntry(let mealType):
-                    FreeEntryView(onSave: { entry in
-                        addEntry(entry, to: mealType)
-                        path = []
-                    })
+                    FreeEntryView(
+                        mealBaseKcal: mealBaseKcal(mealType),
+                        dayBaseKcal: dayLog?.totalKcal ?? 0,
+                        goalKcal: goal.kcal,
+                        onSave: { entry in
+                            addEntry(entry, to: mealType)
+                            path = []
+                        }
+                    )
                 case .scan(let mealType):
                     BarcodeScannerView(offStore: offStore) { product in
                         // Replace scanner with detail so back goes to SearchView, not scanner.
@@ -98,23 +103,42 @@ struct DashboardView: View {
                         path.append(.detail(product: product, mealType: mealType))
                     }
                 case .detail(let product, let mealType):
-                    ProductDetailView(product: product, userStore: userStore, onSave: { entry in
-                        addEntry(entry, to: mealType)
-                        path = []
-                    })
+                    ProductDetailView(
+                        product: product, userStore: userStore,
+                        mealBaseKcal: mealBaseKcal(mealType),
+                        dayBaseKcal: dayLog?.totalKcal ?? 0,
+                        goalKcal: goal.kcal,
+                        onSave: { entry in
+                            addEntry(entry, to: mealType)
+                            path = []
+                        }
+                    )
                 case .addRecent(let entry, let mealType):
-                    ProductDetailView(recentEntry: entry, onSave: { newEntry in
-                        addEntry(newEntry, to: mealType)
-                        path = []
-                    })
+                    ProductDetailView(
+                        recentEntry: entry,
+                        mealBaseKcal: mealBaseKcal(mealType),
+                        dayBaseKcal: dayLog?.totalKcal ?? 0,
+                        goalKcal: goal.kcal,
+                        onSave: { newEntry in
+                            addEntry(newEntry, to: mealType)
+                            path = []
+                        }
+                    )
                 case .edit(let entry, let mealType):
-                    ProductDetailView(entry: entry, onSave: { updated in
-                        updateEntry(updated, in: mealType)
-                        path = []
-                    }, onDelete: {
-                        removeEntry(entry, from: mealType)
-                        path = []
-                    })
+                    // Subtract the edited entry's kcal so the projection shows a replacement, not a duplicate.
+                    ProductDetailView(
+                        entry: entry,
+                        mealBaseKcal: mealBaseKcal(mealType) - entry.kcal,
+                        dayBaseKcal: (dayLog?.totalKcal ?? 0) - entry.kcal,
+                        goalKcal: goal.kcal,
+                        onSave: { updated in
+                            updateEntry(updated, in: mealType)
+                            path = []
+                        }, onDelete: {
+                            removeEntry(entry, from: mealType)
+                            path = []
+                        }
+                    )
                 case .mealDetail(let meal):
                     MealDetailView(meal: meal)
                 case .goals:
@@ -360,6 +384,11 @@ struct DashboardView: View {
     private func navigateDay(_ offset: Int) {
         guard let newDate = Calendar.current.date(byAdding: .day, value: offset, to: currentDate) else { return }
         currentDate = newDate
+    }
+
+    /// Current calorie total for `mealType` in the loaded day (`0` when unavailable).
+    private func mealBaseKcal(_ mealType: MealType) -> Double {
+        dayLog?.meals.first { $0.type == mealType }?.totalKcal ?? 0
     }
 
     /// Loads the `DayLog` and previous-meal hints for the given date.
