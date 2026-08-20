@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kcalz — Propositions : totaux repas / journée</title>
+<style>
+  :root {
+    --feather: #58CC02;
+    --wing: #43C000;
+    --mask: #89E219;
+    --macaw: #1CB0F6;
+    --cardinal: #FF4B4B;
+    --bee: #FFC800;
+    --eel: #4B4B4B;
+    --wolf: #777777;
+    --hare: #AFAFAF;
+    --swan: #E5E5E5;
+    --polar: #F7F7F7;
+    --snow: #FFFFFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+    background: var(--polar);
+    color: var(--eel);
+    padding: 40px 24px 80px;
+  }
+  .intro { max-width: 720px; margin: 0 auto 48px; }
+  .intro h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .intro p { font-size: 15px; font-weight: 600; color: var(--wolf); line-height: 1.5; }
+
+  .proposal {
+    max-width: 900px;
+    margin: 0 auto 56px;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .explain { flex: 1 1 320px; min-width: 280px; padding-top: 8px; }
+  .explain h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  .explain .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--wolf);
+    background: var(--swan);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-bottom: 10px;
+  }
+  .tag.reco { background: var(--feather); color: var(--snow); }
+  .explain p { font-size: 14px; font-weight: 600; color: var(--wolf); line-height: 1.55; margin-bottom: 8px; }
+  .explain p strong { color: var(--eel); }
+
+  /* ---- Fake iPhone footer frame ---- */
+  .phone {
+    flex: 0 0 390px;
+    width: 390px;
+    background: var(--polar);
+    border: 2px solid var(--swan);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 4px 0 var(--swan);
+  }
+  .scroll-hint {
+    padding: 20px 20px 22px;
+    opacity: 0.55;
+  }
+  .qty-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    color: var(--wolf); margin-bottom: 8px;
+  }
+  .qty-row { display: flex; align-items: center; gap: 8px; }
+  .qty-field {
+    background: var(--snow);
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--swan);
+    padding: 12px 0;
+    width: 120px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 900;
+  }
+  .qty-unit { font-size: 17px; font-weight: 700; color: var(--wolf); }
+
+  .footer { padding: 0 16px 14px; background: var(--polar); }
+  .cta {
+    background: var(--feather);
+    color: var(--snow);
+    border-radius: 16px;
+    box-shadow: 0 5px 0 var(--wing);
+    padding: 16px 0;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  /* margin-top fix appliqué partout : espace au-dessus de la ligne de totaux */
+  .totals { margin: 14px 0 12px; }
+
+  /* ---- V0 : état actuel ---- */
+  .v0-line { text-align: center; font-size: 12px; font-weight: 700; color: var(--wolf); }
+  .v0-line b { color: var(--feather); font-weight: 900; }
+  .totals.v0 { margin-top: 0; } /* reproduit le margin-top manquant */
+
+  /* ---- V1 : deux mini-stats + séparateur ---- */
+  .v1 { display: flex; justify-content: center; align-items: stretch; }
+  .v1 .stat { flex: 1; text-align: center; }
+  .v1 .stat + .stat { border-left: 1.5px solid rgba(75, 75, 75, 0.10); }
+  .v1 .label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--hare); margin-bottom: 3px;
+  }
+  .v1 .value { font-size: 17px; font-weight: 900; color: var(--eel); }
+  .v1 .value b { color: var(--feather); font-weight: 900; }
+  .v1 .value .goal { font-size: 13px; font-weight: 800; color: var(--hare); }
+
+  /* ---- V2 : carte Duolingo ---- */
+  .v2 {
+    background: var(--snow);
+    border-radius: 16px;
+    box-shadow: 0 4px 0 var(--swan);
+    display: flex;
+    padding: 12px 0;
+  }
+  .v2 .stat { flex: 1; text-align: center; }
+  .v2 .stat + .stat { border-left: 1.5px solid rgba(75, 75, 75, 0.10); }
+  .v2 .label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--hare); margin-bottom: 3px;
+  }
+  .v2 .value { font-size: 17px; font-weight: 900; color: var(--feather); }
+  .v2 .value .goal { font-size: 13px; font-weight: 800; color: var(--hare); }
+
+  /* ---- V3 : pills ---- */
+  .v3 { display: flex; justify-content: center; gap: 8px; }
+  .v3 .pill {
+    font-size: 12px; font-weight: 800;
+    border-radius: 999px;
+    padding: 7px 14px;
+    background: rgba(88, 204, 2, 0.12);
+    color: var(--eel);
+    white-space: nowrap;
+  }
+  .v3 .pill b { color: var(--wing); font-weight: 900; }
+  .v3 .pill .goal { color: var(--wolf); font-weight: 700; }
+
+  /* ---- V4 : barre de progression journée ---- */
+  .v4 .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 7px;
+  }
+  .v4 .top .label { font-size: 13px; font-weight: 800; color: var(--eel); }
+  .v4 .top .nums { font-size: 13px; font-weight: 900; color: var(--eel); }
+  .v4 .top .nums .goal { color: var(--hare); font-weight: 800; }
+  .v4 .bar {
+    height: 10px; border-radius: 999px; background: var(--swan);
+    overflow: hidden; display: flex;
+  }
+  .v4 .fill-base { background: var(--feather); width: 62.5%; }
+  .v4 .fill-add { background: var(--mask); width: 10%; }
+  .v4 .meal {
+    margin-top: 7px; text-align: center;
+    font-size: 12px; font-weight: 700; color: var(--wolf);
+  }
+  .v4 .meal b { color: var(--feather); font-weight: 900; }
+
+  /* ---- V5 : restant ---- */
+  .v5 { text-align: center; }
+  .v5 .remaining { font-size: 17px; font-weight: 900; color: var(--eel); }
+  .v5 .remaining b { color: var(--feather); }
+  .v5 .sub { margin-top: 3px; font-size: 12px; font-weight: 700; color: var(--hare); }
+  .v5 .sub b { color: var(--wolf); font-weight: 800; }
+
+  .note {
+    max-width: 720px; margin: 0 auto;
+    font-size: 13px; font-weight: 600; color: var(--hare); line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Totaux repas / journée — propositions</h1>
+  <p>Contexte : footer de l'écran d'ajout (ProductDetailView / FreeEntryView), au-dessus du bouton « Ajouter ».
+  Valeurs d'exemple : repas projeté 650 kcal, journée projetée 1 450 / 2 000 kcal (portion en cours : 200 kcal).
+  Toutes les variantes incluent le margin-top manquant (14 pt au-dessus de la ligne).</p>
+</div>
+
+<!-- V0 — état actuel -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V0 — état actuel</span>
+    <h2>Ligne unique centrée</h2>
+    <p>Tout dans une seule phrase en caption 12 pt. <strong>Problèmes</strong> : collée au contenu du dessus (le margin-top manquant), hiérarchie faible — les deux chiffres se noient dans le texte, et la ligne est longue à scanner pendant qu'on tape des grammes.</p>
+  </div>
+  <div class="phone">
+    <div class="scroll-hint">
+      <div class="qty-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">100</div><span class="qty-unit">grammes</span></div>
+    </div>
+    <div class="footer">
+      <div class="totals v0"><div class="v0-line">Repas <b>650</b> kcal · Journée <b>1 450</b> / 2 000 kcal</div></div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V1 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag reco">V1 — recommandée</span>
+    <h2>Deux mini-stats, séparateur vertical</h2>
+    <p>Labels REPAS / JOURNÉE en petites capitales (style des labels de section existants, kerning 0.8), chiffres en dessous en rounded black 17 pt. Séparées par un hairline à 10 % d'opacité — pas de carte, juste du blanc.</p>
+    <p><strong>Pourquoi</strong> : hiérarchie nette (on lit d'abord les chiffres), scannable d'un coup d'œil pendant l'ajustement, zéro chrome ajouté au footer qui porte déjà un gros bouton vert. C'est le pattern « stat grid » le plus léger.</p>
+  </div>
+  <div class="phone">
+    <div class="scroll-hint">
+      <div class="qty-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">100</div><span class="qty-unit">grammes</span></div>
+    </div>
+    <div class="footer">
+      <div class="totals v1">
+        <div class="stat">
+          <div class="label">Repas</div>
+          <div class="value"><b>650</b> <span class="goal">kcal</span></div>
+        </div>
+        <div class="stat">
+          <div class="label">Journée</div>
+          <div class="value"><b>1 450</b> <span class="goal">/ 2 000</span></div>
+        </div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V2 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V2</span>
+    <h2>Carte Duolingo</h2>
+    <p>Mêmes deux stats, mais posées dans une carte blanche à ombre plate (le look kcCard de l'app). Chiffres en vert kcFeather.</p>
+    <p><strong>Pour</strong> : très cohérent avec les cartes du dashboard, bien détaché du fond. <strong>Contre</strong> : ajoute une deuxième « masse » au footer juste au-dessus du bouton — ça charge un écran dont le seul but est de régler un chiffre.</p>
+  </div>
+  <div class="phone">
+    <div class="scroll-hint">
+      <div class="qty-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">100</div><span class="qty-unit">grammes</span></div>
+    </div>
+    <div class="footer">
+      <div class="totals v2">
+        <div class="stat">
+          <div class="label">Repas</div>
+          <div class="value">650 <span class="goal">kcal</span></div>
+        </div>
+        <div class="stat">
+          <div class="label">Journée</div>
+          <div class="value">1 450 <span class="goal">/ 2 000</span></div>
+        </div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V3 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V3</span>
+    <h2>Pills teintées</h2>
+    <p>Deux pastilles arrondies sur fond vert à 12 % d'opacité, comme les pills de macros du détail repas.</p>
+    <p><strong>Pour</strong> : compact, joueur, rappelle un composant existant. <strong>Contre</strong> : les pills signalent plutôt des tags/états dans l'app — pour des totaux qui changent en direct, la lecture chiffrée est moins immédiate qu'en V1.</p>
+  </div>
+  <div class="phone">
+    <div class="scroll-hint">
+      <div class="qty-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">100</div><span class="qty-unit">grammes</span></div>
+    </div>
+    <div class="footer">
+      <div class="totals v3">
+        <span class="pill">Repas <b>650</b> kcal</span>
+        <span class="pill">Journée <b>1 450</b> <span class="goal">/ 2 000</span></span>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V4 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V4</span>
+    <h2>Barre de progression journée</h2>
+    <p>La journée devient une mini-barre (style NutrientBarView, 10 pt) : la part déjà consommée en vert kcFeather, la portion en cours d'ajout en vert clair kcMask — on <strong>voit</strong> la portion grossir ou rétrécir quand on change les grammes. Le repas passe en ligne secondaire.</p>
+    <p><strong>Pour</strong> : c'est la réponse la plus directe au besoin « ajuster les quantités pour viser l'objectif ». <strong>Contre</strong> : un peu plus haut que V1, et sans objectif défini la barre n'a pas de sens (fallback texte nécessaire).</p>
+  </div>
+  <div class="phone">
+    <div class="scroll-hint">
+      <div class="qty-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">100</div><span class="qty-unit">grammes</span></div>
+    </div>
+    <div class="footer">
+      <div class="totals v4">
+        <div class="top">
+          <span class="label">Journée</span>
+          <span class="nums">1 450 <span class="goal">/ 2 000 kcal</span></span>
+        </div>
+        <div class="bar"><div class="fill-base"></div><div class="fill-add"></div></div>
+        <div class="meal">Repas <b>650</b> kcal</div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V5 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V5</span>
+    <h2>Focus « restant »</h2>
+    <p>Une seule info principale : ce qu'il restera sur la journée après cet ajout — dans l'esprit du récent passage des barres nutriments au « restant ». Repas et total en ligne secondaire.</p>
+    <p><strong>Pour</strong> : c'est LE chiffre qu'on optimise, cohérent avec la direction récente de l'app. <strong>Contre</strong> : sans objectif kcal défini, « restant » n'existe pas (fallback = total journée), et le total du repas devient moins visible.</p>
+  </div>
+  <div class="phone">
+    <div class="scroll-hint">
+      <div class="qty-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">100</div><span class="qty-unit">grammes</span></div>
+    </div>
+    <div class="footer">
+      <div class="totals v5">
+        <div class="remaining">Reste <b>550</b> kcal aujourd'hui</div>
+        <div class="sub">Repas <b>650</b> · Journée <b>1 450</b> / 2 000 kcal</div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<p class="note">Rendu approché : la police utilise ui-rounded (SF Pro Rounded) quand dispo — au plus proche du rendu SwiftUI.
+V1 et V4 peuvent se combiner (V4 quand un objectif est défini, V1 sinon). Dis-moi la lettre retenue, j'implémente dans ProjectedTotalsRow.</p>
+
+</body>
+</html>

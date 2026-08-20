@@ -1,0 +1,37 @@
+# Couleurs 
+
+Feather Green1 (#58CC02),
+Mask Green2 (#89E219),
+Eel3 (#4B4B4B),
+Snow4 (#FFFFFF),
+Macaw (#1CB0F6),
+Cardinal (#FF4B4B),
+Bee (#FFC800),
+Fox (#FF9600),
+Beetle (#CE82FF),
+Humpback (#2B70C9),
+Eel (#4B4B4B),
+Wolf (#777777),
+Hare (#AFAFAF),
+Swan (#E5E5E5),
+Polar (#F7F7F7),
+Snow (#FFFFFF),
+Wing Overlay (#43C000),
+Feather Green (#58CC02),
+Mask Green (#89E219),
+Beak Inner (#B66E28),
+Beak Lower / Feet (#F49000),
+Beak Upper (#FFC200),
+Beak Highlight (#FFDE00),
+Tongue Pink (#FFCAFF),
+Eel (#4B4B4B),
+Polar (#F7F7F7),
+Snow (#FFFFFF)
+
+# Typographies
+
+Feather Bold : Feather Bold is the typeface we use for headlines, when we want to shout out and get noticed. It's bespoke to Duolingo, so no one else can use it. But let's make sure that we use it nicely!
+
+DIN Next Rounded : Din Next Rounded is our typeface for longer sections of text. We also use it in our marketing if the headline is 10 words or longer
+
+Substitute font, Nunito : In circumstances in which you do not have access to the brand fonts, use the substitute font Nunito. Nunito is a free Google font already available in Google Docs, Sheets, and Slides. It shares visual similarities with DIN Next Rounded with rounded caps and friendly characteristics

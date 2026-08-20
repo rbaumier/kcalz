@@ -26,3 +26,19 @@ build/
 
 # Data dumps
 data/
+
+# Import MFP (donnees personnelles)
+tools/mfp-import/mapping.json
+tools/mfp-import/candidates.json
+
+# Sorties de session
+dogfood-output/
+scripts/*.log
+
+# Local agent config / deploy scripts
+.claude/
+scripts/
+UITests/
+
+# Xcode user state
+**/xcuserdata/

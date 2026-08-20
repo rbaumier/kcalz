@@ -4,7 +4,7 @@ import { Database } from "bun:sqlite";
 import { unlinkSync } from "fs";
 
 // === Config ===
-const MFP_DIR = "/Users/rbaumier/www/myfitnesspal-export/output";
+const MFP_DIR = process.env.MFP_DIR ?? "data/mfp-export";
 const OFF_PATH = "data/off_fr.sqlite";
 const OUT_PATH = "data/user.sqlite";
 const MAPPING_PATH = "tools/mfp-import/mapping.json";

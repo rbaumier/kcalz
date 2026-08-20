@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kcalz — Propositions : écran Saisie libre v2</title>
+<style>
+  :root {
+    --feather: #58CC02;
+    --wing: #43C000;
+    --mask: #89E219;
+    --cardinal: #FF4B4B;
+    --macaw: #1CB0F6;
+    --bee: #FFC800;
+    --eel: #4B4B4B;
+    --wolf: #777777;
+    --hare: #AFAFAF;
+    --swan: #E5E5E5;
+    --polar: #F7F7F7;
+    --snow: #FFFFFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+    background: var(--polar);
+    color: var(--eel);
+    padding: 40px 24px 80px;
+  }
+  .intro { max-width: 760px; margin: 0 auto 48px; }
+  .intro h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .intro p { font-size: 15px; font-weight: 600; color: var(--wolf); line-height: 1.5; }
+
+  .proposal {
+    max-width: 980px;
+    margin: 0 auto 64px;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .explain { flex: 1 1 320px; min-width: 280px; padding-top: 8px; }
+  .explain h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  .explain .tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--wolf); background: var(--swan);
+    border-radius: 999px; padding: 4px 10px; margin-bottom: 10px;
+  }
+  .tag.reco { background: var(--feather); color: var(--snow); }
+  .explain p { font-size: 14px; font-weight: 600; color: var(--wolf); line-height: 1.55; margin-bottom: 8px; }
+  .explain p strong { color: var(--eel); }
+
+  /* ---- Phone frame ---- */
+  .phone {
+    flex: 0 0 390px; width: 390px;
+    background: var(--polar);
+    border: 2px solid var(--swan);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 4px 0 var(--swan);
+  }
+  .navbar {
+    text-align: center; font-size: 17px; font-weight: 800;
+    padding: 14px 0 10px;
+  }
+  .content { padding: 8px 16px 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    color: var(--wolf); margin: 18px 4px 8px;
+  }
+  .label-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 18px 4px 8px;
+  }
+  .label-row .section-label { margin: 0; }
+  .field {
+    background: var(--snow); border-radius: 14px;
+    box-shadow: 0 4px 0 var(--swan);
+    padding: 14px 20px;
+    font-size: 17px; font-weight: 700;
+  }
+  .field .ph { color: var(--hare); }
+  .qty-row { display: flex; align-items: center; gap: 8px; }
+  .qty-field {
+    background: var(--snow); border-radius: 14px;
+    box-shadow: 0 4px 0 var(--swan);
+    padding: 10px 0; width: 110px; text-align: center;
+    font-size: 26px; font-weight: 900;
+  }
+  .qty-unit { font-size: 17px; font-weight: 700; color: var(--wolf); }
+
+  .card {
+    background: var(--snow); border-radius: 20px;
+    box-shadow: 0 4px 0 var(--swan);
+    overflow: hidden;
+  }
+  .nrow {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px;
+  }
+  .nrow + .nrow { border-top: 2px solid var(--polar); }
+  .dot { width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0; }
+  .nrow .lbl { font-size: 16px; font-weight: 700; flex: 1; }
+  .nrow .req { color: var(--cardinal); font-weight: 700; }
+  .nrow .input {
+    width: 70px; text-align: center;
+    font-size: 16px; font-weight: 900; color: var(--hare);
+    border-bottom: 2px solid var(--swan);
+    padding-bottom: 2px;
+  }
+  .nrow .input.filled { color: var(--eel); }
+  .nrow .unit { font-size: 12px; font-weight: 700; color: var(--wolf); width: 42px; }
+
+  /* Segmented Duolingo */
+  .segmented {
+    display: flex; background: var(--snow);
+    border-radius: 14px; box-shadow: 0 4px 0 var(--swan);
+    padding: 4px; gap: 4px;
+  }
+  .segmented .seg {
+    flex: 1; text-align: center;
+    font-size: 14px; font-weight: 800;
+    padding: 9px 0; border-radius: 10px; color: var(--wolf);
+  }
+  .segmented .seg.active {
+    background: var(--feather); color: var(--snow);
+    box-shadow: 0 3px 0 var(--wing);
+  }
+  /* Mini segmented inline (V3) */
+  .mini-seg {
+    display: flex; background: var(--snow);
+    border-radius: 999px; box-shadow: 0 3px 0 var(--swan);
+    padding: 3px; gap: 3px;
+  }
+  .mini-seg .seg {
+    font-size: 11px; font-weight: 800;
+    padding: 5px 10px; border-radius: 999px; color: var(--wolf);
+  }
+  .mini-seg .seg.active { background: var(--feather); color: var(--snow); }
+
+  /* Big kcal field (V2) */
+  .kcal-card {
+    background: var(--snow); border-radius: 20px;
+    box-shadow: 0 4px 0 var(--swan);
+    padding: 16px 20px 14px;
+  }
+  .kcal-line { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+  .kcal-line .big {
+    font-size: 30px; font-weight: 900;
+    border-bottom: 2px solid var(--swan); padding: 0 18px 2px;
+  }
+  .kcal-line .u { font-size: 15px; font-weight: 800; color: var(--wolf); }
+
+  .conv-hint {
+    text-align: center; margin-top: 8px;
+    font-size: 12px; font-weight: 700; color: var(--hare);
+  }
+
+  /* Totaux mini-stats (déjà validés) */
+  .totals { display: flex; margin: 18px 0 14px; }
+  .totals .stat { flex: 1; text-align: center; }
+  .totals .stat + .stat { border-left: 1.5px solid rgba(75, 75, 75, 0.10); }
+  .totals .tl {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    color: var(--hare); margin-bottom: 3px;
+  }
+  .totals .tv { font-size: 17px; font-weight: 900; color: var(--feather); }
+  .totals .tv .g { font-size: 13px; font-weight: 800; color: var(--hare); }
+
+  .cta {
+    background: var(--feather); color: var(--snow);
+    border-radius: 16px; box-shadow: 0 5px 0 var(--wing);
+    padding: 16px 0; text-align: center;
+    font-size: 20px; font-weight: 800;
+    margin-bottom: 18px;
+  }
+
+  .note {
+    max-width: 760px; margin: 0 auto;
+    font-size: 13px; font-weight: 600; color: var(--hare); line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Saisie libre v2 — propositions</h1>
+  <p>Règles : kcal <strong>saisissables</strong> (plus de calcul auto) et un toggle
+  <strong>« Pour 100 g » ↔ « Au total »</strong> qui s'applique à <strong>tout le bloc nutriments</strong>
+  (calories ET macros). Exemple : 250 g — en /100 g on saisit 180 kcal / P 12 / G 20 ;
+  en total on saisit 450 kcal / P 30 / G 50 (mêmes valeurs stockées).
+  Totaux repas/journée et bouton inchangés.</p>
+</div>
+
+<!-- V1 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag reco">V1 — recommandée</span>
+    <h2>Segmented au-dessus de la carte unique</h2>
+    <p>Un segmented Duolingo pleine largeur pilote toute la carte NUTRIMENTS (Calories + P/G/L).
+    Le label de section suit l'état (« NUTRIMENTS POUR 100 G » ↔ « NUTRIMENTS AU TOTAL — 250 G »),
+    et une ligne d'aide sous la carte affiche l'équivalent dans l'autre référentiel
+    (« soit 450 kcal pour 250 g »).</p>
+    <p><strong>Pourquoi</strong> : un seul toggle, une seule carte, zéro ambiguïté — il est posé sur le bloc
+    entier qu'il pilote. C'est aussi l'écran le plus court, et la carte reprend le pattern exact
+    de « Créer un aliment ».</p>
+  </div>
+  <div class="phone">
+    <div class="navbar">Saisie libre</div>
+    <div class="content">
+      <div class="section-label">NOM</div>
+      <div class="field"><span class="ph">Saisie libre</span></div>
+
+      <div class="section-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">250</div><span class="qty-unit">grammes</span></div>
+
+      <div class="section-label">NUTRIMENTS POUR 100 G</div>
+      <div class="segmented" style="margin-bottom: 8px;">
+        <div class="seg active">Pour 100 g</div>
+        <div class="seg">Au total</div>
+      </div>
+      <div class="card">
+        <div class="nrow"><span class="dot" style="background: var(--feather);"></span><span class="lbl">Calories <span class="req">*</span></span><span class="input filled">180</span><span class="unit">kcal</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--cardinal);"></span><span class="lbl">Protéines</span><span class="input filled">12</span><span class="unit">g</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--macaw);"></span><span class="lbl">Glucides</span><span class="input filled">20</span><span class="unit">g</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--bee);"></span><span class="lbl">Lipides</span><span class="input">0</span><span class="unit">g</span></div>
+      </div>
+      <div class="conv-hint">soit 450 kcal pour 250 g</div>
+
+      <div class="totals">
+        <div class="stat"><div class="tl">REPAS</div><div class="tv">1 100 <span class="g">kcal</span></div></div>
+        <div class="stat"><div class="tl">JOURNÉE</div><div class="tv">1 700 <span class="g">/ 2 000</span></div></div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V2 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V2</span>
+    <h2>Calories en vedette + carte macros</h2>
+    <p>Même segmented global, mais les kcal gardent une carte dédiée avec un grand champ centré,
+    au-dessus de la carte macros. Ici en mode « Au total » : on saisit 450 kcal et les macros totales,
+    l'aide affiche l'équivalent /100 g.</p>
+    <p><strong>Pour</strong> : le champ kcal (saisie principale) est mis en scène. <strong>Contre</strong> :
+    un écran plus long — avec le clavier ouvert, les macros et le bouton partent sous le fold ;
+    deux cartes à scanner au lieu d'une.</p>
+  </div>
+  <div class="phone">
+    <div class="navbar">Saisie libre</div>
+    <div class="content">
+      <div class="section-label">NOM</div>
+      <div class="field"><span class="ph">Saisie libre</span></div>
+
+      <div class="section-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">250</div><span class="qty-unit">grammes</span></div>
+
+      <div class="section-label">NUTRIMENTS</div>
+      <div class="segmented" style="margin-bottom: 8px;">
+        <div class="seg">Pour 100 g</div>
+        <div class="seg active">Au total</div>
+      </div>
+      <div class="kcal-card">
+        <div class="kcal-line"><span class="big">450</span><span class="u">kcal au total</span></div>
+        <div class="conv-hint">soit 180 kcal / 100 g</div>
+      </div>
+      <div class="card" style="margin-top: 8px;">
+        <div class="nrow"><span class="dot" style="background: var(--cardinal);"></span><span class="lbl">Protéines</span><span class="input filled">30</span><span class="unit">g</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--macaw);"></span><span class="lbl">Glucides</span><span class="input filled">50</span><span class="unit">g</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--bee);"></span><span class="lbl">Lipides</span><span class="input">0</span><span class="unit">g</span></div>
+      </div>
+
+      <div class="totals">
+        <div class="stat"><div class="tl">REPAS</div><div class="tv">1 100 <span class="g">kcal</span></div></div>
+        <div class="stat"><div class="tl">JOURNÉE</div><div class="tv">1 700 <span class="g">/ 2 000</span></div></div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<!-- V3 -->
+<section class="proposal">
+  <div class="explain">
+    <span class="tag">V3</span>
+    <h2>Mini-segmented dans le label de section</h2>
+    <p>La carte unique de V1, mais le toggle est un mini-segmented en pilule, aligné à droite du label
+    « NUTRIMENTS » — pas de gros contrôle entre le label et la carte.</p>
+    <p><strong>Pour</strong> : le plus discret et le plus compact. <strong>Contre</strong> : cible tactile
+    réduite pour un réglage qui change le sens de toutes les saisies — le geste principal de cet écran
+    mérite mieux que deux mini-pilules.</p>
+  </div>
+  <div class="phone">
+    <div class="navbar">Saisie libre</div>
+    <div class="content">
+      <div class="section-label">NOM</div>
+      <div class="field"><span class="ph">Saisie libre</span></div>
+
+      <div class="section-label">QUANTITÉ</div>
+      <div class="qty-row"><div class="qty-field">250</div><span class="qty-unit">grammes</span></div>
+
+      <div class="label-row">
+        <div class="section-label">NUTRIMENTS</div>
+        <div class="mini-seg">
+          <div class="seg active">/100 g</div>
+          <div class="seg">total</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="nrow"><span class="dot" style="background: var(--feather);"></span><span class="lbl">Calories <span class="req">*</span></span><span class="input filled">180</span><span class="unit">kcal</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--cardinal);"></span><span class="lbl">Protéines</span><span class="input filled">12</span><span class="unit">g</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--macaw);"></span><span class="lbl">Glucides</span><span class="input filled">20</span><span class="unit">g</span></div>
+        <div class="nrow"><span class="dot" style="background: var(--bee);"></span><span class="lbl">Lipides</span><span class="input">0</span><span class="unit">g</span></div>
+      </div>
+      <div class="conv-hint">soit 450 kcal pour 250 g</div>
+
+      <div class="totals">
+        <div class="stat"><div class="tl">REPAS</div><div class="tv">1 100 <span class="g">kcal</span></div></div>
+        <div class="stat"><div class="tl">JOURNÉE</div><div class="tv">1 700 <span class="g">/ 2 000</span></div></div>
+      </div>
+      <div class="cta">Ajouter</div>
+    </div>
+  </div>
+</section>
+
+<p class="note">Commun aux trois : le toggle bascule le référentiel de TOUTES les saisies (kcal + macros) sans convertir
+les valeurs déjà tapées (on change l'interprétation, pas les chiffres) ; validation = quantité &gt; 0 ET kcal &gt; 0
+(macros optionnelles) ; stockage inchangé en per-100g (mode « total » converti via la quantité) ;
+tap « Journée » et autofocus du nom conservés. Dis-moi la lettre retenue, j'implémente.</p>
+
+</body>
+</html>

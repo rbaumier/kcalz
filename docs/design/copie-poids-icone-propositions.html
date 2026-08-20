@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kcalz — Propositions : icône du bouton copier (courbe de poids)</title>
+<style>
+  :root {
+    --feather: #58CC02;
+    --wing: #43C000;
+    --macaw: #1CB0F6;
+    --eel: #4B4B4B;
+    --wolf: #777777;
+    --hare: #AFAFAF;
+    --swan: #E5E5E5;
+    --polar: #F7F7F7;
+    --snow: #FFFFFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+    background: var(--polar);
+    color: var(--eel);
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .lede { font-size: 15px; font-weight: 600; color: var(--wolf); line-height: 1.5; max-width: 640px; }
+  h2 { font-size: 18px; font-weight: 900; margin: 48px 0 16px; }
+
+  /* --- Aperçu collant --- */
+  .preview-bar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--polar);
+    padding: 24px 0 20px;
+    margin-top: 28px;
+    border-bottom: 2px solid var(--swan);
+  }
+  .card {
+    background: var(--snow);
+    border-radius: 20px;
+    box-shadow: 0 4px 0 var(--swan);
+    padding: 20px;
+    max-width: 380px;
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 4px 12px;
+  }
+  .sel-date { font-size: 13px; font-weight: 800; color: var(--wolf); }
+  .sel-kg { font-size: 17px; font-weight: 900; color: var(--feather); }
+  .spacer { flex: 1; }
+
+  /* --- Le bouton, taille réelle (34pt) --- */
+  .kc-btn {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    background: var(--polar);
+    border-radius: 12px;
+    box-shadow: 0 3px 0 var(--swan);
+    color: var(--wolf);
+    flex: 0 0 auto;
+  }
+  .kc-btn svg { width: 18px; height: 18px; display: block; }
+
+  .preview-meta { margin-top: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .preview-meta .name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px; font-weight: 700; color: var(--eel);
+    background: var(--snow); border: 2px solid var(--swan);
+    border-radius: 8px; padding: 3px 8px;
+  }
+  .preview-meta .hint { font-size: 13px; font-weight: 600; color: var(--hare); }
+
+  /* --- Grille de candidats --- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
+  .opt {
+    background: var(--snow);
+    border-radius: 16px;
+    box-shadow: 0 4px 0 var(--swan);
+    padding: 16px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform .1s ease-out;
+    text-align: left;
+    font: inherit; color: inherit;
+    display: block; width: 100%;
+  }
+  .opt:hover { transform: translateY(-2px); }
+  .opt.active { border-color: var(--feather); }
+  .opt-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .opt-big { color: var(--wolf); }
+  .opt-big svg { width: 30px; height: 30px; display: block; }
+  .opt-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; font-weight: 700; color: var(--eel);
+    word-break: break-all;
+  }
+  .opt-note { font-size: 13px; font-weight: 600; color: var(--wolf); line-height: 1.45; }
+  .tag {
+    display: inline-block; margin-top: 10px;
+    font-size: 11px; font-weight: 900; letter-spacing: .6px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .tag-now { background: var(--swan); color: var(--wolf); }
+  .tag-reco { background: var(--feather); color: var(--snow); }
+  .tag-warn { background: #FFE9C2; color: #9A6400; }
+
+  .note {
+    margin-top: 40px; padding: 16px 20px;
+    background: var(--snow); border-radius: 16px; box-shadow: 0 4px 0 var(--swan);
+    font-size: 14px; font-weight: 600; color: var(--wolf); line-height: 1.6;
+    max-width: 720px;
+  }
+  .note code, .snippet code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px; font-weight: 700; color: var(--eel);
+  }
+  .snippet {
+    margin-top: 16px; padding: 14px 18px;
+    background: var(--eel); border-radius: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px; color: #EDEDED; overflow-x: auto;
+  }
+  .snippet .k { color: #89E219; }
+  .snippet .s { color: #FFC800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Icône du bouton « copier »</h1>
+  <p class="lede">
+    Le bouton se trouve en haut à droite de la carte du graphe de poids.
+    Clique une proposition : l'aperçu du haut se met à jour, en taille réelle (34&nbsp;pt, icône 14&nbsp;pt).
+  </p>
+
+  <div class="preview-bar">
+    <div class="card">
+      <div class="card-head">
+        <span class="sel-date">17 août</span>
+        <span class="sel-kg">57.6 kg</span>
+        <span class="spacer"></span>
+        <span class="kc-btn" id="preview-btn"></span>
+      </div>
+      <svg viewBox="0 0 340 130" style="width:100%;height:130px">
+        <line x1="0" y1="26" x2="340" y2="26" stroke="#E5E5E5" stroke-width="2"/>
+        <line x1="0" y1="66" x2="340" y2="66" stroke="#E5E5E5" stroke-width="2"/>
+        <line x1="0" y1="106" x2="340" y2="106" stroke="#E5E5E5" stroke-width="2"/>
+        <polyline points="14,88 68,74 122,80 176,52 230,58 284,34 330,40"
+                  fill="none" stroke="#58CC02" stroke-width="4"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        <g fill="#58CC02">
+          <circle cx="14" cy="88" r="5"/><circle cx="68" cy="74" r="5"/>
+          <circle cx="122" cy="80" r="5"/><circle cx="176" cy="52" r="5"/>
+          <circle cx="230" cy="58" r="5"/><circle cx="284" cy="34" r="5"/>
+          <circle cx="330" cy="40" r="5"/>
+        </g>
+      </svg>
+    </div>
+    <div class="preview-meta">
+      <span class="name" id="preview-name">doc.on.clipboard</span>
+      <span class="hint" id="preview-hint">actuelle</span>
+    </div>
+  </div>
+
+  <h2>Propositions</h2>
+  <div class="grid" id="grid"></div>
+
+  <div class="note">
+    Les dessins ci-dessus sont des <strong>approximations</strong> des SF&nbsp;Symbols, redessinées en SVG.
+    L'app affiche le vrai symbole d'Apple, un peu plus fin et mieux équilibré.
+    Vérifie le rendu final dans SF&nbsp;Symbols ou sur le téléphone.
+  </div>
+
+  <div class="snippet">
+    <span class="k">Image</span>(systemName: <span class="s">"doc.on.doc"</span>)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;.font(.kcIcon)<br>
+    <br>
+    kcalz/Views/Weight/WeightView.swift — var copyButton
+  </div>
+
+</div>
+
+<script>
+var ICONS = [
+  {
+    name: "doc.on.clipboard",
+    tag: "now",
+    note: "L'actuelle. Deux formes empilées : ça devient du bruit à 14 pt.",
+    svg: '<path d="M8.5 4.5H7A2.5 2.5 0 0 0 4.5 7v9A2.5 2.5 0 0 0 7 18.5h2.5"/>' +
+         '<rect x="7.5" y="2.5" width="6" height="3.6" rx="1.5"/>' +
+         '<rect x="11" y="9" width="9.5" height="12.5" rx="2.5"/>'
+  },
+  {
+    name: "doc.on.doc",
+    tag: "reco",
+    note: "Le geste « copier » universel. Deux feuilles décalées, lisible tout de suite.",
+    svg: '<path d="M8 7.5V5.5A2.5 2.5 0 0 1 10.5 3h8A2.5 2.5 0 0 1 21 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-2"/>' +
+         '<rect x="3" y="7.5" width="13.5" height="13.5" rx="2.5"/>'
+  },
+  {
+    name: "square.on.square",
+    tag: "reco",
+    note: "Même idée, sans les coins de page. La plus calme des trois.",
+    svg: '<path d="M8 7V5.5A2 2 0 0 1 10 3.5h8.5A2 2 0 0 1 20.5 5.5V14a2 2 0 0 1-2 2H17"/>' +
+         '<rect x="3.5" y="7.5" width="13" height="13" rx="2"/>'
+  },
+  {
+    name: "list.clipboard",
+    note: "Presse-papier + lignes : dit bien « la liste part dans le presse-papier ».",
+    svg: '<path d="M9 4.5H7.5A2.5 2.5 0 0 0 5 7v11.5A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V7a2.5 2.5 0 0 0-2.5-2.5H15"/>' +
+         '<rect x="8.5" y="2.5" width="7" height="4" rx="1.8"/>' +
+         '<path d="M8.5 11.5h7M8.5 15h7M8.5 18h4"/>'
+  },
+  {
+    name: "clipboard",
+    note: "Presse-papier nu. Simple, mais moins parlant que deux feuilles.",
+    svg: '<path d="M9 4.5H7.5A2.5 2.5 0 0 0 5 7v11.5A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V7a2.5 2.5 0 0 0-2.5-2.5H15"/>' +
+         '<rect x="8.5" y="2.5" width="7" height="4" rx="1.8"/>'
+  },
+  {
+    name: "text.alignleft",
+    note: "Décrit le résultat : des lignes de texte. Très léger à 14 pt.",
+    svg: '<path d="M3.5 5.5h17M3.5 10h12M3.5 14.5h17M3.5 19h9"/>'
+  },
+  {
+    name: "list.bullet",
+    note: "La liste jour par jour. Discret, mais peut se lire « voir le détail ».",
+    svg: '<path d="M9 5.5h11.5M9 12h11.5M9 18.5h11.5"/>' +
+         '<circle cx="4.5" cy="5.5" r="1.4" fill="currentColor" stroke="none"/>' +
+         '<circle cx="4.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>' +
+         '<circle cx="4.5" cy="18.5" r="1.4" fill="currentColor" stroke="none"/>'
+  },
+  {
+    name: "square.and.arrow.up",
+    tag: "warn",
+    note: "Icône de partage iOS. Attends-toi à une share sheet, pas à une copie muette.",
+    svg: '<path d="M12 3v12"/><path d="M8.4 6.6 12 3l3.6 3.6"/>' +
+         '<path d="M7.5 10H5.5A2 2 0 0 0 3.5 12v7a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2"/>'
+  },
+  {
+    name: "tray.and.arrow.up",
+    note: "Sens « export ». Bien si tu ajoutes un jour un vrai export fichier.",
+    svg: '<path d="M12 2.5v9"/><path d="M8.6 5.9 12 2.5l3.4 3.4"/>' +
+         '<path d="M3.5 14.5v4A2 2 0 0 0 5.5 20.5h13a2 2 0 0 0 2-2v-4h-5a3.5 3.5 0 0 1-7 0h-5Z"/>'
+  },
+  {
+    name: "doc.text",
+    note: "Le document produit. Neutre, un peu passif pour une action.",
+    svg: '<rect x="5" y="2.5" width="14" height="19" rx="2.5"/>' +
+         '<path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>'
+  },
+  {
+    name: "arrow.up.doc",
+    note: "Sortir les données du document. Deux idées en une, lecture plus lente.",
+    svg: '<path d="M12 2v6"/><path d="M9 5l3-3 3 3"/>' +
+         '<rect x="4.5" y="8.5" width="15" height="13" rx="2.5"/>'
+  },
+  {
+    name: "text.line.first.and.arrowtriangle.forward",
+    note: "Rare, très spécifique. À éviter ici : personne ne la connaît.",
+    svg: '<path d="M3.5 5h17M3.5 10h9M3.5 14.5h9M3.5 19h9"/>' +
+         '<path d="M16.5 10.5v8l5-4Z" fill="currentColor" stroke="none"/>'
+  }
+];
+
+function svgWrap(inner) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+         'stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
+}
+
+var TAGS = {
+  now:  '<span class="tag tag-now">actuelle</span>',
+  reco: '<span class="tag tag-reco">recommandée</span>',
+  warn: '<span class="tag tag-warn">à surveiller</span>'
+};
+
+var grid = document.getElementById("grid");
+var previewBtn = document.getElementById("preview-btn");
+var previewName = document.getElementById("preview-name");
+var previewHint = document.getElementById("preview-hint");
+
+function select(icon, el) {
+  previewBtn.innerHTML = svgWrap(icon.svg);
+  previewName.textContent = icon.name;
+  previewHint.textContent = icon.note;
+  var prev = grid.querySelector(".opt.active");
+  if (prev) prev.classList.remove("active");
+  el.classList.add("active");
+}
+
+ICONS.forEach(function (icon, i) {
+  var el = document.createElement("button");
+  el.className = "opt";
+  el.innerHTML =
+    '<div class="opt-row">' +
+      '<span class="kc-btn">' + svgWrap(icon.svg) + '</span>' +
+      '<span class="opt-big">' + svgWrap(icon.svg) + '</span>' +
+    '</div>' +
+    '<div class="opt-name">' + icon.name + '</div>' +
+    '<div class="opt-note" style="margin-top:6px">' + icon.note + '</div>' +
+    (icon.tag ? TAGS[icon.tag] : "");
+  el.onclick = function () { select(icon, el); };
+  grid.appendChild(el);
+  if (i === 0) select(icon, el);
+});
+</script>
+</body>
+</html>

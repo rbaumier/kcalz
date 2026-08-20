@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFP → OFF Mapping</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f5f5f7; color: #1d1d1f; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);
+    border-bottom: 1px solid #d2d2d7; padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .toolbar h1 { font-size: 18px; font-weight: 700; }
+  .toolbar .stats { font-size: 13px; color: #86868b; }
+  .toolbar input[type=text] {
+    padding: 6px 12px; border: 1px solid #d2d2d7; border-radius: 8px;
+    font-size: 14px; width: 220px; outline: none;
+  }
+  .toolbar input[type=text]:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
+  .toolbar button {
+    padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+  }
+  .btn-primary { background: #0071e3; color: #fff; }
+  .btn-primary:hover { background: #0077ED; }
+  .btn-secondary { background: #e8e8ed; color: #1d1d1f; }
+  .btn-danger { background: #ff3b30; color: #fff; }
+
+  .filter-tabs { display: flex; gap: 4px; }
+  .filter-tab {
+    padding: 4px 12px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600; background: transparent; color: #86868b;
+  }
+  .filter-tab.active { background: #1d1d1f; color: #fff; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 16px 24px 120px; }
+
+  .section-title {
+    font-size: 14px; font-weight: 700; color: #86868b; text-transform: uppercase;
+    letter-spacing: 0.5px; margin: 24px 0 8px; padding: 0 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .count { font-weight: 400; }
+
+  .item {
+    background: #fff; border-radius: 12px; margin-bottom: 6px;
+    border: 1px solid #e8e8ed; overflow: hidden; transition: border-color 0.15s;
+  }
+  .item.matched { border-left: 3px solid #34c759; }
+  .item.skipped { border-left: 3px solid #aeaeb2; opacity: 0.5; }
+  .item.pending { border-left: 3px solid #ff9500; }
+
+  .item-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer; user-select: none;
+  }
+  .item-header:hover { background: #f5f5f7; }
+
+  .freq {
+    background: #e8e8ed; border-radius: 6px; padding: 2px 8px;
+    font-size: 11px; font-weight: 700; color: #86868b; min-width: 36px; text-align: center;
+  }
+  .freq.high { background: #0071e3; color: #fff; }
+
+  .mfp-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .mfp-nutrients { font-size: 11px; color: #86868b; white-space: nowrap; }
+  .match-label {
+    font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 6px;
+    white-space: nowrap; max-width: 250px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .match-label.matched { background: #d1f2d9; color: #1a7f37; }
+  .match-label.skipped { background: #e8e8ed; color: #86868b; }
+  .match-label.pending { background: #fff3cd; color: #856404; }
+
+  .item-body { display: none; padding: 0 14px 14px; border-top: 1px solid #f0f0f5; }
+  .item.open .item-body { display: block; }
+
+  .candidates { margin-top: 10px; }
+  .candidate {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; margin-bottom: 3px; transition: all 0.1s;
+  }
+  .candidate:hover { background: #f5f5f7; }
+  .candidate.selected { border-color: #0071e3; background: #eff6ff; }
+  .candidate .c-name { flex: 1; font-size: 12px; font-weight: 500; }
+  .candidate .c-brands { font-size: 11px; color: #86868b; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .candidate .c-nuts { font-size: 10px; color: #86868b; white-space: nowrap; font-family: 'SF Mono', monospace; }
+  .candidate .c-code { font-size: 9px; color: #aeaeb2; font-family: 'SF Mono', monospace; }
+  .candidate .c-img {
+    width: 36px; height: 36px; border-radius: 6px; object-fit: cover;
+    background: #f0f0f5; flex-shrink: 0;
+  }
+
+  .barcode-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .barcode-row input {
+    padding: 5px 10px; border: 1px solid #d2d2d7; border-radius: 8px;
+    font-size: 12px; width: 180px; outline: none; font-family: 'SF Mono', monospace;
+  }
+  .barcode-row .status { font-size: 11px; color: #86868b; }
+
+  .grams-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .grams-row label { font-size: 12px; color: #86868b; }
+  .grams-row input {
+    padding: 4px 8px; border: 1px solid #d2d2d7; border-radius: 6px;
+    font-size: 12px; width: 70px; text-align: center; outline: none;
+  }
+  .grams-row .unit-info { font-size: 11px; color: #aeaeb2; }
+
+  .actions-row { display: flex; gap: 8px; margin-top: 8px; }
+  .skip-btn {
+    padding: 4px 12px; border-radius: 6px;
+    border: 1px solid #d2d2d7; background: #fff; cursor: pointer;
+    font-size: 11px; color: #86868b;
+  }
+  .skip-btn:hover { background: #f5f5f7; }
+
+  .hidden { display: none !important; }
+
+  .mapping-match {
+    font-size: 11px; color: #34c759; font-weight: 500;
+    padding: 4px 0; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>MFP → OFF</h1>
+  <div class="stats" id="stats"></div>
+  <input type="text" id="search" placeholder="Filtrer...">
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">Tous</button>
+    <button class="filter-tab" data-filter="recent">Récents</button>
+    <button class="filter-tab" data-filter="old">Anciens</button>
+    <button class="filter-tab" data-filter="pending">À valider</button>
+    <button class="filter-tab" data-filter="matched">Matchés</button>
+  </div>
+  <button class="btn-danger" id="skipOldBtn">Ignorer anciens</button>
+  <button class="btn-secondary" id="importBtn">Importer mapping</button>
+  <button class="btn-primary" id="exportBtn">Exporter mapping.json</button>
+</div>
+
+<div class="container" id="list"></div>
+
+<script>
+let data = [];
+let mappingData = {};
+let state = {};
+
+async function init() {
+  const [candidatesResp, mappingResp] = await Promise.all([
+    fetch('candidates.json'),
+    fetch('mapping.json').catch(() => null)
+  ]);
+  data = await candidatesResp.json();
+  if (mappingResp && mappingResp.ok) {
+    mappingData = await mappingResp.json();
+  }
+
+  for (const item of data) {
+    state[item.mfpName] = { selectedIndex: null, barcodeProduct: null, gramsPerUnit: null, status: 'pending' };
+  }
+
+  // Apply existing mapping
+  for (const item of data) {
+    const m = mappingData[item.mfpName];
+    if (!m) continue;
+    const s = state[item.mfpName];
+    const ci = item.candidates.findIndex(c => c.code === m.off_code);
+    if (ci !== -1) {
+      s.selectedIndex = ci;
+    } else {
+      s.barcodeProduct = {
+        code: m.off_code, name: m.off_name, brands: m.off_brands,
+        kcal: m.off_kcal, proteins: m.off_prot, carbs: m.off_carbs,
+        fat: m.off_fat, sugars: m.off_sugars, salt: m.off_salt
+      };
+    }
+    if (m.grams_per_unit) s.gramsPerUnit = m.grams_per_unit;
+    s.status = 'matched';
+  }
+
+  render();
+  updateStats();
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function offImgUrl(code) {
+  if (!code) return '';
+  const c = code.replace(/^0+/, '');
+  if (c.length <= 8) return `https://images.openfoodfacts.org/images/products/${c}/front_fr.3.200.jpg`;
+  const padded = c.padStart(13, '0');
+  return `https://images.openfoodfacts.org/images/products/${padded.slice(0,3)}/${padded.slice(3,6)}/${padded.slice(6,9)}/${padded.slice(9)}/front_fr.3.200.jpg`;
+}
+function nutStr(cal, prot, carbs, fat) { return `${Math.round(cal)} kcal · P${Math.round(prot)} G${Math.round(carbs)} L${Math.round(fat)}`; }
+function nutStr100(kcal, prot, carbs, fat) { return `${Math.round(kcal ?? 0)} · P${Math.round(prot ?? 0)} G${Math.round(carbs ?? 0)} L${Math.round(fat ?? 0)}`; }
+
+function render() {
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  // Split into recent and old
+  const recent = data.filter(d => d.recent);
+  const old = data.filter(d => !d.recent);
+
+  renderSection(list, 'Récents (dernier mois)', recent, 'recent');
+  renderSection(list, 'Anciens (> 1 mois)', old, 'old');
+
+  applyFilters();
+}
+
+function renderSection(container, title, items, sectionClass) {
+  const h = document.createElement('div');
+  h.className = `section-title section-${sectionClass}`;
+  h.innerHTML = `${title} <span class="count">(${items.length})</span>`;
+  container.appendChild(h);
+
+  for (const item of items) {
+    const i = data.indexOf(item);
+    const s = state[item.mfpName];
+    const el = document.createElement('div');
+    el.className = `item ${s.status} section-${sectionClass}`;
+    el.dataset.index = i;
+    el.dataset.mfpName = item.mfpName.toLowerCase();
+    el.dataset.section = sectionClass;
+
+    const freqClass = item.count >= 20 ? 'freq high' : 'freq';
+    const needsGrams = item.parsed.unit && item.parsed.unit !== 'g';
+
+    let selectedName = '';
+    if (s.status === 'matched') {
+      if (s.barcodeProduct) selectedName = s.barcodeProduct.name;
+      else if (s.selectedIndex !== null && item.candidates[s.selectedIndex]) selectedName = item.candidates[s.selectedIndex].name;
+    }
+
+    const statusLabel = s.status === 'matched' ? esc(selectedName) : s.status === 'skipped' ? 'Ignoré' : 'À valider';
+
+    el.innerHTML = `
+      <div class="item-header" onclick="toggle(${i})">
+        <span class="${freqClass}">${item.count}×</span>
+        <span class="mfp-name">${esc(item.mfpName)}</span>
+        <span class="mfp-nutrients">${nutStr(item.mfp.cal, item.mfp.prot, item.mfp.carbs, item.mfp.fat)}</span>
+        <span class="match-label ${s.status}">${statusLabel}</span>
+      </div>
+      <div class="item-body">
+        ${s.barcodeProduct ? `<div class="mapping-match" style="display:flex;align-items:center;gap:8px"><img class="c-img" src="${offImgUrl(s.barcodeProduct.code)}" onerror="this.style.display='none'" loading="lazy"> ✓ ${esc(s.barcodeProduct.name)} — ${nutStr100(s.barcodeProduct.kcal, s.barcodeProduct.proteins, s.barcodeProduct.carbs, s.barcodeProduct.fat)}/100g</div>` : ''}
+        <div class="candidates">
+          ${item.candidates.map((c, ci) => `
+            <div class="candidate ${s.selectedIndex === ci && !s.barcodeProduct ? 'selected' : ''}" onclick="selectCandidate(${i}, ${ci})">
+              <img class="c-img" src="${offImgUrl(c.code)}" onerror="this.style.display='none'" loading="lazy">
+              <span class="c-name">${esc(c.name)}</span>
+              <span class="c-brands">${esc(c.brands || '')}</span>
+              <span class="c-nuts">${nutStr100(c.kcal, c.proteins, c.carbs, c.fat)}/100g</span>
+              <span class="c-code">${c.code}</span>
+            </div>
+          `).join('')}
+          ${item.candidates.length === 0 ? '<div style="font-size:12px;color:#86868b;padding:6px">Aucun candidat OFF</div>' : ''}
+        </div>
+        <div class="search-off-row" style="margin-top:8px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" placeholder="Rechercher un produit OFF..." id="offsearch-${i}" style="width:280px;padding:5px 10px;border:1px solid #d2d2d7;border-radius:8px;font-size:12px;outline:none" onkeydown="if(event.key==='Enter')searchOFF(${i})">
+            <button class="btn-secondary" onclick="searchOFF(${i})" style="padding:5px 10px;font-size:11px">Rechercher</button>
+          </div>
+          <div id="offsearch-results-${i}" style="margin-top:6px"></div>
+        </div>
+        <div class="barcode-row">
+          <input type="text" placeholder="Code-barres OFF..." id="barcode-${i}" onkeydown="if(event.key==='Enter')lookupBarcode(${i})">
+          <button class="btn-secondary" onclick="lookupBarcode(${i})" style="padding:5px 10px;font-size:11px">Chercher</button>
+          <span class="status" id="barcode-status-${i}"></span>
+        </div>
+        ${needsGrams ? `
+          <div class="grams-row">
+            <label>g/${esc(item.parsed.unit)} :</label>
+            <input type="number" id="gpu-${i}" value="${s.gramsPerUnit || ''}" onchange="setGramsPerUnit(${i}, this.value)" placeholder="g">
+            <span class="unit-info">${item.parsed.qty} ${item.parsed.unit} → <span id="gpu-total-${i}">${s.gramsPerUnit ? Math.round(item.parsed.qty * s.gramsPerUnit) + 'g' : '?'}</span></span>
+          </div>
+        ` : ''}
+        <div class="actions-row">
+          <button class="skip-btn" onclick="toggleSkip(${i})">${s.status === 'skipped' ? 'Restaurer' : 'Ignorer'}</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(el);
+  }
+}
+
+function toggle(i) { document.querySelectorAll('.item')[findItemEl(i)]?.classList.toggle('open'); }
+
+function findItemEl(dataIndex) {
+  const items = document.querySelectorAll('.item');
+  for (let j = 0; j < items.length; j++) {
+    if (parseInt(items[j].dataset.index) === dataIndex) return j;
+  }
+  return -1;
+}
+
+function selectCandidate(itemIdx, candidateIdx) {
+  const s = state[data[itemIdx].mfpName];
+  s.selectedIndex = candidateIdx;
+  s.barcodeProduct = null;
+  s.status = 'matched';
+  render();
+  updateStats();
+}
+
+async function lookupBarcode(itemIdx) {
+  const input = document.getElementById(`barcode-${itemIdx}`);
+  const status = document.getElementById(`barcode-status-${itemIdx}`);
+  const code = input.value.trim();
+  if (!code) return;
+  status.textContent = '...';
+  try {
+    const resp = await fetch(`/api/product?code=${encodeURIComponent(code)}`);
+    const p = await resp.json();
+    if (!p) { status.textContent = 'Non trouvé'; return; }
+    const s = state[data[itemIdx].mfpName];
+    s.barcodeProduct = {
+      code: p.code, name: p.name, brands: p.brands || null,
+      kcal: p.kcal, proteins: p.proteins, carbs: p.carbs, fat: p.fat,
+      sugars: p.sugars, salt: p.salt,
+    };
+    s.selectedIndex = null;
+    s.status = 'matched';
+    render(); updateStats();
+  } catch { status.textContent = 'Erreur réseau'; }
+}
+
+async function searchOFF(itemIdx) {
+  const input = document.getElementById(`offsearch-${itemIdx}`);
+  const results = document.getElementById(`offsearch-results-${itemIdx}`);
+  const q = input.value.trim();
+  if (!q) return;
+  results.innerHTML = '<span style="font-size:11px;color:#86868b">Recherche...</span>';
+  try {
+    const resp = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const products = await resp.json();
+    if (!products.length) {
+      results.innerHTML = '<span style="font-size:11px;color:#86868b">Aucun résultat</span>';
+      return;
+    }
+    results.innerHTML = products.map((p, pi) => {
+      return `<div class="candidate" onclick="selectOFFSearch(${itemIdx}, ${pi})" data-product='${esc(JSON.stringify({
+        code: p.code, name: p.name, brands: p.brands || null,
+        kcal: p.kcal, proteins: p.proteins, carbs: p.carbs, fat: p.fat,
+        sugars: p.sugars, salt: p.salt,
+      }))}'>
+        <img class="c-img" src="${offImgUrl(p.code)}" onerror="this.style.display='none'" loading="lazy">
+        <span class="c-name">${esc(p.name)}</span>
+        <span class="c-brands">${esc(p.brands || '')}</span>
+        <span class="c-nuts">${nutStr100(p.kcal, p.proteins, p.carbs, p.fat)}/100g</span>
+      </div>`;
+    }).join('');
+  } catch { results.innerHTML = '<span style="font-size:11px;color:#86868b">Erreur réseau</span>'; }
+}
+
+function selectOFFSearch(itemIdx, resultIdx) {
+  const container = document.getElementById(`offsearch-results-${itemIdx}`);
+  const el = container.querySelectorAll('.candidate')[resultIdx];
+  const product = JSON.parse(el.dataset.product);
+  const s = state[data[itemIdx].mfpName];
+  s.barcodeProduct = product;
+  s.selectedIndex = null;
+  s.status = 'matched';
+  render(); updateStats();
+}
+
+function setGramsPerUnit(itemIdx, value) {
+  const v = parseFloat(value);
+  state[data[itemIdx].mfpName].gramsPerUnit = isNaN(v) ? null : v;
+  const el = document.getElementById(`gpu-total-${itemIdx}`);
+  if (el && !isNaN(v) && data[itemIdx].parsed.qty) {
+    el.textContent = Math.round(data[itemIdx].parsed.qty * v) + 'g';
+  }
+}
+
+function toggleSkip(itemIdx) {
+  const s = state[data[itemIdx].mfpName];
+  s.status = s.status === 'skipped'
+    ? (s.selectedIndex !== null || s.barcodeProduct ? 'matched' : 'pending')
+    : 'skipped';
+  render(); updateStats();
+}
+
+function updateStats() {
+  const vals = Object.values(state);
+  const matched = vals.filter(s => s.status === 'matched').length;
+  const skipped = vals.filter(s => s.status === 'skipped').length;
+  const pending = vals.filter(s => s.status === 'pending').length;
+  document.getElementById('stats').textContent =
+    `${data.length} total · ${matched} matchés · ${skipped} ignorés · ${pending} à valider`;
+}
+
+// Filters
+document.getElementById('search').addEventListener('input', applyFilters);
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    applyFilters();
+  });
+});
+
+function applyFilters() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const filter = document.querySelector('.filter-tab.active').dataset.filter;
+
+  document.querySelectorAll('.item').forEach(el => {
+    const i = parseInt(el.dataset.index);
+    const s = state[data[i].mfpName];
+    const section = el.dataset.section;
+    const matchesSearch = !search || el.dataset.mfpName.includes(search);
+    let matchesFilter = true;
+    if (filter === 'recent') matchesFilter = section === 'recent';
+    else if (filter === 'old') matchesFilter = section === 'old';
+    else if (filter === 'pending') matchesFilter = s.status === 'pending';
+    else if (filter === 'matched') matchesFilter = s.status === 'matched';
+    el.classList.toggle('hidden', !(matchesSearch && matchesFilter));
+  });
+
+  // Show/hide section titles
+  document.querySelectorAll('.section-title').forEach(title => {
+    if (filter === 'recent') title.classList.toggle('hidden', !title.classList.contains('section-recent'));
+    else if (filter === 'old') title.classList.toggle('hidden', !title.classList.contains('section-old'));
+    else title.classList.remove('hidden');
+  });
+}
+
+// Skip all old
+document.getElementById('skipOldBtn').addEventListener('click', () => {
+  if (!confirm('Ignorer tous les 1312 aliments anciens ?')) return;
+  for (const item of data) {
+    if (!item.recent && state[item.mfpName].status === 'pending') {
+      state[item.mfpName].status = 'skipped';
+    }
+  }
+  render(); updateStats();
+});
+
+// Export
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const mapping = {};
+  for (const item of data) {
+    const s = state[item.mfpName];
+    if (s.status !== 'matched') continue;
+    let product;
+    if (s.barcodeProduct) product = s.barcodeProduct;
+    else if (s.selectedIndex !== null && item.candidates[s.selectedIndex]) product = item.candidates[s.selectedIndex];
+    else continue;
+    const entry = {
+      off_code: product.code, off_name: product.name, off_brands: product.brands,
+      off_kcal: product.kcal, off_prot: product.proteins, off_carbs: product.carbs,
+      off_fat: product.fat, off_sugars: product.sugars, off_salt: product.salt,
+    };
+    if (s.gramsPerUnit) entry.grams_per_unit = s.gramsPerUnit;
+    mapping[item.mfpName] = entry;
+  }
+  const blob = new Blob([JSON.stringify(mapping, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mapping.json';
+  a.click();
+});
+
+// Import
+document.getElementById('importBtn').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = async (e) => {
+    const text = await e.target.files[0].text();
+    const mapping = JSON.parse(text);
+    for (const item of data) {
+      const m = mapping[item.mfpName];
+      if (!m) continue;
+      const s = state[item.mfpName];
+      const ci = item.candidates.findIndex(c => c.code === m.off_code);
+      if (ci !== -1) { s.selectedIndex = ci; s.barcodeProduct = null; }
+      else {
+        s.barcodeProduct = { code: m.off_code, name: m.off_name, brands: m.off_brands, kcal: m.off_kcal, proteins: m.off_prot, carbs: m.off_carbs, fat: m.off_fat, sugars: m.off_sugars, salt: m.off_salt };
+        s.selectedIndex = null;
+      }
+      if (m.grams_per_unit) s.gramsPerUnit = m.grams_per_unit;
+      s.status = 'matched';
+    }
+    render(); updateStats();
+  };
+  input.click();
+});
+
+init();
+</script>
+</body>
+</html>
